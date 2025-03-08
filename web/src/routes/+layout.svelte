@@ -30,23 +30,19 @@
 
 <Styles />
 <Navbar
-	class=""
 	container="fluid"
-	color="primary"
-	dark={false}
-	expand="md"
 	fixed=""
 	sticky=""
 	theme="auto"
 >
 	<NavbarBrand href="/" class="me-auto">
 		<a class="navbar-brand" href="/">
-			<img src="/logo.png" width="auto" height="30" alt="Klanglandet logotyp" />
-			Klanglandet Hanterare
+			<img src="/logo.png" width="auto" height="30" alt="Klanglandets logotyp" />
+			KlangHan
 		</a>
 	</NavbarBrand>
 	<Dropdown direction="down">
-		<DropdownToggle color="secondary" caret><Icon name="gear-fill" /> Meny</DropdownToggle>
+		<DropdownToggle color="primary" caret><Icon name="gear-fill" /> Meny</DropdownToggle>
 		<DropdownMenu>
             <DropdownItem header>Allmänt</DropdownItem>
 			<DropdownItem href="/"><Icon name="house-fill" /> Hem</DropdownItem>
