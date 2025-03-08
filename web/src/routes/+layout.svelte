@@ -1,6 +1,20 @@
 <script>
 	export let isMobile = true;
-	import { Styles, Icon } from '@sveltestrap/sveltestrap';
+	export const isAdmin = true;
+	export const isManager = true;
+	import {
+		Styles,
+		Icon,
+		Button,
+		colorMode,
+		useColorMode,
+		Navbar,
+		NavbarBrand,
+		Dropdown,
+		DropdownToggle,
+		DropdownMenu,
+		DropdownItem
+	} from '@sveltestrap/sveltestrap';
 	import { onMount } from 'svelte';
 
 	onMount(() => {
@@ -15,15 +29,68 @@
 </script>
 
 <Styles />
-<div class="row">
-	<div class="col-12 bg-warning text-center">
-        <p class="display-4"><Icon name="exclamation-triangle" />
-            {#if isMobile}
-                You're on a mobile device!
-            {:else}
-                You're on a desktop device!
+<Navbar
+	class=""
+	container="fluid"
+	color="primary"
+	dark={false}
+	expand="md"
+	fixed=""
+	sticky=""
+	theme="auto"
+>
+	<NavbarBrand href="/" class="me-auto">
+		<a class="navbar-brand" href="/">
+			<img src="/logo.png" width="auto" height="30" alt="Klanglandet logotyp" />
+			Klanglandet Hanterare
+		</a>
+	</NavbarBrand>
+	<Dropdown direction="down">
+		<DropdownToggle color="secondary" caret><Icon name="gear-fill" /> Meny</DropdownToggle>
+		<DropdownMenu>
+            <DropdownItem header>Allmänt</DropdownItem>
+			<DropdownItem href="/"><Icon name="house-fill" /> Hem</DropdownItem>
+			<DropdownItem href="/"><Icon name="calendar-event-fill" /> Överblick</DropdownItem>
+
+            {#if isManager}
+			<DropdownItem divider />
+			<DropdownItem header>Hanterare</DropdownItem>
+			<DropdownItem><Icon name="calendar-range-fill" /> Överblick+</DropdownItem>
+			<DropdownItem><Icon name="calendar-check-fill" /> Arbetspass</DropdownItem>
+			<DropdownItem><Icon name="person-fill-gear" /> Användare</DropdownItem>
             {/if}
-        </p>
-	</div>
-</div>
+
+            {#if isAdmin}
+			<DropdownItem divider />
+			<DropdownItem header>Administratör</DropdownItem>
+			<DropdownItem><Icon name="discord" /> Discord</DropdownItem>
+			<DropdownItem><Icon name="key-fill" /> Åtkomst</DropdownItem>
+            {/if}
+
+			<DropdownItem divider />
+
+            {#if isAdmin || isManager}
+			<DropdownItem header>Din användare</DropdownItem>
+            {:else}
+			<DropdownItem header>Användare</DropdownItem>
+            {/if}
+			<DropdownItem>
+                <Icon name="door-open-fill" /> Logga ut
+            </DropdownItem>
+
+			<DropdownItem divider />
+			<DropdownItem header>Ändra färgschema</DropdownItem>
+			<DropdownItem active={$colorMode === 'light'} on:click={() => useColorMode('light')}>
+                <Icon name="sun-fill" /> Ljust
+            </DropdownItem>
+            <DropdownItem active={$colorMode === 'dark'} on:click={() => useColorMode('dark')}>
+                <Icon name="moon-stars-fill" /> Mörkt
+            </DropdownItem>
+            <DropdownItem active={$colorMode === 'auto'} on:click={() => useColorMode('auto')}>
+                <Icon name="circle-half" /> Automatiskt
+            </DropdownItem>
+		</DropdownMenu>
+	</Dropdown>
+</Navbar>
+
 <slot />
