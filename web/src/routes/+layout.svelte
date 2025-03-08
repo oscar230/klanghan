@@ -50,33 +50,30 @@
 		<DropdownMenu>
             <DropdownItem header>Allmänt</DropdownItem>
 			<DropdownItem href="/"><Icon name="house-fill" /> Hem</DropdownItem>
-			<DropdownItem href="/"><Icon name="calendar-event-fill" /> Överblick</DropdownItem>
+			<DropdownItem href="/about"><Icon name="chat-left-text-fill" /> Vad är detta?</DropdownItem>
 
             {#if isManager}
 			<DropdownItem divider />
 			<DropdownItem header>Hanterare</DropdownItem>
-			<DropdownItem><Icon name="calendar-range-fill" /> Överblick+</DropdownItem>
-			<DropdownItem><Icon name="calendar-check-fill" /> Arbetspass</DropdownItem>
-			<DropdownItem><Icon name="person-fill-gear" /> Användare</DropdownItem>
+			<DropdownItem href="/overview"><Icon name="calendar-event-fill" /> Överblick</DropdownItem>
+			<DropdownItem href="/schedule"><Icon name="calendar-check-fill" /> Arbetspass</DropdownItem>
+			<DropdownItem href="/users"><Icon name="person-fill-gear" /> Användare</DropdownItem>
             {/if}
 
             {#if isAdmin}
 			<DropdownItem divider />
 			<DropdownItem header>Administratör</DropdownItem>
-			<DropdownItem><Icon name="discord" /> Discord</DropdownItem>
-			<DropdownItem><Icon name="key-fill" /> Åtkomst</DropdownItem>
+			<DropdownItem href="/settings/discord"><Icon name="discord" /> Discord</DropdownItem>
+			<DropdownItem href="/settings/access"><Icon name="key-fill" /> Åtkomst</DropdownItem>
             {/if}
 
 			<DropdownItem divider />
-
             {#if isAdmin || isManager}
 			<DropdownItem header>Din användare</DropdownItem>
             {:else}
 			<DropdownItem header>Användare</DropdownItem>
             {/if}
-			<DropdownItem>
-                <Icon name="door-open-fill" /> Logga ut
-            </DropdownItem>
+			<DropdownItem><Icon name="door-open-fill" /> Logga ut</DropdownItem>
 
 			<DropdownItem divider />
 			<DropdownItem header>Ändra färgschema</DropdownItem>
