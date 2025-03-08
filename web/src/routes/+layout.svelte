@@ -50,7 +50,7 @@
 
             {#if isManager}
 			<DropdownItem divider />
-			<DropdownItem header>Hanterare</DropdownItem>
+			<DropdownItem header>Arbetsledare</DropdownItem>
 			<DropdownItem href="/overview"><Icon name="calendar-event-fill" /> Överblick</DropdownItem>
 			<DropdownItem href="/schedule"><Icon name="calendar-check-fill" /> Arbetspass</DropdownItem>
 			<DropdownItem href="/users"><Icon name="person-fill-gear" /> Användare</DropdownItem>
@@ -58,7 +58,7 @@
 
             {#if isAdmin}
 			<DropdownItem divider />
-			<DropdownItem header>Administratör</DropdownItem>
+			<DropdownItem header>Systemadministratör</DropdownItem>
 			<DropdownItem href="/settings/discord"><Icon name="discord" /> Discord</DropdownItem>
 			<DropdownItem href="/settings/access"><Icon name="key-fill" /> Åtkomst</DropdownItem>
             {/if}
