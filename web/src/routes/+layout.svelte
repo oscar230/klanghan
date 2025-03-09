@@ -5,7 +5,6 @@
 	import {
 		Styles,
 		Icon,
-		Button,
 		colorMode,
 		useColorMode,
 		Navbar,
