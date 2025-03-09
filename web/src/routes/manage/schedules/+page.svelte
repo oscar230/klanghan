@@ -88,7 +88,7 @@
 
 <style>
 	.shift-container {
-		overflow-x: hidden;
+		overflow-x: auto;
 	}
 	.shift {
 		display: inline-block;
