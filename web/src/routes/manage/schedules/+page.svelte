@@ -1,6 +1,9 @@
 <script lang="ts">
 	import {
-		Table
+		Table,
+
+		Tooltip
+
 	} from '@sveltestrap/sveltestrap';
 	import { onMount } from 'svelte';
 	import { writable, type Writable } from 'svelte/store';
@@ -17,7 +20,7 @@
 			this.end = end;
 			this.user = user;
 			this.role = role;
-			this.free = !(user && role);
+			this.free = !user;
 		}
 
 		// Method to calculate the difference in minutes
@@ -35,9 +38,12 @@
 
 	onMount(() => {
 		addshift(new Shift(new Date("2025-01-01T00:00:00"), new Date("2025-01-01T00:30:00"), 'Oscar', 'Arbetsledare'));
-		addshift(new Shift(new Date("2025-01-01T00:00:00"), new Date("2025-01-01T00:30:00"), 'Evelina', 'Arbetsledare'));
-		addshift(new Shift(new Date("2025-01-01T00:00:00"), new Date("2025-01-01T00:30:00"), 'Olof', 'Arbetsledare'));
-		addshift(new Shift(new Date("2025-01-01T00:00:00"), new Date("2025-01-01T00:30:00"), 'Oscar', 'DJ'));
+		addshift(new Shift(new Date("2025-01-01T00:30:00"), new Date("2025-01-01T01:00:00"), 'Evelina', 'Arbetsledare'));
+		addshift(new Shift(new Date("2025-01-01T01:00:00"), new Date("2025-01-01T02:30:00"), 'Olof', 'Arbetsledare'));
+		addshift(new Shift(new Date("2025-01-01T02:00:00"), new Date("2025-01-01T02:15:00"), '', 'Arbetsledare'));
+		addshift(new Shift(new Date("2025-01-01T02:15:00"), new Date("2025-01-01T02:30:00"), 'Markus', 'Arbetsledare'));
+
+		addshift(new Shift(new Date("2025-01-01T00:00:00"), new Date("2025-01-01T00:30:00"), 'OscarOscarOscarOscar', 'DJ'));
 		addshift(new Shift(new Date("2025-01-01T00:00:00"), new Date("2025-01-01T00:30:00"), 'Markus', 'DJ'));
 		addshift(new Shift(new Date("2025-01-01T00:00:00"), new Date("2025-01-01T00:30:00"), 'Marble', 'DJ'));
 		addshift(new Shift(new Date("2025-01-01T00:00:00"), new Date("2025-01-01T00:30:00"), 'Trocadero Sunrise', 'DJ'));
@@ -61,7 +67,15 @@
 							<th scope="row">{role}</th>
 							<td class="shift-container">
 								{#each $shifts.filter(shift => shift.role === role) as shift, index}
-									<div class="shift border {index % 2 === 0 ? 'border-warning bg-warning-subtle' : 'border-info bg-info-subtle'}" style="width: {shift.getDurationInMinutes()}rem;">{shift.user}</div>
+									<div 
+										class="shift border {shift.free ? 'border-dark bg-dark-subtle' : (index % 2 === 0 ? 'border-warning bg-warning-subtle' : 'border-info bg-info-subtle')}"
+										style="width: {shift.getDurationInMinutes() * 2}px;">
+										{#if shift.free}
+											Ledigt
+										{:else}
+											{shift.user}
+										{/if}
+									</div>
 								{/each}
 							</td>
 						</tr>
@@ -77,7 +91,9 @@
 		overflow-x: hidden;
 	}
 	.shift {
+		display: inline-block;
 		overflow: hidden;
-		display: inline;
+		white-space: nowrap;
+		text-overflow: ellipsis;
 	}
 </style>
