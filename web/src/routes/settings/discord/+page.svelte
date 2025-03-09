@@ -8,7 +8,7 @@
 
 <div class="container">
 	<div class="row gy-3">
-		<div class="col-12 col-md-6 ">
+		<div class="col-12 col-lg-6 ">
 			<Card>
 				<CardHeader>
 					<CardTitle>Meddela om försäljning på Billetto</CardTitle>
@@ -32,7 +32,7 @@
 				</CardBody>
 			</Card>
 		</div>
-		<div class="col-12 col-md-6">
+		<div class="col-12 col-lg-6">
 			<Card>
 				<CardHeader>
 					<CardTitle>Meddela om ny medarbetaråtkomst</CardTitle>
