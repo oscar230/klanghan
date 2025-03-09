@@ -15,8 +15,8 @@
 				Detta är en applikation för <a
 					href="https://klanglandet.se/"
 					target="_blank"
-					rel="noopener noreferrer"><b>Klang</b>landet</a
-				>. Här <b>han</b>terar vi arbetet under festivalen {year}.
+					rel="noopener noreferrer">Klanglandet</a
+				>. Här hanterar vi arbetet under festivalen {year}.
 			</p>
 
 			<FormGroup>
