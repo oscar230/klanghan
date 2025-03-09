@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { Icon, Button, Input, FormGroup, Label, Alert } from '@sveltestrap/sveltestrap';
-	const roles: Array<string> = ['medarbetare', 'arbetsledare', 'systemadministratör'];
+	const userTypes: Array<string> = ['medarbetare', 'arbetsledare', 'systemadministratör'];
 	const users: Array<string> = ['Oscar', 'Olof', 'Evelina', 'Markus'];
-	let role: string = roles[0];
+	let selectedUserType: string = userTypes[0];
 	let year: number = new Date().getFullYear();
-	let accessKey: string = '';
+	let enteredAccessKey: string = '';
 </script>
 
 <div class="container">
@@ -21,23 +21,23 @@
 
 			<FormGroup>
 				<Label>Din roll</Label>
-				{#each roles as value}
+				{#each userTypes as value}
 					<Input
 						type="radio"
-						bind:group={role}
+						bind:group={selectedUserType}
 						{value}
 						label={value.charAt(0).toUpperCase() + value.slice(1)}
 					/>
 				{/each}
 				<br>
-				{#if role == roles[0]}
+				{#if selectedUserType == userTypes[0]}
 					<p>
-						När du väljer att logga in som {role} så använder du den åtkomstnyckel som är angiven i vår
+						När du väljer att logga in som {selectedUserType} så använder du den åtkomstnyckel som är angiven i vår
 						Discord-server.
 					</p>
 				{:else}
 					<p>
-						När du väljer att logga in som {role} så får du din åtkomstnyckel ifrån Oscar.
+						När du väljer att logga in som {selectedUserType} så får du din åtkomstnyckel ifrån Oscar.
 					</p>
 					<img
 						src="/oscar.png"
@@ -51,11 +51,11 @@
 				<Input
 					type="password"
 					placeholder="Din åtkomstnyckel"
-					bind:value={accessKey}
+					bind:value={enteredAccessKey}
 					style="max-width: 15rem;"
 				/>
 			</FormGroup>
-			{#if role == roles[0]}
+			{#if selectedUserType == userTypes[0]}
 				<FormGroup>
 					<Label>Vem är du?</Label>
 					{#if users.length > 0}
@@ -66,14 +66,14 @@
 						</Input>
 					{:else}
 						<Alert color="danger">
-							<p><b>Fel:</b> Det finns inga användare, du kan inte logga in som {roles[0]} just nu, vänligen kontakta {roles[2]}.</p>
+							<p><b>Fel:</b> Det finns inga användare, du kan inte logga in som {userTypes[0]} just nu, vänligen kontakta {userTypes[2]}.</p>
 						</Alert>
 					{/if}
 				</FormGroup>
 			{/if}
 			<FormGroup>
-				<Button color="success" disabled={role == roles[0] && users.length == 0}>
-					<Icon name="door-open-fill" /> Logga in som {role.toLowerCase()}
+				<Button color="success" disabled={selectedUserType == userTypes[0] && users.length == 0}>
+					<Icon name="door-open-fill" /> Logga in som {selectedUserType.toLowerCase()}
 				</Button>
 			</FormGroup>
 		</div>
