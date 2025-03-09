@@ -1,10 +1,5 @@
 <script lang="ts">
-	import { Icon, Button, Input, FormGroup, Label, Alert } from '@sveltestrap/sveltestrap';
-	const roles: Array<string> = ['medarbetare', 'arbetsledare', 'systemadministratör'];
-	const users: Array<string> = ['Oscar', 'Olof', 'Evelina', 'Markus'];
-	let role: string = roles[0];
 	let year: number = new Date().getFullYear();
-	let accessKey: string = '';
 </script>
 
 <div class="container">
