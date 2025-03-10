@@ -3,8 +3,9 @@
 	import { onMount } from 'svelte';
 	import { writable, type Writable } from 'svelte/store';
 
-	const timelineStartDate = new Date('2025-01-01T00:00:00');
-	const timelineEndDate = new Date('2025-01-01T23:59:59');
+	const timelineNowdate = new Date('2025-01-01T01:10:00');
+	let timelineStartDate = new Date('2025-01-01T00:00:00');
+	let timelineEndDate = new Date('2025-01-01T23:59:59');
 	let totalTimelineWidth: number = 10000; // Define the total width of the timeline container
 
 	class Shift {
@@ -27,18 +28,32 @@
 			return Math.floor((this.end.getTime() - this.start.getTime()) / (1000 * 60));
 		}
 
-		position(): any {
+		position(): string {
 			const eventStartOffset: number = this.start.getTime() - timelineStartDate.getTime();
 			const eventEndOffset: number = this.end.getTime() - timelineStartDate.getTime();
-			const eventWidth: number =
+			const height: number =
 				((eventEndOffset - eventStartOffset) /
 					(timelineEndDate.getTime() - timelineStartDate.getTime())) *
 				totalTimelineWidth;
-			const eventLeft: number =
+			const top: number =
 				(eventStartOffset / (timelineEndDate.getTime() - timelineStartDate.getTime())) *
 				totalTimelineWidth;
 
-			return `top: ${eventLeft}px; height: ${eventWidth}px;`;
+			return `top: ${top < 0 ? 0 : top}px; height: ${height}px;`;
+		}
+
+		classes(index: number): string {
+			if (this.role === '#Tid') {
+				return 'bg-light-subtle';
+			} else if (this.start.getTime() > this.end.getTime()) {
+				return 'bg-danger';
+			} else if (this.start.getTime() <= timelineNowdate.getTime() && this.end.getTime() > timelineNowdate.getTime()) {
+				return 'shift-animated';
+			} else if (index % 2 === 0) {
+				return 'bg-primary-subtle';
+			} else {
+				return 'bg-info-subtle';
+			}
 		}
 	}
 
@@ -139,6 +154,11 @@
 				'AAAA'
 			)
 		);
+
+		if ($shifts.length > 0) {
+			timelineStartDate = new Date(Math.min(...$shifts.map(s => s.start.getTime())));
+			timelineEndDate = new Date(Math.max(...$shifts.map(s => s.end.getTime())));
+		}
 	});
 </script>
 
@@ -162,7 +182,7 @@
 		<div class="col-12 schedule">
 			<div class="schedule-header">
 				{#each roles as role}
-					<div class="schedule-column border border">
+					<div class="schedule-column">
 						<p class="m-1">
 							{#if role === '#Tid'}
 								<b>Tidslinje</b>
@@ -175,27 +195,23 @@
 			</div>
 			<div class="schedule-body">
 				{#each roles as role}
-					<div class="schedule-column border" style="height: {totalTimelineWidth}px;">
+					<div class="schedule-column" style="height: {totalTimelineWidth}px;">
 						{#each $shifts.filter((shift) => shift.role === role) as shift, index}
-							<div
-								class="shift p-1 border {shift.role === '#Tid'
-									? 'border-light bg-light-subtle'
-									: index % 2 === 0
-										? 'border-warning bg-warning-subtle'
-										: 'border-info bg-info-subtle'}"
-								style={shift.position()}
-							>
+							<div class="shift p-1 {shift.classes(index)}" style={shift.position()}>
 								<p>
 									{#if role === '#Tid'}
 										<b>Tid:</b> {shift.start.toLocaleTimeString('sv-SE')}
 									{:else}
 										{shift.user}
 										<br />
-										{shift.start.toLocaleTimeString('sv-SE')}
+										<code>{shift.start.toLocaleTimeString('sv-SE')}</code>
 										<br />
-										{shift.end.toLocaleTimeString('sv-SE')}
+										<code>{shift.end.toLocaleTimeString('sv-SE')}</code>
 									{/if}
 								</p>
+								{#if role !== '#Tid'}
+									<Button size="sm" color="primary"><Icon name="gear-fill" /> Ändra</Button>
+								{/if}
 							</div>
 						{/each}
 					</div>
@@ -235,8 +251,29 @@
 
 	.schedule-body > .schedule-column > .shift {
 		position: absolute;
-		width: 10rem;
-		overflow: hidden;
+		width: 9rem;
+		overflow-y: scroll;
 		z-index: 1;
+		white-space: normal; /* Allow text wrapping */
+		word-wrap: break-word; /* Ensure long words wrap */
+	}
+
+	.shift-animated {
+		background-color: #e4ffc3;
+		background-image: repeating-linear-gradient(
+			-45deg,
+			transparent,
+			transparent 1rem,
+			#ccff8e 1rem,
+			#ccff8e 2rem
+		);
+		background-size: 200% 200%;
+		animation: barberpole 30s linear infinite;
+	}
+
+	@keyframes barberpole {
+		100% {
+			background-position: 100% 100%;
+		}
 	}
 </style>
