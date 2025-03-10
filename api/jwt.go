@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,8 +11,8 @@ import (
 )
 
 // Constants for login credentials
-const correctUsername = "admin"
-const correctAccessKey = "admin"
+const correctUsername = AdminRole
+const correctAccessKey = AdminRole
 
 // Secret key for signing JWT tokens (store this securely in production)
 var jwtSecret = []byte("mysecretkey")
@@ -56,45 +55,90 @@ func ValidateJWT(tokenString string) (*jwt.Token, error) {
 	return token, err
 }
 
-// JWT Middleware to validate token
 func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get token from Authorization header (Bearer <token>)
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing Authorization header"})
-			c.Abort()
-			return
-		}
-
-		// Split the "Bearer <token>" string
-		tokenString := strings.Split(authHeader, " ")[1]
+		// Get the token from the Authorization header
+		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "No token provided"})
 			c.Abort()
 			return
 		}
 
-		// Validate JWT token
-		token, err := ValidateJWT(tokenString)
-		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+		// Parse and validate the token
+		_, claims, err := parseJWT(tokenString)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
 
-		// Optionally, extract user info from token claims
-		claims, ok := token.Claims.(*jwt.RegisteredClaims)
-		if !ok || claims.Subject == "" {
+		// Extract user role from the claims
+		userRole, ok := claims["role"].(string)
+		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
 			c.Abort()
 			return
 		}
 
-		// Set the username from claims in the context
-		c.Set("username", claims.Subject)
+		// Attach the user role to the context for later use
+		c.Set("role", userRole)
 
-		// Continue processing the request
+		// Continue with the request
+		c.Next()
+	}
+}
+
+func parseJWT(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
+	// Secret key should be used here to parse and validate the JWT token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(ConfigData.Security.JWTSecret), nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, nil, fmt.Errorf("invalid token")
+	}
+
+	return token, claims, nil
+}
+
+func RoleMiddleware(requiredRole string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Retrieve the role from the context (set by the JWT middleware)
+		role, exists := c.Get("role")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "No role found in token"})
+			c.Abort()
+			return
+		}
+
+		// Check if the user's role matches the required role
+		switch requiredRole {
+		case AdminRole:
+			if role != AdminRole {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient permissions"})
+				c.Abort()
+				return
+			}
+		case ManagerRole:
+			if role != AdminRole && role != ManagerRole {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient permissions"})
+				c.Abort()
+				return
+			}
+		case RegularRole:
+			if role != AdminRole && role != ManagerRole && role != RegularRole {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient permissions"})
+				c.Abort()
+				return
+			}
+		}
+
+		// Continue with the request
 		c.Next()
 	}
 }

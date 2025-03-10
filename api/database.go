@@ -6,17 +6,25 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
+const (
+	AdminRole   = "admin"
+	ManagerRole = "manager"
+	RegularRole = "regular"
+)
+
 // Define the User model
 type User struct {
-	ID    uint   `gorm:"primaryKey"`
-	Name  string `json:"name"`
-	Email string `json:"email" gorm:"unique"`
+	ID         uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Name       string    `json:"name" gorm:"type:varchar(255)"`
+	DiscordUID string    `json:"discord_uid" gorm:"type:varchar(18);unique""`
+	Role       string    `json:"role" gorm:"type:varchar(7);not null"` // Can be "admin", "manager" or "regular"
 }
 
 // Create User (POST)
@@ -26,6 +34,9 @@ func createUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Enforce default role
+	user.Role = RegularRole
 
 	// Insert user into DB
 	DB.Create(&user)
@@ -41,8 +52,8 @@ func getUsers(c *gin.Context) {
 
 // Get Schedule (for user) (GET)
 func getSchedule(c *gin.Context) {
-	// Retrieve the username from the URL parameter `user`
-	// user := c.Param("user")
+	// Retrieve the username from the URL parameter `id`
+	// user := c.Param("id")
 	var users []User
 	DB.Find(&users)
 	c.JSON(http.StatusOK, users)

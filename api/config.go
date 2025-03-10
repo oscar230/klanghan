@@ -12,6 +12,7 @@ import (
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Database DatabaseConfig `yaml:"database"`
+	Security Security       `yaml:"security"`
 }
 
 type ServerConfig struct {
@@ -25,6 +26,10 @@ type DatabaseConfig struct {
 	DBName   string `yaml:"dbname"`
 	Port     int    `yaml:"port"`
 	SslMode  string `yaml:"sslmode"`
+}
+
+type Security struct {
+	JWTSecret string `yaml:"jwtSecret"`
 }
 
 // LoadConfig loads the configuration from the YAML file

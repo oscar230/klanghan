@@ -1,6 +1,9 @@
 server:
   port: 5200
 
+security:
+  jwtSecret: secret
+
 database:
   host: localhost
   user: postgres
