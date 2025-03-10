@@ -32,23 +32,28 @@ func initServer() {
 	adminRoutes := protected.Group("/admin")
 	adminRoutes.Use(RoleMiddleware(AdminRole))
 	{
-		adminRoutes.POST("/users", createUser)      // Admins can create users
-		adminRoutes.GET("/schedules", getSchedules) // Admin can view all schedules
+		adminRoutes.POST("/users", createUser) // Create users
+		adminRoutes.PUT("/users", createUser)  // Update users
+		adminRoutes.DELETE("/users/:id", nil)  // Remove user
 	}
 
 	// Manager routes (accessible by admins and managers)
 	managerRoutes := protected.Group("/manager")
 	managerRoutes.Use(RoleMiddleware(ManagerRole))
 	{
-		adminRoutes.GET("/users", getUsers)           // Managers can get all users
-		managerRoutes.GET("/schedules", getSchedules) // Managers can view all schedules
+		managerRoutes.GET("/users", getUsers) // Get all users
+
+		managerRoutes.POST("/shifts", getSchedules)       // Create shift
+		managerRoutes.PUT("/shifts", getSchedules)        // Update shift
+		managerRoutes.GET("/shifts/:id", getSchedules)    // Get shift
+		managerRoutes.DELETE("/shifts/:id", getSchedules) // Reomve shift
 	}
 
 	// Regular routes (accessible by all logged-in users)
 	regularRoutes := protected.Group("/user")
 	regularRoutes.Use(RoleMiddleware(RegularRole))
 	{
-		regularRoutes.GET("/schedule", getSchedule) // Regular users can view their own schedule
+		regularRoutes.GET("/shifts", getShifts) // Get all shifts
 	}
 
 	// Start the server

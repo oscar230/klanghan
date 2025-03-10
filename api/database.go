@@ -51,7 +51,16 @@ func getUsers(c *gin.Context) {
 }
 
 // Get Schedule (for user) (GET)
-func getSchedule(c *gin.Context) {
+func getShifts(c *gin.Context) {
+	// Retrieve the username from the URL parameter `id`
+	// user := c.Param("id")
+	var users []User
+	DB.Find(&users)
+	c.JSON(http.StatusOK, users)
+}
+
+// Get Schedule (for user) (GET)
+func getShiftsForUser(c *gin.Context) {
 	// Retrieve the username from the URL parameter `id`
 	// user := c.Param("id")
 	var users []User
