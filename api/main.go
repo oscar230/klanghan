@@ -9,6 +9,12 @@ func main() {
 	// Initialize DB
 	initDB()
 
-	// Initialize API Server
-	initServer()
+	// Initialize scheduler
+	go initScheduler()
+
+	// Initialize API server
+	go initServer()
+
+	// Keep the main function alive
+	select {}
 }
