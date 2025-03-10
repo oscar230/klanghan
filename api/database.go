@@ -39,6 +39,22 @@ func getUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
+// Get Schedule (for user) (GET)
+func getSchedule(c *gin.Context) {
+	// Retrieve the username from the URL parameter `user`
+	// user := c.Param("user")
+	var users []User
+	DB.Find(&users)
+	c.JSON(http.StatusOK, users)
+}
+
+// Get Schedules (GET)
+func getSchedules(c *gin.Context) {
+	var users []User
+	DB.Find(&users)
+	c.JSON(http.StatusOK, users)
+}
+
 // Initialize database connection
 func initDB() {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s",
