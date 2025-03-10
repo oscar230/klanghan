@@ -28,8 +28,11 @@
 			return Math.floor((this.end.getTime() - this.start.getTime()) / (1000 * 60));
 		}
 
-		position(): string {
-			const eventStartOffset: number = this.start.getTime() - timelineStartDate.getTime();
+		position(start: null | number = null): string {
+			if (!start) {
+				start = this.start.getTime();
+			}
+			const eventStartOffset: number = start - timelineStartDate.getTime();
 			const eventEndOffset: number = this.end.getTime() - timelineStartDate.getTime();
 			const height: number =
 				((eventEndOffset - eventStartOffset) /
@@ -197,6 +200,10 @@
 				{#each roles as role}
 					<div class="schedule-column" style="height: {totalTimelineWidth}px;">
 						{#each $shifts.filter((shift) => shift.role === role) as shift, index}
+							{#if shift.start.getTime() <= timelineNowdate.getTime() && shift.end.getTime() > timelineNowdate.getTime()}
+								<div class="shift shift-line" style={shift.position(timelineNowdate.getTime())}>
+								</div>
+							{/if}
 							<div class="shift p-1 {shift.classes(index)}" style={shift.position()}>
 								<p>
 									{#if role === '#Tid'}
@@ -256,6 +263,17 @@
 		z-index: 1;
 		white-space: normal; /* Allow text wrapping */
 		word-wrap: break-word; /* Ensure long words wrap */
+	}
+
+	.shift-line {
+		z-index: 2 !important;
+		background-color: red;
+		color: white;
+		opacity: 0.5;
+		height: 2px !important;
+		pointer-events: none !important;
+		overflow-y: hidden !important;
+		width: 10rem !important;
 	}
 
 	.shift-animated {
