@@ -35,7 +35,7 @@
 		<DropdownMenu>
             <DropdownItem header>Allmänt</DropdownItem>
 			<DropdownItem href="/"><Icon name="house-fill" /> Ditt schema</DropdownItem>
-			<DropdownItem href="/overview"><Icon name="calendar-event-fill" /> Allas scheman</DropdownItem>
+			<DropdownItem href="/schedules"><Icon name="calendar-event-fill" /> Scheman</DropdownItem>
 			<DropdownItem href="/about"><Icon name="chat-left-text-fill" /> Vad är detta?</DropdownItem>
 
             {#if $isManager}
