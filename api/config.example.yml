@@ -1,0 +1,10 @@
+server:
+  port: 5200
+
+database:
+  host: localhost
+  user: postgres
+  password: yourpassword
+  dbname: klanghan
+  port: 5432
+  sslmode: disable
