@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,12 +10,14 @@ import (
 func initServer() {
 
 	// Create Gin router
-	r := gin.Default()
+	engine := gin.Default()
+	engine.SetTrustedProxies(nil) // Handle the client's IP and not the proxy's IP
 
 	// Routes
-	r.POST("/users", createUser)
-	r.GET("/users", getUsers)
+	engine.POST("/users", createUser)
+	engine.GET("/users", getUsers)
 
 	// Start the server
-	r.Run(fmt.Sprintf(":%d", ConfigData.Server.Port))
+	log.Printf("http://localhost:%d", ConfigData.Server.Port)
+	engine.Run(fmt.Sprintf(":%d", ConfigData.Server.Port))
 }
