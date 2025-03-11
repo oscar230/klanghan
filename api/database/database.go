@@ -14,36 +14,6 @@ import (
 
 var DB *gorm.DB
 
-// Create User (POST)
-func CreateUser(c *gin.Context) {
-	type UserInput struct {
-		Name       string `json:"name" binding:"required"`
-		DiscordUID string `json:"discord_uid" binding:"required"`
-	}
-
-	var userInput UserInput
-	if err := c.ShouldBindJSON(&userInput); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Create a new user object
-	user := model.CreateUser(userInput.Name, userInput.DiscordUID)
-
-	// Insert user into DB
-	DB.Create(&user)
-
-	// Return the user object
-	c.JSON(http.StatusCreated, user)
-}
-
-// Get Users (GET)
-func GetUsers(c *gin.Context) {
-	var users []model.User
-	DB.Find(&users)
-	c.JSON(http.StatusOK, users)
-}
-
 // Get Schedule (for user) (GET)
 func GetShifts(c *gin.Context) {
 	// Retrieve the username from the URL parameter `id`

@@ -18,7 +18,6 @@ func healthCheck(c *gin.Context) {
 }
 
 func InitServer(config config.Config) {
-
 	// Create Gin router
 	engine := gin.Default()
 	engine.SetTrustedProxies(nil) // Handle the client's IP and not the proxy's IP

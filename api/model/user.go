@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -17,13 +16,6 @@ type User struct {
 type Role struct {
 	ID   int    `json:"id" gorm:"primaryKey"`
 	Name string `json:"name" gorm:"type:varchar(255);unique"`
-}
-
-type AccessKey struct {
-	ID          uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	CreatedTime time.Time `json:"created_time" gorm:"type:timestamp;not null"`
-	RoleID      int       `json:"role_id" gorm:"type:smallint;not null"`
-	Key         string    `json:"key" gorm:"type:varchar(32);unique;not null"`
 }
 
 var AdminRole Role = Role{ID: 1, Name: "admin"}
