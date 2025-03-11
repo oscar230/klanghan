@@ -1,89 +1,88 @@
-package main
+package database
 
 import (
 	"fmt"
+	"klanghan-api/config"
+	"klanghan-api/model"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
-const (
-	AdminRole   = "admin"
-	ManagerRole = "manager"
-	RegularRole = "regular"
-)
-
-// Define the User model
-type User struct {
-	ID         uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	Name       string    `json:"name" gorm:"type:varchar(255)"`
-	DiscordUID string    `json:"discord_uid" gorm:"type:varchar(18);unique""`
-	Role       string    `json:"role" gorm:"type:varchar(7);not null"` // Can be "admin", "manager" or "regular"
-}
-
 // Create User (POST)
-func createUser(c *gin.Context) {
-	var user User
-	if err := c.ShouldBindJSON(&user); err != nil {
+func CreateUser(c *gin.Context) {
+	type UserInput struct {
+		Name       string `json:"name" binding:"required"`
+		DiscordUID string `json:"discord_uid" binding:"required"`
+	}
+
+	var userInput UserInput
+	if err := c.ShouldBindJSON(&userInput); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Enforce default role
-	user.Role = RegularRole
+	// Create a new user object
+	user := model.CreateUser(userInput.Name, userInput.DiscordUID)
 
 	// Insert user into DB
 	DB.Create(&user)
+
+	// Return the user object
 	c.JSON(http.StatusCreated, user)
 }
 
 // Get Users (GET)
-func getUsers(c *gin.Context) {
-	var users []User
+func GetUsers(c *gin.Context) {
+	var users []model.User
 	DB.Find(&users)
 	c.JSON(http.StatusOK, users)
 }
 
 // Get Schedule (for user) (GET)
-func getShifts(c *gin.Context) {
+func GetShifts(c *gin.Context) {
 	// Retrieve the username from the URL parameter `id`
 	// user := c.Param("id")
-	var users []User
+	var users []model.User
 	DB.Find(&users)
 	c.JSON(http.StatusOK, users)
 }
 
 // Get Schedule (for user) (GET)
-func getShiftsForUser(c *gin.Context) {
+func GetShiftsForUser(c *gin.Context) {
 	// Retrieve the username from the URL parameter `id`
 	// user := c.Param("id")
-	var users []User
+	var users []model.User
 	DB.Find(&users)
 	c.JSON(http.StatusOK, users)
 }
 
 // Get Schedules (GET)
-func getSchedules(c *gin.Context) {
-	var users []User
+func GetSchedules(c *gin.Context) {
+	var users []model.User
 	DB.Find(&users)
 	c.JSON(http.StatusOK, users)
 }
 
+// Validate login credentials
+func ValidateLogin(loginDetails model.LoginDetails) bool {
+	return true // TODO Implement this
+}
+
 // Initialize database connection
-func initDB() {
+func InitDB(config config.Config) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s",
-		ConfigData.Database.Host,
-		ConfigData.Database.User,
-		ConfigData.Database.Password,
-		ConfigData.Database.DBName,
-		ConfigData.Database.Port,
-		ConfigData.Database.SslMode)
+		config.Database.Host,
+		config.Database.User,
+		config.Database.Password,
+		config.Database.DBName,
+		config.Database.Port,
+		config.Database.SslMode)
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -92,6 +91,6 @@ func initDB() {
 	}
 
 	// Auto-migrate User table
-	DB.AutoMigrate(&User{})
+	DB.AutoMigrate(&model.User{})
 	fmt.Println("Database connected & migrated successfully!")
 }

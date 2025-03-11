@@ -3,6 +3,8 @@ server:
 
 security:
   jwtSecret: secret
+  adminAccessKey: secret
+  managerAccessKey: secret
 
 database:
   host: localhost
