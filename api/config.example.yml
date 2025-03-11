@@ -3,6 +3,8 @@ server:
 
 security:
   jwtSecret: secret
+  jwtIssuer: klanghan
+  jwtExpiresInHours: 24
   adminAccessKey: secret
   managerAccessKey: secret
 
