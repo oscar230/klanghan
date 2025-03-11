@@ -8,11 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type LoginDetails struct {
-	UserID    uuid.UUID `json:"username:requried"`
-	AccessKey string    `json:"access_key:required"`
-}
-
 type AccessKey struct {
 	ID          uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	CreatedTime time.Time `json:"created_time" gorm:"type:timestamp;not null"`

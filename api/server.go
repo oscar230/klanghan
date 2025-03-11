@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"klanghan-api/auth"
-	"klanghan-api/config"
-	"klanghan-api/database"
+	"klanghan-api/middleware/jwt"
 	"klanghan-api/model"
+	"klanghan-api/model/config"
+	"klanghan-api/service/auth"
+	"klanghan-api/service/database"
 	"log"
 	"net/http"
 
@@ -17,7 +18,7 @@ func healthCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, "ONLINE")
 }
 
-func InitServer(config config.Config) {
+func Serve(config config.Config) {
 	// Create Gin router
 	engine := gin.Default()
 	engine.SetTrustedProxies(nil) // Handle the client's IP and not the proxy's IP
@@ -25,15 +26,17 @@ func InitServer(config config.Config) {
 	// Health route (public access)
 	engine.GET("/health", healthCheck)
 	// Login route (public access)
-	engine.POST("/login", auth.Login)
+	engine.POST("/login", func(c *gin.Context) {
+		auth.Login(config.Security, c)
+	})
 
 	// Group of routes that require authentication via JWT
 	protected := engine.Group("/protected")
-	protected.Use(auth.JWTMiddleware(config.Security.JWTSecret))
+	protected.Use(jwt.JWTMiddleware(config.Security.JWTSecret))
 
 	// Admin routes (accessible by admins only)
 	adminRoutes := protected.Group("/admin")
-	adminRoutes.Use(auth.RoleMiddleware(model.AdminRole))
+	adminRoutes.Use(jwt.RoleMiddleware(model.AdminRole))
 	{
 		adminRoutes.POST("/users", database.CreateUser) // Create users
 		adminRoutes.PUT("/users", database.CreateUser)  // Update users
@@ -42,10 +45,9 @@ func InitServer(config config.Config) {
 
 	// Manager routes (accessible by admins and managers)
 	managerRoutes := protected.Group("/manager")
-	managerRoutes.Use(auth.RoleMiddleware(model.ManagerRole))
+	managerRoutes.Use(jwt.RoleMiddleware(model.ManagerRole))
 	{
-		managerRoutes.GET("/users", database.GetUsers) // Get all users
-
+		managerRoutes.GET("/users", database.GetUsers)             // Get all users
 		managerRoutes.POST("/shifts", database.GetSchedules)       // Create shift
 		managerRoutes.PUT("/shifts", database.GetSchedules)        // Update shift
 		managerRoutes.GET("/shifts/:id", database.GetSchedules)    // Get shift
@@ -54,7 +56,7 @@ func InitServer(config config.Config) {
 
 	// Regular routes (accessible by all logged-in users)
 	regularRoutes := protected.Group("/user")
-	regularRoutes.Use(auth.RoleMiddleware(model.RegularRole))
+	regularRoutes.Use(jwt.RoleMiddleware(model.RegularRole))
 	{
 		regularRoutes.GET("/shifts", database.GetShifts) // Get all shifts
 	}

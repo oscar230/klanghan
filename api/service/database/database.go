@@ -2,8 +2,8 @@ package database
 
 import (
 	"fmt"
-	"klanghan-api/config"
 	"klanghan-api/model"
+	"klanghan-api/model/config"
 	"log"
 	"net/http"
 

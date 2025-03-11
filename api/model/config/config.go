@@ -1,14 +1,7 @@
 package config
 
-import (
-	"fmt"
-	"log"
-	"os"
+import "fmt"
 
-	"gopkg.in/yaml.v3"
-)
-
-// Config struct to hold config values
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Database DatabaseConfig `yaml:"database"`
@@ -40,7 +33,7 @@ func (sc Security) GetJWTSecret() []byte {
 	return []byte(sc.JWTSecret)
 }
 
-func (c Config) validateConfig() error {
+func (c Config) Validate() error {
 	if c.Server.Port >= 0 && c.Server.Port <= 1023 {
 		return fmt.Errorf("server port in the range 1024 to 65535 is required, 5200 for example")
 	}
@@ -67,13 +60,6 @@ func (c Config) validateConfig() error {
 		return fmt.Errorf("database port is required, 5432 for example")
 	}
 
-	// sslmode		Eavesdropping protection 	MITM protection 		Statement
-	// disable		No 							No 						I don't care about security, and I don't want to pay the overhead of encryption.
-	// allow 		Maybe 						No 						I don't care about security, but I will pay the overhead of encryption if the server insists on it.
-	// prefer 		Maybe 						No 						I don't care about encryption, but I wish to pay the overhead of encryption if the server supports it.
-	// require 		Yes 						No 						I want my data to be encrypted, and I accept the overhead. I trust that the network will make sure I always connect to the server I want.
-	// verify-ca 	Yes 						Depends on CA policy 	I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server that I trust.
-	// verify-full 	Yes 						Yes 					I want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server I trust, and that it's the one I specify.
 	if c.Database.SslMode == "" {
 		return fmt.Errorf("database ssl mode is required")
 	} else if c.Database.SslMode != "disable" && c.Database.SslMode != "allow" && c.Database.SslMode != "prefer" && c.Database.SslMode != "require" && c.Database.SslMode != "verify-ca" && c.Database.SslMode != "verify-full" {
@@ -107,29 +93,4 @@ func (c Config) validateConfig() error {
 	}
 
 	return nil
-}
-
-// LoadConfig loads the configuration from the YAML file
-func LoadConfig() (Config, error) {
-	// Open the YAML configuration file
-	file, err := os.Open("config.yml")
-	if err != nil {
-		log.Fatal("Could not open config file: ", err)
-	}
-	defer file.Close()
-
-	// Use yaml.v3 decoder
-	decoder := yaml.NewDecoder(file)
-	var configData Config
-	if err := decoder.Decode(&configData); err != nil {
-		err := fmt.Errorf("failed to decode config file: %v", err)
-		return Config{}, err
-	}
-
-	if err := configData.validateConfig(); err != nil {
-		return Config{}, err
-	}
-
-	fmt.Println("Config loaded successfully!")
-	return configData, nil
 }
