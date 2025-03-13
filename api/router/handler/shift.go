@@ -3,10 +3,10 @@ package handler
 import (
 	"klanghan-api/model"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 // Get shifts
@@ -47,15 +47,15 @@ func GetShiftsByTime(c *gin.Context) {
 // Get shift by ID
 func GetShiftById(c *gin.Context) {
 	// Parse shift ID
-	id := c.Param("id")
-	uuid, err := uuid.Parse(id)
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid shift ID"})
 		return
 	}
 
 	// Get shift
-	shift, err := model.GetShiftById(uuid)
+	shift, err := model.GetShiftById(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

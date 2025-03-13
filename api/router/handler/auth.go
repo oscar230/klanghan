@@ -1,13 +1,15 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"klanghan-api/middleware/auth"
 	"klanghan-api/model"
+	"klanghan-api/service/discord/bot"
+	"log"
 	"net/http"
-	"slices"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -16,6 +18,7 @@ import (
 // Login handler
 func LoginHandler(oauth2Config *oauth2.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		log.Print("Login initiated")
 		url := oauth2Config.AuthCodeURL("state", oauth2.AccessTypeOffline)
 		c.Redirect(http.StatusFound, url)
 	}
@@ -24,20 +27,33 @@ func LoginHandler(oauth2Config *oauth2.Config) gin.HandlerFunc {
 // Callback handler
 func CallbackHandler(config model.DiscordConfig, oauth2Config *oauth2.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		log.Print("Login callback initiated")
 		code := c.Query("code")
 		if code == "" {
+			log.Print("Login callback failed: Authorization code not provided")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Authorization code not provided"})
 			return
 		}
 
-		token, err := oauth2Config.Exchange(c, code)
+		userToken, err := oauth2Config.Exchange(c, code)
 		if err != nil {
+			log.Printf("Login callback failed to exchange token: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		userId, err := UpdateDiscordInfo(token, config, oauth2Config)
+		// Get user info from Discord
+		userId, err := GetDiscordUserInfo(userToken, c, oauth2Config)
 		if err != nil {
+			log.Printf("Login callback failed to get Discord user info: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		log.Printf("Login callback successfull for user ID: %s", *userId)
+
+		err = bot.UpdateDiscordInfo(*userId, config, oauth2Config)
+		if err != nil {
+			log.Printf("Login callback failed to update Discord info: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -46,6 +62,7 @@ func CallbackHandler(config model.DiscordConfig, oauth2Config *oauth2.Config) gi
 		session.Set(auth.SessionDiscordUIDKey, userId)
 		session.Save()
 
+		log.Print("Login callback successful for user ID: ", userId)
 		c.JSON(http.StatusOK, gin.H{"message": "Logged in successfully"})
 	}
 }
@@ -55,43 +72,34 @@ func LogoutHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Clear()
 	session.Save()
+	log.Print("Logged out successfully")
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
-// Update Discord information
-func UpdateDiscordInfo(token *oauth2.Token, config model.DiscordConfig, oauth2Config *oauth2.Config) (*string, error) {
+// Get Discord user info
+func GetDiscordUserInfo(userToken *oauth2.Token, c *gin.Context, oauth2Config *oauth2.Config) (*string, error) {
 	// Get user info from Discord
-	discordUserSession, err := discordgo.New(token.AccessToken)
+	userInfoResponse, err := oauth2Config.Client(c, userToken).Get("https://discord.com/api/users/@me")
 	if err != nil {
 		return nil, err
-	}
-	defer discordUserSession.Close()
-
-	user, err := discordUserSession.User("@me")
-	if err != nil {
-		return nil, err
+	} else if userInfoResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed with status %s to get user info", userInfoResponse.Status)
 	}
 
-	guildMembers, err := discordUserSession.GuildMembers(config.GuildID, "", 1000)
-	if err != nil {
-		return nil, err
-	} else if len(guildMembers) == 0 {
-		return nil, fmt.Errorf("no members found in the Discord guild")
-	} else if slices.ContainsFunc(guildMembers, func(member *discordgo.Member) bool {
-		return member.User.ID == user.ID
-	}) {
-		return nil, fmt.Errorf("you are not a member of the Discord guild")
-	}
-
-	// Upsert users
-	members := make([]discordgo.Member, len(guildMembers))
-	for i, member := range guildMembers {
-		members[i] = *member
-	}
-	err = model.UpsertUsers(members)
+	// Read response body
+	defer userInfoResponse.Body.Close()
+	body, err := io.ReadAll(userInfoResponse.Body)
+	log.Printf("Got user info from Discord: %s", string(body))
 	if err != nil {
 		return nil, err
 	}
 
-	return &user.ID, nil
+	// Parse Discord user info
+	var discordUserInfo struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(body, &discordUserInfo); err != nil {
+		return nil, err
+	}
+	return &discordUserInfo.ID, nil
 }

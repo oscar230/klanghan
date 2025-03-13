@@ -25,6 +25,7 @@ type DatabaseConfig struct {
 type DiscordConfig struct {
 	ClientID              string   `yaml:"clientID"`
 	ClientSecret          string   `yaml:"clientSecret"`
+	BotToken              string   `yaml:"botToken"`
 	RedirectURL           string   `yaml:"redirectURL"`
 	GuildID               string   `yaml:"guildID"`
 	NotificationChannelID string   `yaml:"notificationChannelID"`
@@ -100,6 +101,10 @@ func (c DiscordConfig) Validate() error {
 
 	if c.ClientSecret == "" {
 		return fmt.Errorf("discord client secret is required")
+	}
+
+	if c.BotToken == "" {
+		return fmt.Errorf("discord bot token is required")
 	}
 
 	if c.GuildID == "" {

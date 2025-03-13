@@ -11,11 +11,12 @@ database:
   sslmode: disable
 
 discord:
-  clientId: abc123
+  clientID: abc123
   clientSecret: reallylongstringsecretstring
+  botToken: reallylongstringsecretstring
   redirectURL: http://localhost:5200/auth/discord/callback
   guildID: abc123
-  NotificationChannelID: abc123
+  notificationChannelID: abc123
   adminRoles:
     - abc123
   managerRoles:

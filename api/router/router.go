@@ -26,7 +26,7 @@ func InitRouter(config model.Config) {
 		ClientID:     config.Discord.ClientID,
 		ClientSecret: config.Discord.ClientSecret,
 		RedirectURL:  config.Discord.RedirectURL,
-		Scopes:       []string{discordAuth.ScopeIdentify, discordAuth.ScopeGuilds, discordAuth.ScopeGuildsMembersRead},
+		Scopes:       []string{discordAuth.ScopeIdentify},
 		Endpoint:     discordAuth.Endpoint,
 	}
 

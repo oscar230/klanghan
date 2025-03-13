@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type EventAttendees struct {
@@ -57,7 +55,7 @@ type EventAttendees struct {
 }
 
 type Attendees struct {
-	ID         uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID         int       `json:"id" gorm:"primaryKey;autoIncrement"`
 	Timestamp  time.Time `json:"timestamp" gorm:"type:timestamp;not null"`
 	EventID    int       `json:"event_id" gorm:"type:int;not null"`
 	SalesCount int       `json:"sales_count" gorm:"type:int;not null"`
@@ -67,7 +65,6 @@ type Attendees struct {
 // Convert EventAttendees to Attendees
 func (e EventAttendees) ToAttendees(eventID int) Attendees {
 	return Attendees{
-		ID:         uuid.New(),
 		Timestamp:  time.Now(),
 		EventID:    eventID,
 		SalesCount: e.Total,

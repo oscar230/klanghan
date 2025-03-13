@@ -3,12 +3,10 @@ package model
 import (
 	"fmt"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Shift struct {
-	ID          uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID          int       `json:"id" gorm:"primaryKey;autoIncrement"`
 	UserID      string    `json:"user_id" gorm:"type:varchar(18);not null"`
 	ShiftRole   string    `json:"shift_role" gorm:"type:varchar(64);not null"`
 	StartTime   time.Time `json:"start_time" gorm:"type:timestamp;not null"`
@@ -37,7 +35,7 @@ func GetShiftsByTime(startTime time.Time, endTime time.Time) ([]Shift, error) {
 }
 
 // Get shift by ID
-func GetShiftById(id uuid.UUID) (*Shift, error) {
+func GetShiftById(id int) (*Shift, error) {
 	var shift Shift
 	err := DB.First(&shift, "id = ?", id).Error
 	if err != nil {
