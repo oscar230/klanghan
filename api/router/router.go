@@ -7,7 +7,6 @@ import (
 	"klanghan-api/router/handler"
 	"klanghan-api/service"
 	"log"
-	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -15,11 +14,6 @@ import (
 	discordAuth "github.com/ravener/discord-oauth2"
 	"golang.org/x/oauth2"
 )
-
-// Health Check (GET)
-func healthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, "ONLINE")
-}
 
 func InitRouter(config model.Config) {
 	const cookieSessionDiscord = "discord-session"
@@ -50,7 +44,7 @@ func InitRouter(config model.Config) {
 	})
 
 	// Health route (public access)
-	engine.GET("/health", healthCheck)
+	engine.GET("/health", handler.HealthCheck)
 
 	// Authentication routes (public access)
 	engine.GET("/auth/login", handler.LoginHandler(discordOAuthConfig))
