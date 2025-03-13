@@ -2,6 +2,7 @@ package auth
 
 import (
 	"klanghan-api/model"
+	"klanghan-api/service"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -32,7 +33,14 @@ func RoleMiddleware(requiredRole int, config model.DiscordConfig) gin.HandlerFun
 			c.Abort()
 			return
 		}
-		user, err := model.GetUserById(userId)
+
+		databaseService, err := service.GetDatabaseService(c)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+		user, err := databaseService.GetUserById(userId)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			c.Abort()

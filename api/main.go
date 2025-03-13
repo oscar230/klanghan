@@ -17,9 +17,6 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	// Initialize DB
-	model.InitDB(config)
-
 	// Initialize scheduler
 	go initScheduler()
 

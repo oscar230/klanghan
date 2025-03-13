@@ -9,7 +9,9 @@ import (
 	"klanghan-api/service"
 	"log"
 	"net/http"
+	"slices"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -58,13 +60,38 @@ func CallbackHandler(config model.DiscordConfig, oauth2Config *oauth2.Config) gi
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		err = discordService.UpdateDiscordInfo(*userId)
+
+		// Get Discord guild members
+		members, err := discordService.GetGuildMembers()
 		if err != nil {
 			log.Printf("Login callback failed to update Discord info: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
+		// Check if the user is a member of the Discord guild, else return unauthorized
+		if !slices.ContainsFunc(members, func(member discordgo.Member) bool {
+			return member.User.ID == *userId
+		}) {
+			log.Print("Login callback failed: User is not a member of the Discord guild")
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "User is not a member of the Discord guild"})
+			return
+		}
+
+		// Upsert the Discord guild members
+		databaseService, err := service.GetDatabaseService(c)
+		if err != nil {
+			log.Printf("Login callback failed to get database service: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if err := databaseService.UpsertUsers(members); err != nil {
+			log.Printf("Login callback failed to upsert users: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Set the Discord user ID in the session as the user is authenticated
 		session := sessions.Default(c)
 		session.Set(auth.SessionDiscordUIDKey, userId)
 		session.Save()

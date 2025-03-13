@@ -2,6 +2,7 @@ package handler
 
 import (
 	"klanghan-api/model"
+	"klanghan-api/service"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,7 +12,14 @@ import (
 
 // Get shifts
 func GetShifts(c *gin.Context) {
-	shifts, err := model.GetShifts()
+
+	databaseService, err := service.GetDatabaseService(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	shifts, err := databaseService.GetShifts()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -35,8 +43,15 @@ func GetShiftsByTime(c *gin.Context) {
 		return
 	}
 
+	// Get database service
+	databaseService, err := service.GetDatabaseService(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	// Get shifts
-	shifts, err := model.GetShiftsByTime(startTime, endTime)
+	shifts, err := databaseService.GetShiftsByTime(startTime, endTime)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -54,8 +69,15 @@ func GetShiftById(c *gin.Context) {
 		return
 	}
 
+	// Get database service
+	databaseService, err := service.GetDatabaseService(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	// Get shift
-	shift, err := model.GetShiftById(id)
+	shift, err := databaseService.GetShiftById(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -65,7 +87,14 @@ func GetShiftById(c *gin.Context) {
 
 // Get shift roles
 func GetShiftRoles(c *gin.Context) {
-	shiftRoles, err := model.GetShiftRoles()
+	// Get database service
+	databaseService, err := service.GetDatabaseService(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	shiftRoles, err := databaseService.GetShiftRoles()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -81,7 +110,14 @@ func UpsertShift(c *gin.Context) {
 		return
 	}
 
-	err := model.UpsertShift(shift)
+	// Get database service
+	databaseService, err := service.GetDatabaseService(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = databaseService.UpsertShift(shift)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -42,6 +42,14 @@ func InitRouter(config model.Config) {
 		c.Set(service.DiscordServiceID, discordService)
 		c.Next()
 	})
+	engine.Use(func(c *gin.Context) {
+		databaseService, err := service.NewDatabaseService(config.Database)
+		if err != nil {
+			log.Fatalf("Failed to start Database service: %v", err)
+		}
+		c.Set(service.DatabaseServiceID, databaseService)
+		c.Next()
+	})
 
 	// Health route (public access)
 	engine.GET("/health", handler.HealthCheck)
