@@ -47,11 +47,11 @@ func NewDiscordService(config model.DiscordConfig) (*DiscordService, error) {
 }
 
 // Close shuts down the bot
-func (b *DiscordService) Close() {
+func (b *DiscordService) Close() error {
 	if b.Session != nil {
-		b.Session.Close()
-		log.Println("Discord bot stopped.")
+		return b.Session.Close()
 	}
+	return fmt.Errorf("discord service cannot be stopped, it is not started")
 }
 
 // Update Discord information

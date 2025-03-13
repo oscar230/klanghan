@@ -47,6 +47,14 @@ func NewDatabaseService(config model.DatabaseConfig) (*DatabaseService, error) {
 	}, nil
 }
 
+func (d *DatabaseService) Close() error {
+	db, err := d.DB.DB()
+	if err != nil {
+		return err
+	}
+	return db.Close()
+}
+
 // Get Users
 func (d *DatabaseService) GetUsers() ([]model.User, error) {
 	var users []model.User

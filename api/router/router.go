@@ -7,6 +7,9 @@ import (
 	"klanghan-api/router/handler"
 	"klanghan-api/service"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
@@ -40,20 +43,22 @@ func InitRouter(config model.Config) {
 	store := cookie.NewStore([]byte(config.Server.CookieSecret))
 	engine.Use(sessions.Sessions(cookieSession, store))
 
+	// Set up services
+	discordService, err := service.NewDiscordService(config.Discord)
+	if err != nil {
+		log.Fatalf("Failed to start Discord service: %v", err)
+	}
+	databaseService, err := service.NewDatabaseService(config.Database)
+	if err != nil {
+		log.Fatalf("Failed to start Database service: %v", err)
+	}
+
+	// Graceful shutdown handling
+	go gracefulShutdown(discordService, databaseService)
+
 	// Set services
 	engine.Use(func(c *gin.Context) {
-		discordService, err := service.NewDiscordService(config.Discord)
-		if err != nil {
-			log.Fatalf("Failed to start Discord service: %v", err)
-		}
 		c.Set(service.DiscordServiceID, discordService)
-		c.Next()
-	})
-	engine.Use(func(c *gin.Context) {
-		databaseService, err := service.NewDatabaseService(config.Database)
-		if err != nil {
-			log.Fatalf("Failed to start Database service: %v", err)
-		}
 		c.Set(service.DatabaseServiceID, databaseService)
 		c.Next()
 	})
@@ -94,4 +99,32 @@ func InitRouter(config model.Config) {
 	// Start the server
 	log.Printf("http://localhost:%d", config.Server.Port)
 	engine.Run(fmt.Sprintf(":%d", config.Server.Port))
+}
+
+// gracefulShutdown listens for termination signals and ensures proper cleanup of services
+func gracefulShutdown(discordService *service.DiscordService, databaseService *service.DatabaseService) {
+	// Create a channel to listen for termination signals
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	// Wait for a termination signal
+	sig := <-sigs
+	log.Printf("Received signal %s, shutting down gracefully...", sig)
+
+	// Cleanup services
+	err := discordService.Close()
+	if err != nil {
+		log.Printf("Failed to stop Discord service: %v", err)
+	} else {
+		log.Println("Discord service stopped")
+	}
+	err = databaseService.Close()
+	if err != nil {
+		log.Printf("Failed to stop Database service: %v", err)
+	} else {
+		log.Println("Database service stopped")
+	}
+
+	log.Println("Services stopped, exiting...")
+	os.Exit(0)
 }
