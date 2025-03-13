@@ -6,9 +6,12 @@ import (
 )
 
 type User struct {
-	ID    string `json:"id" gorm:"type:varchar(32);primaryKey"` // Discord UID
-	Name  string `json:"name" gorm:"type:text"`                 // Discord User Name
-	Roles string `json:"roles" gorm:"type:text;"`               // Discord User Roles (comma separated)
+	ID      string `json:"id" gorm:"type:varchar(32);primaryKey"` // Discord UID
+	Name    string `json:"name" gorm:"type:text"`                 // Discord User Name
+	Roles   string `json:"roles" gorm:"type:text;"`               // Discord User Roles (comma separated)
+	Admin   bool   `json:"admin"`
+	Manager bool   `json:"manager"`
+	Member  bool   `json:"member"`
 }
 
 func (u *User) IsAdmin(config DiscordConfig) bool {

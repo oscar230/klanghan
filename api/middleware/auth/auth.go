@@ -14,7 +14,7 @@ const (
 	ManagerRole = 2
 	MemberRole  = 3
 )
-const SessionDiscordUIDKey = "discord_uid"
+const SessionDiscordUIDKey = "userid"
 
 func RoleMiddleware(requiredRole int, config model.DiscordConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -25,10 +25,10 @@ func RoleMiddleware(requiredRole int, config model.DiscordConfig) gin.HandlerFun
 			return
 		}
 
-		// Retrieve the role from the context
+		// Retrieve the user from the context
 		session := sessions.Default(c)
-		userId := session.Get(SessionDiscordUIDKey).(string)
-		if userId == "" {
+		userId, ok := session.Get(SessionDiscordUIDKey).(string)
+		if !ok || userId == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "No user found in session"})
 			c.Abort()
 			return

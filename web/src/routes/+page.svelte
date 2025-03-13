@@ -1,31 +1,85 @@
 <script lang="ts">
-	import { Icon, Button, FormGroup } from '@sveltestrap/sveltestrap';
+	import { Icon, Button, FormGroup, ButtonGroup, Spinner } from '@sveltestrap/sveltestrap';
 	import { onMount } from 'svelte';
 
+	class User {
+		userId: string;
+		username: string;
+		roles: string[];
+		admin: boolean;
+		manager: boolean;
+		member: boolean;
+
+		constructor(
+			userId: string,
+			username: string,
+			roles: string,
+			admin: boolean,
+			manager: boolean,
+			member: boolean
+		) {
+			this.userId = userId;
+			this.username = username;
+			this.roles = roles.split(',');
+			this.admin = admin;
+			this.manager = manager;
+			this.member = member;
+		}
+	}
+
 	let year: number = new Date().getFullYear();
-	let code: string | null = null;
-	let callbackResponse: any = null;
+	let user: User | null = null;
+	let done: boolean = false;
+	let debug: boolean = false;
 
 	onMount(async () => {
 		const urlParams = new URLSearchParams(window.location.search);
-		code = urlParams.get('code');
+		let code = urlParams.get('code');
 
-		if (code) {
+		if (code && !document.cookie) {
 			try {
-				const response = await fetch(`http://localhost:5200/auth/discord/callback?code=${code}`);
-				callbackResponse = await response.json();
+				const response = await fetch(`http://localhost:5200/auth/discord/callback?code=${code}`, {
+					method: 'GET',
+					credentials: 'include'
+				});
+				let callbackResponse = await response.json();
+				console.log(response);
+				console.log('OAuth2 callback response:', callbackResponse);
 			} catch (error) {
 				console.error('Error fetching callback:', error);
 			}
 		}
+
+		if (document.cookie) {
+			try {
+				const response = await fetch(`http://localhost:5200/member/`, {
+					method: 'GET',
+					credentials: 'include'
+				});
+				let callbackResponse = await response.json();
+				user = new User(
+					callbackResponse.id,
+					callbackResponse.name,
+					callbackResponse.roles,
+					callbackResponse.admin,
+					callbackResponse.manager,
+					callbackResponse.member
+				);
+				console.log('Current user:', user);
+			} catch (error) {
+				console.error('Error getting current user:', error);
+			}
+		}
+
+		done = true;
 	});
 </script>
 
 <div class="container">
 	<div class="row">
 		<div class="col-12 col-lg-6">
-			{#if callbackResponse && callbackResponse['username']}
-				<h1>Välkommen till KlangHan {callbackResponse.username}!</h1>
+			{#if done && user}
+				<h1>Hej {user.username} 🎉</h1>
 			{:else}
 				<h1>Välkommen till KlangHan</h1>
 			{/if}
@@ -36,23 +90,57 @@
 					rel="noopener noreferrer">Klanglandet</a
 				>. Här hanterar vi arbetet under festivalen {year}.
 			</p>
-			<FormGroup>
-				<Button
-					color="primary"
-					class="login-button"
-					on:click={() => {
-						window.location.href = 'http://localhost:5200/auth/login';
-					}}
-				>
-					<Icon name="discord" /> Logga in
-				</Button>
-			</FormGroup>
-			{#if code}
-				<p>Code: {code}</p>
+			{#if done && user}
+				<FormGroup>
+					{#if user}
+						<ButtonGroup>
+							<Button
+								color="danger"
+								on:click={() => {
+									window.location.href = 'http://localhost:5200/auth/logout';
+								}}
+							>
+								<Icon name="door-open-fill" /> Logga ut
+							</Button>
+							<Button
+								color="secondary"
+								on:click={() => {
+									debug = !debug;
+								}}
+							>
+								<Icon name="bug-fill" /> Debug
+							</Button>
+						</ButtonGroup>
+					{:else}
+						<Button
+							color="primary"
+							on:click={() => {
+								window.location.href = 'http://localhost:5200/auth/login';
+							}}
+						>
+							<Icon name="discord" /> Logga in
+						</Button>
+					{/if}
+				</FormGroup>
+			{:else}
+				<Spinner color="primary" />
 			{/if}
-			{#if callbackResponse}
-				<p>Response: <code>{JSON.stringify(callbackResponse, null, 2)}</code></p>
-				<p>Logged in as: {callbackResponse.username}</p>
+			{#if done && debug && user}
+				<ul>
+					<li>Discord UID: <code>{user.userId}</code></li>
+					<li>Discord Display Name: <code>{user.username}</code></li>
+					<li>
+						Guild Roles
+						<ul>
+							{#each user.roles as role}
+								<li>RID: <code>{role}</code></li>
+							{/each}
+						</ul>
+					</li>
+					<li>Admin: {user.admin ? '✅' : '⛔'}</li>
+					<li>Manager: {user.manager ? '✅' : '⛔'}</li>
+					<li>Member: {user.member ? '✅' : '⛔'}</li>
+				</ul>
 			{/if}
 		</div>
 	</div>

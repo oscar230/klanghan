@@ -1,6 +1,10 @@
 server:
   port: 5200
   cookieSecret: reallylongstringsecretstring
+  trustedProxies:
+    - localhost
+  corsAllowOrigins:
+    - http://localhost:5173
 
 database:
   host: localhost

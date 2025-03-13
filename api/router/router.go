@@ -8,6 +8,7 @@ import (
 	"klanghan-api/service"
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,7 @@ import (
 )
 
 func InitRouter(config model.Config) {
-	const cookieSessionDiscord = "discord-session"
+	const cookieSession = "klanghan-session"
 	var discordOAuthConfig = &oauth2.Config{
 		ClientID:     config.Discord.ClientID,
 		ClientSecret: config.Discord.ClientSecret,
@@ -27,11 +28,17 @@ func InitRouter(config model.Config) {
 
 	// Create Gin router
 	engine := gin.Default()
-	engine.SetTrustedProxies(nil) // Handle the client's IP and not the proxy's IP
+	engine.SetTrustedProxies(config.Server.TrustedProxies)
+	engine.Use(cors.New(cors.Config{
+		AllowOrigins:     config.Server.CorsAllowOrigins,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type"},
+		AllowCredentials: true,
+	}))
 
 	// Set up session middleware (secure cookie store)
 	store := cookie.NewStore([]byte(config.Server.CookieSecret))
-	engine.Use(sessions.Sessions(cookieSessionDiscord, store))
+	engine.Use(sessions.Sessions(cookieSession, store))
 
 	// Set services
 	engine.Use(func(c *gin.Context) {
@@ -57,19 +64,17 @@ func InitRouter(config model.Config) {
 	// Authentication routes (public access)
 	engine.GET("/auth/login", handler.LoginHandler(discordOAuthConfig))
 	engine.GET("/auth/discord/callback", handler.CallbackHandler(config.Discord, discordOAuthConfig))
-	engine.GET("/auth/logout", handler.LogoutHandler)
 
 	// Admin routes (accessible by admins only)
-	adminRoutes := engine.Group("/admin")
-	adminRoutes.Use(auth.RoleMiddleware(auth.AdminRole, config.Discord))
-	{
-	}
+	// adminRoutes := engine.Group("/admin")
+	// adminRoutes.Use(auth.RoleMiddleware(auth.AdminRole, config.Discord))
+	// {
+	// }
 
 	// Manager routes (accessible by admins and managers)
 	managerRoutes := engine.Group("/manager")
 	managerRoutes.Use(auth.RoleMiddleware(auth.ManagerRole, config.Discord))
 	{
-		managerRoutes.GET("/users", handler.GetUsers)        // Get all users
 		managerRoutes.GET("/users/:id", handler.GetUserById) // Get user by ID
 		managerRoutes.POST("/shifts", nil)                   // Create shift
 		managerRoutes.PUT("/shifts", nil)                    // Update shift
@@ -81,7 +86,9 @@ func InitRouter(config model.Config) {
 	regularRoutes := engine.Group("/member")
 	regularRoutes.Use(auth.RoleMiddleware(auth.MemberRole, config.Discord))
 	{
-		regularRoutes.GET("/shifts", nil) // Get all shifts
+		regularRoutes.GET("/", handler.GetUserCurrent) // Get current user
+		regularRoutes.GET("/users", handler.GetUsers)  // Get all users
+		regularRoutes.GET("/shifts", nil)              // Get all shifts
 	}
 
 	// Start the server

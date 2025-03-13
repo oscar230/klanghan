@@ -9,8 +9,10 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port         int    `yaml:"port"`
-	CookieSecret string `yaml:"cookieSecret"`
+	Port             int      `yaml:"port"`
+	CookieSecret     string   `yaml:"cookieSecret"`
+	TrustedProxies   []string `yaml:"trustedProxies"`
+	CorsAllowOrigins []string `yaml:"corsAllowOrigins"`
 }
 
 type DatabaseConfig struct {
