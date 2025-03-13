@@ -1,9 +1,7 @@
-package database
+package model
 
 import (
 	"fmt"
-	"klanghan-api/model"
-	"klanghan-api/model/config"
 	"log"
 	"net/http"
 
@@ -18,7 +16,7 @@ var DB *gorm.DB
 func GetShifts(c *gin.Context) {
 	// Retrieve the username from the URL parameter `id`
 	// user := c.Param("id")
-	var users []model.User
+	var users []User
 	DB.Find(&users)
 	c.JSON(http.StatusOK, users)
 }
@@ -27,25 +25,25 @@ func GetShifts(c *gin.Context) {
 func GetShiftsForUser(c *gin.Context) {
 	// Retrieve the username from the URL parameter `id`
 	// user := c.Param("id")
-	var users []model.User
+	var users []User
 	DB.Find(&users)
 	c.JSON(http.StatusOK, users)
 }
 
 // Get Schedules (GET)
 func GetSchedules(c *gin.Context) {
-	var users []model.User
+	var users []User
 	DB.Find(&users)
 	c.JSON(http.StatusOK, users)
 }
 
 // Validate login credentials
-func ValidateLogin(loginDetails model.LoginDetails) bool {
+func ValidateLogin(loginDetails LoginDetails) bool {
 	return true // TODO Implement this
 }
 
 // Initialize database connection
-func InitDB(config config.Config) {
+func InitDB(config Config) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s",
 		config.Database.Host,
 		config.Database.User,
@@ -60,7 +58,9 @@ func InitDB(config config.Config) {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Auto-migrate User table
-	DB.AutoMigrate(&model.User{})
+	// Auto-migrate tables
+	DB.AutoMigrate(&Attendees{})
+	DB.AutoMigrate(&Shift{})
+	DB.AutoMigrate(&User{})
 	fmt.Println("Database connected & migrated successfully!")
 }

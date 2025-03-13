@@ -2,74 +2,73 @@ package model
 
 import (
 	"fmt"
+	"slices"
 
-	"github.com/google/uuid"
+	"github.com/bwmarrin/discordgo"
+	"gorm.io/gorm"
 )
 
 type User struct {
-	ID         uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	Name       string    `json:"name" gorm:"type:varchar(255)"`
-	DiscordUID string    `json:"discord_uid" gorm:"type:varchar(18);unique""`
-	RoleID     int       `json:"role_id" gorm:"type:smallint;not null"`
+	ID    string   `json:"id" gorm:"type:varchar(18);primaryKey"` // Discord UID
+	Name  string   `json:"name" gorm:"type:text"`                 // Discord User Name
+	Roles []string `json:"roles" gorm:"type:text[];"`             // Discord User Roles
 }
 
-type Role struct {
-	ID   int    `json:"id" gorm:"primaryKey"`
-	Name string `json:"name" gorm:"type:varchar(255);unique"`
-}
-
-var AdminRole Role = Role{ID: 1, Name: "admin"}
-var ManagerRole Role = Role{ID: 2, Name: "manager"}
-var RegularRole Role = Role{ID: 3, Name: "regular"}
-
-func CreateUser(name string, discordUID string) User {
-	return User{
-		ID:         uuid.New(),
-		Name:       name,
-		DiscordUID: discordUID,
-		RoleID:     RegularRole.ID,
-	}
-}
-
-func (u *User) GetRole() Role {
-	role, err := GetRoleFromID(u.RoleID)
+// Get Users
+func GetUsers() ([]User, error) {
+	var users []User
+	err := DB.Find(&users).Error
 	if err != nil {
-		return Role{}
+		return nil, err
 	}
-	return role
+	return users, nil
 }
 
-func (u *User) SetRole(role Role) error {
-	role, err := GetRoleFromID(u.RoleID)
+// Get user by ID
+func GetUserById(id string) (*User, error) {
+	var user User
+	err := DB.First(&user, "id = ?", id).Error
 	if err != nil {
-		return err
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("user with ID %s not found: %w", id, err)
+		}
+		return nil, fmt.Errorf("error fetching user with ID %s: %w", id, err)
 	}
-	u.RoleID = role.ID
-	return nil
+	return &user, nil
 }
 
-func (u *User) IsAdmin() bool {
-	return u.GetRole().Name == AdminRole.Name
-}
-
-func (u *User) IsManager() bool {
-	return u.GetRole().Name == ManagerRole.Name || u.IsAdmin()
-}
-
-func (u *User) IsRegular() bool {
-	return u.GetRole().Name == RegularRole.Name || u.IsManager() || u.IsAdmin()
-}
-
-func GetRoleFromID(roleID int) (Role, error) {
-	switch roleID {
-	case 1:
-		return AdminRole, nil
-	case 2:
-		return ManagerRole, nil
-	case 3:
-		return RegularRole, nil
-	default:
-		err := fmt.Errorf("Role with ID %d not found", roleID)
-		return Role{}, err
+// Upsert users
+func UpsertUsers(members []discordgo.Member) error {
+	var users []User
+	for _, member := range members {
+		user := User{
+			ID:    member.User.ID,
+			Name:  member.DisplayName(),
+			Roles: member.Roles,
+		}
+		users = append(users, user)
 	}
+	err := DB.Save(&users).Error
+	return err
+}
+
+func (u *User) IsAdmin(config DiscordConfig) bool {
+	return u.hasRole(config.AdminRoles)
+}
+
+func (u *User) IsManager(config DiscordConfig) bool {
+	return u.hasRole(config.ManagerRoles)
+}
+
+func (u *User) IsMember(config DiscordConfig) bool {
+	return u.hasRole(config.MemberRoles)
+}
+
+func (u *User) hasRole(roles []string) bool {
+	for _, role := range roles {
+		if slices.Contains(u.Roles, role) {
+			return true
+		}
+	}
+	return false
 }

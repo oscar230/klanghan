@@ -1,17 +1,25 @@
 server:
   port: 5200
-
-security:
-  jwtSecret: secret
-  jwtIssuer: klanghan
-  jwtExpiresInHours: 24
-  adminAccessKey: secret
-  managerAccessKey: secret
+  cookieSecret: reallylongstringsecretstring
 
 database:
   host: localhost
   user: postgres
-  password: yourpassword
+  password: asecurepassword
   dbname: klanghan
   port: 5432
   sslmode: disable
+
+discord:
+  clientId: abc123
+  clientSecret: reallylongstringsecretstring
+  redirectURL: http://localhost:5200/auth/discord/callback
+  guildID: abc123
+  NotificationChannelID: abc123
+  adminRoles:
+    - abc123
+  managerRoles:
+    - abc123
+  memberRoles:
+    - abc123
+  

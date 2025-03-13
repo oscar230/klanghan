@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"klanghan-api/model/config"
-	"klanghan-api/service/database"
+	"klanghan-api/model"
+	"klanghan-api/router"
 	"log"
 	"os"
 
@@ -18,20 +18,20 @@ func main() {
 	}
 
 	// Initialize DB
-	database.InitDB(config)
+	model.InitDB(config)
 
 	// Initialize scheduler
 	go initScheduler()
 
 	// Initialize API server
-	go Serve(config)
+	go router.InitRouter(config)
 
 	// Keep the main function alive
 	select {}
 }
 
 // LoadConfig loads the configuration from the YAML file
-func LoadConfig() (config.Config, error) {
+func LoadConfig() (model.Config, error) {
 	// Open the YAML configuration file
 	file, err := os.Open("config.yml")
 	if err != nil {
@@ -41,14 +41,14 @@ func LoadConfig() (config.Config, error) {
 
 	// Use yaml.v3 decoder
 	decoder := yaml.NewDecoder(file)
-	var configData config.Config
+	var configData model.Config
 	if err := decoder.Decode(&configData); err != nil {
 		err := fmt.Errorf("failed to decode config file: %v", err)
-		return config.Config{}, err
+		return model.Config{}, err
 	}
 
 	if err := configData.Validate(); err != nil {
-		return config.Config{}, err
+		return model.Config{}, err
 	}
 
 	fmt.Println("Config loaded successfully!")
