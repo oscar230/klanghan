@@ -58,18 +58,24 @@ func (b *DiscordService) Close() {
 // Update Discord information
 func (b *DiscordService) UpdateDiscordInfo(userId string) error {
 	// Get the user from the Discord guild
+	log.Printf("Getting Discord guild members for guild %s", b.Config.GuildID)
 	guildMembers, err := b.Session.GuildMembers(b.Config.GuildID, "", 1000)
 	if err != nil {
 		return err
 	} else if len(guildMembers) == 0 {
 		return fmt.Errorf("no members found in the Discord guild")
-	} else if slices.ContainsFunc(guildMembers, func(member *discordgo.Member) bool {
+	}
+
+	// Log the Discord guild members
+	for _, member := range guildMembers {
+		log.Printf("Discord member %s (%s) roles %s", member.DisplayName(), member.User.ID, member.Roles)
+	}
+
+	// Check if the user is not a member of the Discord guild
+	if !slices.ContainsFunc(guildMembers, func(member *discordgo.Member) bool {
 		return member.User.ID == userId
 	}) {
 		return fmt.Errorf("you are not a member of the Discord guild")
-	}
-	for _, member := range guildMembers {
-		log.Printf("Discord member %s (%s) roles %s", member.DisplayName(), member.User.ID, member.Roles)
 	}
 
 	// Upsert users

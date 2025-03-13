@@ -3,15 +3,16 @@ package model
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	ID    string   `json:"id" gorm:"type:varchar(18);primaryKey"` // Discord UID
-	Name  string   `json:"name" gorm:"type:text"`                 // Discord User Name
-	Roles []string `json:"roles" gorm:"type:text[];"`             // Discord User Roles
+	ID    string `json:"id" gorm:"type:varchar(32);primaryKey"` // Discord UID
+	Name  string `json:"name" gorm:"type:text"`                 // Discord User Name
+	Roles string `json:"roles" gorm:"type:text;"`               // Discord User Roles (comma separated)
 }
 
 // Get Users
@@ -44,7 +45,7 @@ func UpsertUsers(members []discordgo.Member) error {
 		user := User{
 			ID:    member.User.ID,
 			Name:  member.DisplayName(),
-			Roles: member.Roles,
+			Roles: strings.Join(member.Roles, ","),
 		}
 		users = append(users, user)
 	}
@@ -66,7 +67,7 @@ func (u *User) IsMember(config DiscordConfig) bool {
 
 func (u *User) hasRole(roles []string) bool {
 	for _, role := range roles {
-		if slices.Contains(u.Roles, role) {
+		if slices.Contains(strings.Split(u.Roles, ","), role) {
 			return true
 		}
 	}
