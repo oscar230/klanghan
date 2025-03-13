@@ -5,6 +5,7 @@ import (
 	"klanghan-api/middleware/auth"
 	"klanghan-api/model"
 	"klanghan-api/router/handler"
+	"klanghan-api/service"
 	"log"
 	"net/http"
 
@@ -37,6 +38,16 @@ func InitRouter(config model.Config) {
 	// Set up session middleware (secure cookie store)
 	store := cookie.NewStore([]byte(config.Server.CookieSecret))
 	engine.Use(sessions.Sessions(cookieSessionDiscord, store))
+
+	// Set services
+	engine.Use(func(c *gin.Context) {
+		discordService, err := service.NewDiscordService(config.Discord)
+		if err != nil {
+			log.Fatalf("Failed to start Discord service: %v", err)
+		}
+		c.Set(service.DiscordServiceID, discordService)
+		c.Next()
+	})
 
 	// Health route (public access)
 	engine.GET("/health", healthCheck)

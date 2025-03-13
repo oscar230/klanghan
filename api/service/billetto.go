@@ -1,4 +1,4 @@
-package billetto
+package service
 
 import (
 	"encoding/json"
@@ -8,6 +8,13 @@ import (
 	"log"
 	"net/http"
 )
+
+// type BillettoService struct {
+// }
+
+// // Initialize the Discord bot service
+// func NewBillettoService(config model.Config) (*BillettoService, error) {
+// }
 
 func GetEventAttendees(eventId int, AccessKeyId, AccessKeySecret string) (model.EventAttendees, string) {
 	// Build url

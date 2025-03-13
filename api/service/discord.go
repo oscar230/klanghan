@@ -1,4 +1,4 @@
-package bot
+package service
 
 import (
 	"fmt"
@@ -8,20 +8,20 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"golang.org/x/oauth2"
 )
 
-var bot *discordgo.Session
+type DiscordService struct {
+	Session *discordgo.Session
+	Config  model.DiscordConfig
+}
 
-// Initialize the Discord bot
-func InitBot(config model.DiscordConfig) error {
+// Initialize the Discord bot service
+func NewDiscordService(config model.DiscordConfig) (*DiscordService, error) {
 	// Create a new Discord session
 	bot, err := discordgo.New(fmt.Sprintf("Bot %s", strings.TrimSpace(config.BotToken)))
 	if err != nil {
-		log.Println("Failed to create Discord bot session")
-		return err
+		return nil, err
 	}
-	defer bot.Close()
 
 	// Enable the required intent
 	bot.Identify.Intents = discordgo.IntentGuildMembers
@@ -35,15 +35,30 @@ func InitBot(config model.DiscordConfig) error {
 	})
 
 	// Open the Discord session
-	log.Println("Opening Discord bot session")
 	err = bot.Open()
-	return err
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("Discord bot service started")
+	return &DiscordService{
+		Session: bot,
+		Config:  config,
+	}, nil
+}
+
+// Close shuts down the bot
+func (b *DiscordService) Close() {
+	if b.Session != nil {
+		b.Session.Close()
+		log.Println("Discord bot stopped.")
+	}
 }
 
 // Update Discord information
-func UpdateDiscordInfo(userId string, config model.DiscordConfig, oauth2Config *oauth2.Config) error {
+func (b *DiscordService) UpdateDiscordInfo(userId string) error {
 	// Get the user from the Discord guild
-	guildMembers, err := bot.GuildMembers(config.GuildID, "", 1000)
+	guildMembers, err := b.Session.GuildMembers(b.Config.GuildID, "", 1000)
 	if err != nil {
 		return err
 	} else if len(guildMembers) == 0 {

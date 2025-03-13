@@ -6,7 +6,7 @@ import (
 	"io"
 	"klanghan-api/middleware/auth"
 	"klanghan-api/model"
-	"klanghan-api/service/discord/bot"
+	"klanghan-api/service"
 	"log"
 	"net/http"
 
@@ -51,7 +51,14 @@ func CallbackHandler(config model.DiscordConfig, oauth2Config *oauth2.Config) gi
 		}
 		log.Printf("Login callback successfull for user ID: %s", *userId)
 
-		err = bot.UpdateDiscordInfo(*userId, config, oauth2Config)
+		// Update Discord info
+		discordService, err := service.GetDiscordService(c)
+		if err != nil {
+			log.Printf("Login callback failed to get Discord service: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		err = discordService.UpdateDiscordInfo(*userId)
 		if err != nil {
 			log.Printf("Login callback failed to update Discord info: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"klanghan-api/model"
 	"klanghan-api/router"
-	"klanghan-api/service/discord/bot"
 	"log"
 	"os"
 
@@ -20,14 +19,6 @@ func main() {
 
 	// Initialize DB
 	model.InitDB(config)
-
-	// Initialize Discord bot
-	err = bot.InitBot(config.Discord)
-	if err != nil {
-		log.Fatalf("Failed to initialize Discord bot: %v", err)
-	} else {
-		log.Println("Discord bot initialized successfully!")
-	}
 
 	// Initialize scheduler
 	go initScheduler()
