@@ -97,7 +97,23 @@ func CallbackHandler(config model.DiscordConfig, oauth2Config *oauth2.Config) gi
 		session.Save()
 
 		log.Print("Login callback successful for user ID: ", userId)
-		c.JSON(http.StatusOK, gin.H{"message": "Logged in successfully"})
+
+		// Get the member from userId
+		var member *discordgo.Member
+		for _, m := range members {
+			if m.User.ID == *userId {
+				member = &m
+				break
+			}
+		}
+
+		if member == nil {
+			log.Print("Login callback failed: User member not found")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User member not found"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Logged in successfully", "userId": userId, "username": member.User.Username})
 	}
 }
 
