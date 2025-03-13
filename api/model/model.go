@@ -3,44 +3,12 @@ package model
 import (
 	"fmt"
 	"log"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
-
-// Get Schedule (for user) (GET)
-func GetShifts(c *gin.Context) {
-	// Retrieve the username from the URL parameter `id`
-	// user := c.Param("id")
-	var users []User
-	DB.Find(&users)
-	c.JSON(http.StatusOK, users)
-}
-
-// Get Schedule (for user) (GET)
-func GetShiftsForUser(c *gin.Context) {
-	// Retrieve the username from the URL parameter `id`
-	// user := c.Param("id")
-	var users []User
-	DB.Find(&users)
-	c.JSON(http.StatusOK, users)
-}
-
-// Get Schedules (GET)
-func GetSchedules(c *gin.Context) {
-	var users []User
-	DB.Find(&users)
-	c.JSON(http.StatusOK, users)
-}
-
-// Validate login credentials
-func ValidateLogin(loginDetails LoginDetails) bool {
-	return true // TODO Implement this
-}
 
 // Initialize database connection
 func InitDB(config Config) {
