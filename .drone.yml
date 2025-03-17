@@ -11,6 +11,14 @@ trigger:
     - main
 
 steps:
+  - name: prepare-build-web
+    image: alpine:3
+    environment:
+      BASE_URL:
+        from_secret: base_url
+    commands:
+      - echo "PUBLIC_API_BASE_URL=${BASE_URL}" > web/.env
+
   - name: build-and-push-web
     image: plugins/docker
     settings:
@@ -24,6 +32,8 @@ steps:
       dockerfile: web/Dockerfile
       force_tag: false
       purge: true
+    depends_on:
+    - prepare-build-web
 
   - name: build-and-push-api
     image: plugins/docker
