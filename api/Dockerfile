@@ -5,7 +5,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -o /app/api/bin/api .
+RUN go build -o /app/bin/api .
 
 # Release
 FROM debian:bookworm
