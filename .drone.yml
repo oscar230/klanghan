@@ -44,6 +44,7 @@ steps:
       repo: registry.e012.se/oscar230/klanghan-web
       tags: "${DRONE_SOURCE_BRANCH}"
       dockerfile: web/Dockerfile
+      context: web
       force_tag: false
       purge: true
     depends_on:
@@ -61,6 +62,7 @@ steps:
       repo: registry.e012.se/oscar230/klanghan-api
       tags: "${DRONE_SOURCE_BRANCH}"
       dockerfile: api/Dockerfile
+      context: api
       force_tag: false
       purge: true
 
