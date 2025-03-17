@@ -19,6 +19,20 @@ steps:
     commands:
       - echo "PUBLIC_API_BASE_URL=${BASE_URL}" > web/.env
 
+  - name: compress-images-web
+    image: python:3-alpine
+    commands:
+      - pip3 install pillow optimize-images
+      - optimize-images ./web -jobs 16
+
+  - name: remove-exif-web
+    image: alpine:3
+    commands:
+      - apk update && apk add exiftool
+      - exiftool -all:all= -r ./ -overwrite_original
+    depends_on:
+    - compress-images-web
+
   - name: build-and-push-web
     image: plugins/docker
     settings:
@@ -34,6 +48,7 @@ steps:
       purge: true
     depends_on:
     - prepare-build-web
+    - remove-exif-web
 
   - name: build-and-push-api
     image: plugins/docker
