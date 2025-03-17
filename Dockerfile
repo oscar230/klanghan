@@ -17,10 +17,11 @@ RUN npm prune --omit=dev
 
 # Stage 3: Final image to combine Go API and SvelteKit
 FROM debian:bookworm
+WORKDIR /
 RUN apt-get update && apt-get install -y nginx yq
 RUN mkdir -p /var/api
 COPY --from=go-builder /app/api/bin/api /var/api
 COPY --from=node-builder /app/web/build /var/www/html
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
-CMD ["sh", "-c", "/var/api/api & nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "cd /var/api/ && api & cd ~ && nginx -g 'daemon off;'"]
