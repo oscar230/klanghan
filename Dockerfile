@@ -17,10 +17,10 @@ RUN npm prune --omit=dev
 
 # Stage 3: Final image to combine Go API and SvelteKit
 FROM node:lts-bookworm
-COPY --from=go-builder /api /usr/local/bin/api
-COPY --from=node-builder /app/web/.svelte-kit /usr/share/nginx/html
+RUN mkdir -p /var/web
+COPY --from=go-builder /api/api /var/api
+COPY --from=node-builder /app/web/.svelte-kit /var/web
 EXPOSE 5200
 EXPOSE 5201
 ENV NODE_ENV=production
-# Start both Go API and Nginx to serve the SvelteKit app
-CMD ["/bin/sh", "-c", "/usr/local/bin/api & nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "cd /var/api && api & cd /var/web && node build"]
