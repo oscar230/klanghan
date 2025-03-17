@@ -16,11 +16,13 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # Stage 3: Final image to combine Go API and SvelteKit
-FROM node:lts-bookworm
-RUN mkdir -p /var/web
+FROM debian:bookworm
+RUN apt-get update && apt-get install -y nginx
+RUN mkdir -p /var/api
 COPY --from=go-builder /api/api /var/api
-COPY --from=node-builder /app/web/build /var/web
-EXPOSE 5200
+COPY --from=node-builder /app/web/build /var/www/html
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
 EXPOSE 5201
 ENV NODE_ENV=production
-CMD ["sh", "-c", "cd /var/api && api & cd /var/web && node build"]
+CMD ["sh", "-c", "/var/api/api & nginx -g 'daemon off;'"]
