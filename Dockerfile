@@ -19,7 +19,7 @@ RUN npm prune --omit=dev
 FROM node:lts-bookworm
 RUN mkdir -p /var/web
 COPY --from=go-builder /api/api /var/api
-COPY --from=node-builder /app/web/.svelte-kit /var/web
+COPY --from=node-builder /app/web/build /var/web
 EXPOSE 5200
 EXPOSE 5201
 ENV NODE_ENV=production

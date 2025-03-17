@@ -41,9 +41,9 @@
             {#if $isManager}
 			<DropdownItem divider />
 			<DropdownItem header>Arbetsledare</DropdownItem>
-			<DropdownItem href="/manage/schedules"><Icon name="calendar-check-fill" /> Arbetspass</DropdownItem>
+			<!-- <DropdownItem href="/manage/schedules"><Icon name="calendar-check-fill" /> Arbetspass</DropdownItem> -->
 			<DropdownItem href="/manage/roles"><Icon name="hammer" /> Arbetsroller</DropdownItem>
-			<DropdownItem href="/manage/users"><Icon name="person-fill-gear" /> Användare</DropdownItem>
+			<!-- <DropdownItem href="/manage/users"><Icon name="person-fill-gear" /> Användare</DropdownItem> -->
             {/if}
 
             {#if $isAdmin}
