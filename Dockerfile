@@ -4,7 +4,7 @@ WORKDIR /app/api
 COPY api/go.mod api/go.sum ./
 RUN go mod download
 COPY api/ .
-RUN go build -o /api .
+RUN go build -o /app/api/bin/api .
 
 # Stage 2: Build the SvelteKit app
 FROM node:lts-bookworm as node-builder
@@ -19,10 +19,8 @@ RUN npm prune --omit=dev
 FROM debian:bookworm
 RUN apt-get update && apt-get install -y nginx yq
 RUN mkdir -p /var/api
-COPY --from=go-builder /api/api /var/api
+COPY --from=go-builder /app/api/bin/api /var/api
 COPY --from=node-builder /app/web/build /var/www/html
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
-ENV NODE_ENV=production
-RUN echo "PUBLIC_API_BASE_URL=${yq e '.server.corsAllowOrigins' /var/api/config.yml}" > /var/www/html.env
 CMD ["sh", "-c", "/var/api/api & nginx -g 'daemon off;'"]
