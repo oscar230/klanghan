@@ -11,15 +11,7 @@ trigger:
     - main
 
 steps:
-  - name: set-env
-    image: alpine:3
-    environment:
-      BASE_URL:
-        from_secret: base_url
-    commands:
-      - echo "PUBLIC_API_BASE_URL=${BASE_URL}" > web/.env
-
-  - name: build-and-push
+  - name: build-and-push-web
     image: plugins/docker
     settings:
       registry: registry.e012.se
@@ -27,9 +19,23 @@ steps:
         from_secret: registry_username
       password:
         from_secret: registry_password
-      repo: registry.e012.se/oscar230/klanghan
+      repo: registry.e012.se/oscar230/klanghan-web
       tags: "${DRONE_SOURCE_BRANCH}"
-      dockerfile: Dockerfile
+      dockerfile: web/Dockerfile
+      force_tag: false
+      purge: true
+
+  - name: build-and-push-api
+    image: plugins/docker
+    settings:
+      registry: registry.e012.se
+      username:
+        from_secret: registry_username
+      password:
+        from_secret: registry_password
+      repo: registry.e012.se/oscar230/klanghan-api
+      tags: "${DRONE_SOURCE_BRANCH}"
+      dockerfile: api/Dockerfile
       force_tag: false
       purge: true
 
@@ -44,6 +50,9 @@ steps:
       - apk add --no-cache curl
       - |
         curl -H "Authorization: Bearer $WATCHTOWER_AUTH_TOKEN" "https://$WATCHTOWER_HOST/v1/update"
+    depends_on:
+    - build-and-push-web
+    - build-and-push-api
     when:
       status:
         - success
