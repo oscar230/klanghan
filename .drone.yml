@@ -11,10 +11,16 @@ trigger:
     - main
 
 steps:
+  - name: set-env
+    image: alpine:3
+    environment:
+      BASE_URL:
+        from_secret: base_url
+    commands:
+      - echo "PUBLIC_API_BASE_URL=${BASE_URL}" > web/.env
+
   - name: build-and-push
     image: plugins/docker
-    environment:
-      PUBLIC_API_BASE_URL: https://klanghan.klanglandet.se
     settings:
       registry: registry.e012.se
       username:
