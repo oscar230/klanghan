@@ -1,14 +1,14 @@
 
 # Build
 FROM golang:1.23-bookworm as builder
-WORKDIR /app/api
-COPY api/go.mod api/go.sum ./
+WORKDIR /app
+COPY go.mod go.sum ./
 RUN go mod download
-COPY api/ .
+COPY . .
 RUN go build -o /app/api/bin/api .
 
 # Release
 FROM debian:bookworm
 WORKDIR /
-COPY --from=builder /app/api/bin/api /usr/bin/api
-CMD ["sh", "-c", "/var/api/api"]
+COPY --from=builder /app/bin/api /usr/bin/api
+CMD ["sh", "-c", "/usr/bin/api"]
