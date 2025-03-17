@@ -24,4 +24,4 @@ COPY --from=go-builder /app/api/bin/api /var/api
 COPY --from=node-builder /app/web/build /var/www/html
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
-CMD ["sh", "-c", "cd /var/api/ && api & cd ~ && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "/var/api/api & nginx -g 'daemon off;'"]
