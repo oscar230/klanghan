@@ -13,6 +13,8 @@ trigger:
 steps:
   - name: build-and-push
     image: plugins/docker
+    environment:
+      PUBLIC_API_BASE_URL: https://klanghan.klanglandet.se
     settings:
       registry: registry.e012.se
       username:
