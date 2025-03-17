@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { PUBLIC_API_BASE_URL } from '$env/static/public';
 	import { Icon, Button, FormGroup, ButtonGroup, Spinner } from '@sveltestrap/sveltestrap';
 	import { onMount } from 'svelte';
 
@@ -38,7 +39,7 @@
 
 		if (code && !document.cookie) {
 			try {
-				const response = await fetch(`http://localhost:5200/auth/discord/callback?code=${code}`, {
+				const response = await fetch(`${PUBLIC_API_BASE_URL}/auth/discord/callback?code=${code}`, {
 					method: 'GET',
 					credentials: 'include'
 				});
@@ -52,7 +53,7 @@
 
 		if (document.cookie) {
 			try {
-				const response = await fetch(`http://localhost:5200/member/`, {
+				const response = await fetch(`${PUBLIC_API_BASE_URL}/member/`, {
 					method: 'GET',
 					credentials: 'include'
 				});
@@ -97,7 +98,7 @@
 							<Button
 								color="danger"
 								on:click={() => {
-									window.location.href = 'http://localhost:5200/auth/logout';
+									window.location.href = `${PUBLIC_API_BASE_URL}/auth/logout`;
 								}}
 							>
 								<Icon name="door-open-fill" /> Logga ut
@@ -115,7 +116,7 @@
 						<Button
 							color="primary"
 							on:click={() => {
-								window.location.href = 'http://localhost:5200/auth/login';
+								window.location.href = `${PUBLIC_API_BASE_URL}/auth/login`;
 							}}
 						>
 							<Icon name="discord" /> Logga in

@@ -23,6 +23,5 @@ COPY --from=go-builder /api/api /var/api
 COPY --from=node-builder /app/web/build /var/www/html
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
-EXPOSE 5201
 ENV NODE_ENV=production
 CMD ["sh", "-c", "/var/api/api & nginx -g 'daemon off;'"]
