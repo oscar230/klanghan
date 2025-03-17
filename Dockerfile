@@ -9,7 +9,7 @@ RUN go build -o /api .
 # Stage 2: Build the SvelteKit app
 FROM node:lts-bookworm as node-builder
 WORKDIR /app/web
-COPY web/package*.json ./
+COPY web/package*.json web/svelte.config.js web/vite.config.ts ./
 RUN npm ci
 COPY web/ .
 RUN npm run build
