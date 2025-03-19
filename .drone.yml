@@ -42,7 +42,6 @@ steps:
       - apk update && apk add exiftool
       - exiftool -all:all= -r ./ -overwrite_original
     depends_on:
-    - prepare-build
     - compress-images-web
 
   - name: build-and-push-web
@@ -77,6 +76,8 @@ steps:
       context: api
       force_tag: false
       purge: true
+    depends_on:
+    - prepare-build
 
   - name: deploy
     image: alpine:3
