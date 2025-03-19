@@ -11,14 +11,6 @@ trigger:
     - main
 
 steps:
-  - name: prepare-build-web
-    image: alpine:3
-    environment:
-      BASE_URL:
-        from_secret: base_url
-    commands:
-      - echo "PUBLIC_API_BASE_URL=${BASE_URL}" > web/.env
-
   - name: compress-images-web
     image: python:3-alpine
     commands:
@@ -35,6 +27,9 @@ steps:
 
   - name: build-and-push-web
     image: plugins/docker
+    environment:
+      PUBLIC_API_BASE_URL:
+        from_secret: api_base_url
     settings:
       registry: registry.e012.se
       username:
