@@ -15,9 +15,10 @@ steps:
     image: alpine:3
     environment:
       BASE_URL:
-        from_secret: base_url
+        from_secret: api_base_url
     commands:
       - echo "PUBLIC_API_BASE_URL=${BASE_URL}" > web/.env
+      - cat web/.env
 
   - name: compress-images-web
     image: python:3-alpine
