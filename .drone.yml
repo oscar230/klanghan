@@ -20,7 +20,6 @@ steps:
   - name: prepare-build-web
     image: alpine:3
     commands:
-      - exit 1
       - |
         if [ "${DRONE_BRANCH}" = "main" ]; then
           echo "PUBLIC_API_BASE_URL=$API_BASE_URL_PROD" > web/.env
