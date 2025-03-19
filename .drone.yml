@@ -17,7 +17,7 @@ trigger:
     - qa
 
 steps:
-  - name: prepare-build-web
+  - name: prepare-build
     image: alpine:3
     commands:
       - |
@@ -61,9 +61,6 @@ steps:
     depends_on:
     - prepare-build-web
     - remove-exif-web
-    when:
-      status:
-        - success
 
   - name: build-and-push-api
     image: plugins/docker
@@ -92,6 +89,7 @@ steps:
       - |
         curl -H "Authorization: Bearer $WATCHTOWER_AUTH_TOKEN" "https://$WATCHTOWER_HOST/v1/update"
     depends_on:
+    - prepare-build-web
     - build-and-push-web
     - build-and-push-api
     when:
