@@ -2,6 +2,11 @@ kind: pipeline
 type: docker
 name: default
 
+environment:
+  # Make sure there is not trailing slash in the api base urls
+  API_BASE_URL_PROD: https://api.klanghan.klanglandet.se
+  API_BASE_URL_QA: https://api.qa.klanghan.klanglandet.se
+
 platform:
   os: linux
   arch: arm64
@@ -9,15 +14,13 @@ platform:
 trigger:
   branch:
     - main
+    - qa
 
 steps:
   - name: prepare-build-web
     image: alpine:3
-    environment:
-      API_BASE_URL:
-        from_secret: api_base_url
     commands:
-      - echo "PUBLIC_API_BASE_URL=$API_BASE_URL" > web/.env
+      - echo "PUBLIC_API_BASE_URL=$API_BASE_URL_PROD" > web/.env
 
   - name: compress-images-web
     image: python:3-alpine
