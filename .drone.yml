@@ -43,7 +43,6 @@ steps:
       force_tag: false
       purge: true
     depends_on:
-    - prepare-build-web
     - remove-exif-web
 
   - name: build-and-push-api
