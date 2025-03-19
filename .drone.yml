@@ -42,6 +42,7 @@ steps:
       - apk update && apk add exiftool
       - exiftool -all:all= -r ./ -overwrite_original
     depends_on:
+    - prepare-build
     - compress-images-web
 
   - name: build-and-push-web
@@ -89,7 +90,6 @@ steps:
       - |
         curl -H "Authorization: Bearer $WATCHTOWER_AUTH_TOKEN" "https://$WATCHTOWER_HOST/v1/update"
     depends_on:
-    - prepare-build
     - build-and-push-web
     - build-and-push-api
     when:
