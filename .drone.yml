@@ -17,9 +17,7 @@ steps:
       API_BASE_URL:
         from_secret: api_base_url
     commands:
-      - echo $API_BASE_URL
       - echo "PUBLIC_API_BASE_URL=$API_BASE_URL" > web/.env
-      - cat web/.env
 
   - name: compress-images-web
     image: python:3-alpine
