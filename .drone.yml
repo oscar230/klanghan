@@ -59,7 +59,7 @@ steps:
       force_tag: false
       purge: true
     depends_on:
-    - prepare-build-web
+    - prepare-build
     - remove-exif-web
 
   - name: build-and-push-api
@@ -89,7 +89,7 @@ steps:
       - |
         curl -H "Authorization: Bearer $WATCHTOWER_AUTH_TOKEN" "https://$WATCHTOWER_HOST/v1/update"
     depends_on:
-    - prepare-build-web
+    - prepare-build
     - build-and-push-web
     - build-and-push-api
     when:
