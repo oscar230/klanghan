@@ -28,6 +28,7 @@ steps:
         else
           echo "Unknown branch: ${DRONE_BRANCH}"
           exit 1
+        fi
 
   - name: compress-images-web
     image: python:3-alpine
