@@ -1,14 +1,14 @@
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
-export const users = pgTable('users', {
-	id: uuid('id').defaultRandom().primaryKey(),
+export const users = sqliteTable('users', {
+	id: text('id').$defaultFn(() => crypto.randomUUID()).primaryKey(),
 	name: text('name').notNull().unique()
 });
 
-export const shifts = pgTable('shifts', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+export const shifts = sqliteTable('shifts', {
+	id: text('id').$defaultFn(() => crypto.randomUUID()).primaryKey(),
+	userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
 	role: text('role').notNull(),
-	startTime: timestamp('start_time', { withTimezone: true }).notNull(),
-	endTime: timestamp('end_time', { withTimezone: true }).notNull()
+	startTime: integer('start_time', { mode: 'timestamp' }).notNull(),
+	endTime: integer('end_time', { mode: 'timestamp' }).notNull()
 });
