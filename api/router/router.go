@@ -1,15 +1,18 @@
 package router
 
 import (
+	"context"
 	"fmt"
 	"klanghan-api/middleware/auth"
 	"klanghan-api/model"
 	"klanghan-api/router/handler"
 	"klanghan-api/service"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
@@ -53,9 +56,6 @@ func InitRouter(config model.Config) {
 		log.Fatalf("Failed to start Database service: %v", err)
 	}
 
-	// Graceful shutdown handling
-	go gracefulShutdown(discordService, databaseService)
-
 	// Set services
 	engine.Use(func(c *gin.Context) {
 		c.Set(service.DiscordServiceID, discordService)
@@ -70,6 +70,10 @@ func InitRouter(config model.Config) {
 	engine.GET("/auth/login", handler.LoginHandler(discordOAuthConfig))
 	engine.GET("/auth/discord/callback", handler.CallbackHandler(config.Discord, discordOAuthConfig))
 
+	notImplemented := func(c *gin.Context) {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
+	}
+
 	// Admin routes (accessible by admins only)
 	// adminRoutes := engine.Group("/admin")
 	// adminRoutes.Use(auth.RoleMiddleware(auth.AdminRole, config.Discord))
@@ -81,10 +85,10 @@ func InitRouter(config model.Config) {
 	managerRoutes.Use(auth.RoleMiddleware(auth.ManagerRole, config.Discord))
 	{
 		managerRoutes.GET("/users/:id", handler.GetUserById) // Get user by ID
-		managerRoutes.POST("/shifts", nil)                   // Create shift
-		managerRoutes.PUT("/shifts", nil)                    // Update shift
-		managerRoutes.GET("/shifts/:id", nil)                // Get shift by ID
-		managerRoutes.DELETE("/shifts/:id", nil)             // Reomve shift by ID
+		managerRoutes.POST("/shifts", notImplemented)        // Create shift
+		managerRoutes.PUT("/shifts", notImplemented)         // Update shift
+		managerRoutes.GET("/shifts/:id", notImplemented)     // Get shift by ID
+		managerRoutes.DELETE("/shifts/:id", notImplemented)  // Reomve shift by ID
 	}
 
 	// Regular routes (accessible by all logged-in users)
@@ -93,16 +97,26 @@ func InitRouter(config model.Config) {
 	{
 		regularRoutes.GET("/", handler.GetUserCurrent) // Get current user
 		regularRoutes.GET("/users", handler.GetUsers)  // Get all users
-		regularRoutes.GET("/shifts", nil)              // Get all shifts
+		regularRoutes.GET("/shifts", notImplemented)   // Get all shifts
 	}
+
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", config.Server.Port),
+		Handler: engine,
+	}
+
+	// Graceful shutdown handling
+	go gracefulShutdown(srv, discordService, databaseService)
 
 	// Start the server
 	log.Printf("http://localhost:%d", config.Server.Port)
-	engine.Run(fmt.Sprintf(":%d", config.Server.Port))
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("listen: %s\n", err)
+	}
 }
 
 // gracefulShutdown listens for termination signals and ensures proper cleanup of services
-func gracefulShutdown(discordService *service.DiscordService, databaseService *service.DatabaseService) {
+func gracefulShutdown(srv *http.Server, discordService *service.DiscordService, databaseService *service.DatabaseService) {
 	// Create a channel to listen for termination signals
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -110,6 +124,13 @@ func gracefulShutdown(discordService *service.DiscordService, databaseService *s
 	// Wait for a termination signal
 	sig := <-sigs
 	log.Printf("Received signal %s, shutting down gracefully...", sig)
+
+	// Shutdown HTTP server
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown: ", err)
+	}
 
 	// Cleanup services
 	err := discordService.Close()
@@ -126,5 +147,4 @@ func gracefulShutdown(discordService *service.DiscordService, databaseService *s
 	}
 
 	log.Println("Services stopped, exiting...")
-	os.Exit(0)
 }

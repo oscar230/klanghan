@@ -17,6 +17,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
+const discordApiUsersMe = "https://discord.com/api/users/@me"
+
 // Login handler
 func LoginHandler(oauth2Config *oauth2.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -113,7 +115,7 @@ func LogoutHandler(c *gin.Context) {
 // Get Discord user info
 func GetDiscordUserInfo(userToken *oauth2.Token, c *gin.Context, oauth2Config *oauth2.Config) (*string, error) {
 	// Get user info from Discord
-	userInfoResponse, err := oauth2Config.Client(c, userToken).Get("https://discord.com/api/users/@me")
+	userInfoResponse, err := oauth2Config.Client(c, userToken).Get(discordApiUsersMe)
 	if err != nil {
 		return nil, err
 	} else if userInfoResponse.StatusCode != http.StatusOK {

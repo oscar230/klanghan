@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { Styles	} from '@sveltestrap/sveltestrap';
 	import Navigation from '$lib/components/Navigation.svelte';
 </script>
 
-<Styles />
-<Navigation />
-<slot />
+<div class="min-h-screen bg-gray-50 text-gray-900">
+	<Navigation />
+	<main class="pt-16">
+		<slot />
+	</main>
+</div>

@@ -35,9 +35,9 @@ func NewDatabaseService(config model.DatabaseConfig) (*DatabaseService, error) {
 	}
 
 	// Auto-migrate tables
-	DB.AutoMigrate(&model.Attendees{})
-	DB.AutoMigrate(&model.Shift{})
-	DB.AutoMigrate(&model.User{})
+	if err := DB.AutoMigrate(&model.Attendees{}, &model.Shift{}, &model.User{}); err != nil {
+		return nil, fmt.Errorf("failed to auto-migrate database: %w", err)
+	}
 	log.Println("Database connected & migrated successfully!")
 
 	log.Println("Database service started")
@@ -152,8 +152,8 @@ func (d *DatabaseService) UpsertShift(shift model.Shift) error {
 // Is shift's role overlapping with other shift of the same role?
 func (d *DatabaseService) IsShiftRoleOverlapping(shift model.Shift) error {
 	var count int64
-	err := d.DB.Model(&model.Shift{}).Where("shift_role = ? AND ((start_time BETWEEN ? AND ?) OR (end_time BETWEEN ? AND ?))",
-		shift.ShiftRole, shift.StartTime, shift.EndTime, shift.StartTime, shift.EndTime).Count(&count).Error
+	err := d.DB.Model(&model.Shift{}).Where("shift_role = ? AND start_time < ? AND end_time > ?",
+		shift.ShiftRole, shift.EndTime, shift.StartTime).Count(&count).Error
 	if err != nil {
 		return err
 	} else if count > 0 {
@@ -165,8 +165,8 @@ func (d *DatabaseService) IsShiftRoleOverlapping(shift model.Shift) error {
 // Is shift's user on another shift at the same time?
 func (d *DatabaseService) IsUserOnAnotherShiftAtTheSameTime(shift model.Shift) error {
 	var count int64
-	err := d.DB.Model(&model.Shift{}).Where("user_id = ? AND ((start_time BETWEEN ? AND ?) OR (end_time BETWEEN ? AND ?))",
-		shift.UserID, shift.StartTime, shift.EndTime, shift.StartTime, shift.EndTime).Count(&count).Error
+	err := d.DB.Model(&model.Shift{}).Where("user_id = ? AND start_time < ? AND end_time > ?",
+		shift.UserID, shift.EndTime, shift.StartTime).Count(&count).Error
 	if err != nil {
 		return err
 	} else if count > 0 {
