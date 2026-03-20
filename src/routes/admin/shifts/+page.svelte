@@ -26,30 +26,6 @@
         </p>
     </div>
 
-    <!-- UI Helper text to describe split drop-down logics explicitly -->
-    <div
-        class="bg-primary/5 border border-primary/20 p-2.5 rounded text-xs text-primary font-medium flex items-center gap-2"
-    >
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            ><circle cx="12" cy="12" r="10" /><polyline
-                points="12 6 12 12 16 14"
-            /></svg
-        >
-        <span
-            >Tider anges i exakta 15-minuters klyftor (Tim & Minut). Systemet
-            räknar dynamiskt ut passets totala längd.</span
-        >
-    </div>
-
     {#if form?.error}
         <div
             class="bg-secondary/10 text-secondary border border-secondary/20 p-2.5 rounded text-xs font-medium"
