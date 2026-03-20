@@ -13,10 +13,11 @@ export const actions: Actions = {
 	addRole: async ({ request }) => {
 		const data = await request.formData();
 		const name = data.get('name')?.toString();
+        const description = data.get('description')?.toString() || null;
 		if (!name) return fail(400, { error: 'Rollnamn krävs' });
 		
 		try {
-			await db.insert(roles).values({ name });
+			await db.insert(roles).values({ name, description });
 		} catch (e: any) {
             if (e.message && e.message.includes('UNIQUE constraint failed')) {
                 return fail(400, { error: 'En roll med det namnet finns redan' });

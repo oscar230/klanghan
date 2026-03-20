@@ -13,10 +13,11 @@ export const actions: Actions = {
 	addUser: async ({ request }) => {
 		const data = await request.formData();
 		const name = data.get('name')?.toString();
+        const imageUrl = data.get('imageUrl')?.toString() || null;
 		if (!name) return fail(400, { error: 'Namn krävs' });
 		
 		try {
-			await db.insert(users).values({ name });
+			await db.insert(users).values({ name, imageUrl });
 		} catch (e: any) {
             if (e.message && e.message.includes('UNIQUE constraint failed')) {
                 return fail(400, { error: 'En volontär med det namnet finns redan' });

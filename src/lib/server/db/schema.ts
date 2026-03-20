@@ -3,12 +3,14 @@ import { randomUUID } from 'node:crypto';
 
 export const users = sqliteTable('users', {
 	id: text('id').$defaultFn(() => randomUUID()).primaryKey(),
-	name: text('name').notNull().unique()
+	name: text('name').notNull().unique(),
+    imageUrl: text('image_url')
 });
 
 export const roles = sqliteTable('roles', {
     id: text('id').$defaultFn(() => randomUUID()).primaryKey(),
-    name: text('name').notNull().unique()
+    name: text('name').notNull().unique(),
+    description: text('description')
 });
 
 export const shifts = sqliteTable('shifts', {

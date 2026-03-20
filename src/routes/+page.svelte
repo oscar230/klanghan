@@ -107,11 +107,16 @@
 								<div
 									class="md:w-48 shrink-0 border-b md:border-b-0 md:border-r border-border pb-4 md:pb-0 md:pr-4"
 								>
-									<div
-										class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 mb-3 tracking-wide truncate max-w-full"
-									>
-										{shift.roleName}
-									</div>
+									<div class="inline-flex flex-col mb-3">
+                                        <div
+                                            class="inline-flex items-center self-start px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 tracking-wide truncate max-w-full"
+                                        >
+                                            {shift.roleName}
+                                        </div>
+                                        {#if shift.roleDescription}
+                                            <p class="text-[10px] text-muted-foreground mt-1.5 leading-snug max-w-full italic pr-2">"{shift.roleDescription}"</p>
+                                        {/if}
+                                    </div>
 									<div class="space-y-0.5">
 										<p
 											class="text-muted-foreground text-[9px] font-bold uppercase tracking-widest"
@@ -151,13 +156,17 @@
 												<li
 													class="flex items-center gap-3 bg-muted/10 p-2 rounded-lg border border-transparent hover:border-border/50 transition-colors"
 												>
-													<div
-														class="shrink-0 w-7 h-7 rounded-sm bg-secondary/10 text-secondary flex items-center justify-center font-bold text-xs border border-secondary/20 shadow-sm"
-													>
-														{cw.userName
-															.charAt(0)
-															.toUpperCase()}
-													</div>
+                                                    {#if cw.imageUrl}
+                                                        <img src={cw.imageUrl} alt={cw.userName} class="shrink-0 w-7 h-7 rounded-sm object-cover border border-border/50 shadow-sm bg-muted/50" />
+                                                    {:else}
+                                                        <div
+                                                            class="shrink-0 w-7 h-7 rounded-sm bg-secondary/10 text-secondary flex items-center justify-center font-bold text-xs border border-secondary/20 shadow-sm"
+                                                        >
+                                                            {cw.userName
+                                                                .charAt(0)
+                                                                .toUpperCase()}
+                                                        </div>
+                                                    {/if}
 													<div class="flex-1 min-w-0">
 														<p
 															class="font-bold text-foreground text-xs truncate"
