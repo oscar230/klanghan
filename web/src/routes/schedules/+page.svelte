@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Button, ButtonGroup, FormGroup, Icon } from '@sveltestrap/sveltestrap';
 	import { onMount } from 'svelte';
 	import { writable, type Writable } from 'svelte/store';
 
@@ -168,17 +167,17 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-12 col-lg-4">
-			<FormGroup>
-				<ButtonGroup>
-					<Button color="primary" on:click={() => (totalTimelineWidth -= 1000)}
-						><Icon name="zoom-out" /></Button
+			<div class="mb-4">
+				<div class="flex gap-2">
+					<button class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" on:click={() => (totalTimelineWidth -= 1000)}
+						>[-] Zoom Out</button
 					>
-					<Button color="secondary" disabled>{totalTimelineWidth} pixlar/24h</Button>
-					<Button color="primary" on:click={() => (totalTimelineWidth += 1000)}
-						><Icon name="zoom-in" /></Button
+					<button class="px-3 py-1 bg-gray-500 text-white rounded" disabled>{totalTimelineWidth} pixlar/24h</button>
+					<button class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700" on:click={() => (totalTimelineWidth += 1000)}
+						>[+] Zoom In</button
 					>
-				</ButtonGroup>
-			</FormGroup>
+				</div>
+			</div>
 		</div>
 	</div>
 	<div class="row">
@@ -217,7 +216,7 @@
 									{/if}
 								</p>
 								{#if role !== '#Tid'}
-									<Button size="sm" color="primary"><Icon name="gear-fill" /> Ändra</Button>
+									<button class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Ändra</button>
 								{/if}
 							</div>
 						{/each}
