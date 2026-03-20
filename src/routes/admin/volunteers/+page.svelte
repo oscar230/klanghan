@@ -30,18 +30,44 @@
         <div class="p-2 space-y-1 max-h-96 overflow-y-auto">
             {#each data.users as user}
                 <div class="flex justify-between items-center group p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-all">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
                         {#if user.imageUrl}
-                            <img src={user.imageUrl} alt={user.name} class="w-6 h-6 rounded-full object-cover border border-border shadow-sm" />
+                            <img src={user.imageUrl} alt={user.name} class="w-8 h-8 rounded-full object-cover border border-border shadow-sm shrink-0" />
                         {:else}
-                            <div class="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold text-[10px] border border-secondary/20 shadow-sm">{user.name.charAt(0).toUpperCase()}</div>
+                            <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold text-xs border border-secondary/20 shadow-sm shrink-0">{user.name.charAt(0).toUpperCase()}</div>
                         {/if}
-                        <span class="font-medium text-foreground text-xs">{user.name}</span>
+                        <div class="flex flex-col min-w-0 flex-1">
+                            <span class="font-bold text-foreground text-xs truncate">{user.name}</span>
+                            <form method="POST" action="?/updateUser" use:enhance class="mt-1 flex items-center gap-2">
+                                <input type="hidden" name="id" value={user.id} />
+                                <input 
+                                    type="url" 
+                                    name="imageUrl" 
+                                    value={user.imageUrl || ''} 
+                                    placeholder="Ändra bild-URL" 
+                                    class="flex-1 bg-transparent border-none p-0 text-[10px] text-muted-foreground focus:ring-0 placeholder:text-muted-foreground/50 h-auto"
+                                    onchange={(e) => e.currentTarget.form?.requestSubmit()}
+                                />
+                            </form>
+                        </div>
                     </div>
-                    <form method="POST" action="?/deleteUser" use:enhance>
-                        <input type="hidden" name="id" value={user.id} />
-                        <button class="text-secondary hover:text-secondary-foreground text-[10px] font-bold px-2 py-1 hover:bg-secondary/20 rounded transition-all">Ta bort</button>
-                    </form>
+                    <div class="flex items-center gap-2 ml-4">
+                        {#if user.shiftCount > 0}
+                            <div class="text-[9px] font-bold text-amber-500 uppercase bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20" title="Har inbokade pass">
+                                {user.shiftCount} pass
+                            </div>
+                        {/if}
+                        <form method="POST" action="?/deleteUser" use:enhance>
+                            <input type="hidden" name="id" value={user.id} />
+                            <button 
+                                disabled={user.shiftCount > 0}
+                                class="text-secondary hover:text-secondary-foreground text-[10px] font-bold px-2 py-1 hover:bg-secondary/20 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                title={user.shiftCount > 0 ? "Kan inte ta bort volontär med arbetspass" : "Ta bort volontär"}
+                            >
+                                Ta bort
+                            </button>
+                        </form>
+                    </div>
                 </div>
             {/each}
             
