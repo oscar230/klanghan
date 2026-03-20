@@ -17,7 +17,10 @@ export const actions: Actions = {
 		
 		try {
 			await db.insert(roles).values({ name });
-		} catch (e) {
+		} catch (e: any) {
+            if (e.message && e.message.includes('UNIQUE constraint failed')) {
+                return fail(400, { error: 'En roll med det namnet finns redan' });
+            }
 			return fail(400, { error: 'Misslyckades att lägga till roll' });
 		}
 	},

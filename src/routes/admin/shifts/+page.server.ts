@@ -13,6 +13,7 @@ export const load: PageServerLoad = async () => {
     const allShifts = await db
         .select({
             id: shifts.id,
+            userId: shifts.userId,
             userName: users.name,
             roleName: roles.name,
             startOffset: shifts.startOffset,
@@ -68,7 +69,20 @@ export const actions: Actions = {
         const data = await request.formData();
         const id = data.get('id')?.toString();
         
-        if (!id) return fail(400, { error: 'ID krävs' });
+        if (!id) return fail(400, { error: 'Ogiltigt ID' });
+        
         await db.delete(shifts).where(eq(shifts.id, id));
+    },
+    
+    updateShiftUser: async ({ request }) => {
+        const data = await request.formData();
+        const shiftId = data.get('shiftId')?.toString();
+        const userId = data.get('userId')?.toString();
+        
+        if (!shiftId || !userId) {
+            return fail(400, { error: 'Ogiltig förfrågan' });
+        }
+        
+        await db.update(shifts).set({ userId }).where(eq(shifts.id, shiftId));
     }
 };

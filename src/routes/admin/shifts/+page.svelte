@@ -10,6 +10,15 @@
     import type { PageData } from "./$types";
 
     let { data, form } = $props<{ data: PageData; form: any }>();
+
+    function hasOverlap(shift: typeof data.shifts[0]) {
+        return data.shifts.some((s: any) => 
+            s.id !== shift.id && 
+            s.userId === shift.userId && 
+            s.startOffset < shift.endOffset && 
+            s.endOffset > shift.startOffset
+        );
+    }
 </script>
 
 <svelte:head>
@@ -188,17 +197,16 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border bg-card">
-                    {#each data.shifts as shift}
-                        <tr class="hover:bg-muted/30 transition-colors">
-                            <td class="px-4 py-2 font-semibold text-foreground">
+                    {#each data.shifts as shift (shift.id)}
+                        <tr class="hover:bg-muted/30 transition-colors {hasOverlap(shift) ? 'bg-red-950/20' : ''}">
+                            <td class="px-4 py-2 font-semibold {hasOverlap(shift) ? 'text-red-400' : 'text-foreground'}">
                                 {shift.userName}
+                                {#if hasOverlap(shift)}
+                                    <span class="ml-2 text-red-500 font-extrabold text-[9px] uppercase bg-red-950/60 px-1 py-0.5 rounded border border-red-900/50 shadow-sm" title="Krockar med ett annat arbetspass!">⚠️ Krock</span>
+                                {/if}
                             </td>
-                            <td class="px-4 py-2">
-                                <span
-                                    class="px-1.5 py-0.5 rounded-[3px] font-bold bg-secondary/10 text-secondary border border-secondary/20"
-                                >
-                                    {shift.roleName}
-                                </span>
+                            <td class="px-4 py-2 text-foreground font-medium">
+                                {shift.roleName}
                             </td>
                             <td
                                 class="px-4 py-2 text-muted-foreground font-medium"
@@ -207,7 +215,22 @@
                                     shift.endOffset,
                                 )}</td
                             >
-                            <td class="px-4 py-2 text-right">
+                            <td class="px-4 py-2 flex items-center justify-end gap-2 text-right">
+                                <form method="POST" action="?/updateShiftUser" use:enhance class="inline-flex items-center">
+                                    <input type="hidden" name="shiftId" value={shift.id} />
+                                    <div class="relative">
+                                        <select name="userId" onchange={(e) => e.currentTarget.form?.requestSubmit()} class="px-2 py-1 bg-secondary/10 text-secondary hover:bg-secondary/20 hover:text-secondary-foreground border border-secondary/20 rounded font-bold text-xs appearance-none outline-none focus:ring-1 focus:ring-primary cursor-pointer pr-6 transition-all" title="Byt volontär">
+                                            {#each data.users as user}
+                                                {#if user.id === shift.userId}
+                                                    <option value={user.id} selected class="text-foreground bg-popover font-medium">{user.name}</option>
+                                                {:else}
+                                                    <option value={user.id} class="text-foreground bg-popover font-medium">{user.name}</option>
+                                                {/if}
+                                            {/each}
+                                        </select>
+                                        <svg class="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-secondary pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </form>
                                 <form
                                     method="POST"
                                     action="?/deleteShift"
@@ -220,7 +243,7 @@
                                         value={shift.id}
                                     />
                                     <button
-                                        class="font-bold text-secondary hover:text-secondary-foreground hover:bg-secondary/10 px-2 py-1 rounded transition-all"
+                                        class="font-bold text-secondary hover:text-secondary-foreground hover:bg-secondary/10 px-2 py-1 rounded transition-all whitespace-nowrap"
                                         >Ta bort</button
                                     >
                                 </form>
