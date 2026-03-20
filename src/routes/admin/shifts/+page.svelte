@@ -1,6 +1,6 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
-    import { DAYS, QUARTER_TIMES, formatOffset } from '$lib/time';
+    import { DAYS, HOURS, QUARTERS, formatOffset, formatShiftTime } from '$lib/time';
     import type { PageData } from './$types';
     
     let { data, form } = $props<{ data: PageData, form: any }>();
@@ -14,6 +14,12 @@
     <div>
         <h2 class="text-xl font-bold text-foreground tracking-tight">Schemahantering</h2>
         <p class="text-muted-foreground mt-0.5 text-xs">Boka in volontärer på arbetspass under festivalen.</p>
+    </div>
+
+    <!-- UI Helper text to describe split drop-down logics explicitly -->
+    <div class="bg-primary/5 border border-primary/20 p-2.5 rounded text-xs text-primary font-medium flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Tider anges i exakta 15-minuters klyftor (Tim & Minut). Systemet räknar dynamiskt ut passets totala längd.</span>
     </div>
 
     {#if form?.error}
@@ -46,33 +52,45 @@
                     </select>
                 </div>
                                 
-                <div class="min-w-[160px]">
+                <div class="min-w-[180px]">
                     <label class="block text-[10px] font-bold text-primary uppercase mb-1">Möte / Start</label>
-                    <div class="flex gap-1">
-                        <select name="startDay" required class="w-1/2 px-1.5 py-1.5 bg-input border border-input-border text-foreground rounded text-[11px] focus:ring-1 focus:ring-primary outline-none">
+                    <div class="flex gap-1 items-center">
+                        <select name="startDay" required class="flex-1 px-1.5 py-1.5 bg-input border border-input-border text-foreground rounded text-[11px] focus:ring-1 focus:ring-primary outline-none">
                             {#each DAYS as day, i}
                                 <option value={i}>{day}</option>
                             {/each}
                         </select>
-                        <select name="startTime" required class="w-1/2 px-1.5 py-1.5 bg-input border border-input-border text-foreground rounded text-[11px] focus:ring-1 focus:ring-primary outline-none">
-                            {#each QUARTER_TIMES as time}
-                                <option value={time}>{time}</option>
+                        <select name="startHour" required class="w-[42px] px-1 py-1.5 bg-input border border-input-border text-foreground rounded text-[11px] focus:ring-1 focus:ring-primary outline-none text-center">
+                            {#each HOURS as h}
+                                <option value={h}>{h}</option>
+                            {/each}
+                        </select>
+                        <span class="text-muted-foreground font-bold text-xs">:</span>
+                        <select name="startMinute" required class="w-[42px] px-1 py-1.5 bg-input border border-input-border text-foreground rounded text-[11px] focus:ring-1 focus:ring-primary outline-none text-center">
+                            {#each QUARTERS as m}
+                                <option value={m}>{m}</option>
                             {/each}
                         </select>
                     </div>
                 </div>
                 
-                <div class="min-w-[160px]">
+                <div class="min-w-[180px]">
                     <label class="block text-[10px] font-bold text-primary uppercase mb-1">Avslut / Slut</label>
-                    <div class="flex gap-1">
-                        <select name="endDay" required class="w-1/2 px-1.5 py-1.5 bg-input border border-input-border text-foreground rounded text-[11px] focus:ring-1 focus:ring-primary outline-none">
+                    <div class="flex gap-1 items-center">
+                        <select name="endDay" required class="flex-1 px-1.5 py-1.5 bg-input border border-input-border text-foreground rounded text-[11px] focus:ring-1 focus:ring-primary outline-none">
                             {#each DAYS as day, i}
                                 <option value={i}>{day}</option>
                             {/each}
                         </select>
-                        <select name="endTime" required class="w-1/2 px-1.5 py-1.5 bg-input border border-input-border text-foreground rounded text-[11px] focus:ring-1 focus:ring-primary outline-none">
-                            {#each QUARTER_TIMES as time}
-                                <option value={time}>{time}</option>
+                        <select name="endHour" required class="w-[42px] px-1 py-1.5 bg-input border border-input-border text-foreground rounded text-[11px] focus:ring-1 focus:ring-primary outline-none text-center">
+                            {#each HOURS as h}
+                                <option value={h}>{h}</option>
+                            {/each}
+                        </select>
+                        <span class="text-muted-foreground font-bold text-xs">:</span>
+                        <select name="endMinute" required class="w-[42px] px-1 py-1.5 bg-input border border-input-border text-foreground rounded text-[11px] focus:ring-1 focus:ring-primary outline-none text-center">
+                            {#each QUARTERS as m}
+                                <option value={m}>{m}</option>
                             {/each}
                         </select>
                     </div>
@@ -90,8 +108,7 @@
                     <tr>
                         <th class="px-4 py-2 font-bold text-muted-foreground uppercase tracking-wider">Volontär</th>
                         <th class="px-4 py-2 font-bold text-muted-foreground uppercase tracking-wider">Roll</th>
-                        <th class="px-4 py-2 font-bold text-muted-foreground uppercase tracking-wider">Start</th>
-                        <th class="px-4 py-2 font-bold text-muted-foreground uppercase tracking-wider">Slut</th>
+                        <th class="px-4 py-2 font-bold text-muted-foreground uppercase tracking-wider">Arbetspass (Tid)</th>
                         <th class="px-4 py-2 font-bold text-muted-foreground uppercase tracking-wider text-right">Åtgärd</th>
                     </tr>
                 </thead>
@@ -106,8 +123,7 @@
                                     {shift.roleName}
                                 </span>
                             </td>
-                            <td class="px-4 py-2 text-muted-foreground">{formatOffset(shift.startOffset)}</td>
-                            <td class="px-4 py-2 text-muted-foreground">{formatOffset(shift.endOffset)}</td>
+                            <td class="px-4 py-2 text-muted-foreground font-medium">{formatShiftTime(shift.startOffset, shift.endOffset)}</td>
                             <td class="px-4 py-2 text-right">
                                 <form method="POST" action="?/deleteShift" use:enhance class="inline">
                                     <input type="hidden" name="id" value={shift.id} />

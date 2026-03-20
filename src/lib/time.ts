@@ -1,10 +1,7 @@
 export const DAYS = ['Fredag', 'Lördag', 'Söndag'];
 
-export const QUARTER_TIMES = Array.from({ length: 24 * 4 }).map((_, i) => {
-    const h = Math.floor(i / 4).toString().padStart(2, '0');
-    const m = ((i % 4) * 15).toString().padStart(2, '0');
-    return `${h}:${m}`;
-});
+export const HOURS = Array.from({ length: 24 }).map((_, i) => i.toString().padStart(2, '0'));
+export const QUARTERS = ['00', '15', '30', '45'];
 
 export function formatOffset(minutes: number): string {
     const dayIndex = Math.floor(minutes / (24 * 60));
@@ -22,4 +19,31 @@ export function formatOffset(minutes: number): string {
 export function parseOffset(dayIndex: number, timeString: string): number {
     const [h, m] = timeString.split(':').map(Number);
     return (dayIndex * 24 * 60) + (h * 60) + (m || 0);
+}
+
+export function getDuration(startOffset: number, endOffset: number): string {
+    const diff = endOffset - startOffset;
+    const hours = Math.floor(diff / 60);
+    const minutes = diff % 60;
+    
+    if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
+    if (hours > 0) return `${hours}h`;
+    return `${minutes}m`;
+}
+
+export function formatShiftTime(start: number, end: number): string {
+    const startStr = formatOffset(start);
+    const endStr = formatOffset(end);
+    const duration = getDuration(start, end);
+    
+    const startDay = startStr.split(' ')[0];
+    const endDay = endStr.split(' ')[0];
+    
+    if (startDay === endDay) {
+        const startTime = startStr.split(' ')[1];
+        const endTime = endStr.split(' ')[1];
+        return `${startDay} ${startTime} - ${endTime} (${duration})`;
+    }
+    
+    return `${startStr} - ${endStr} (${duration})`;
 }

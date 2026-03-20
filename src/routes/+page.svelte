@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { formatOffset } from '$lib/time';
+	import { formatOffset, formatShiftTime } from '$lib/time';
 	import type { PageData } from './$types';
 	let { data } = $props<{ data: PageData }>();
 
 	let selectedUserId = $state('');
 
 	let myShifts = $derived(
-		data.shifts.filter((s) => s.userId === selectedUserId)
+		data.shifts.filter((s: any) => s.userId === selectedUserId)
 	);
 
 	const getCoworkers = (shift: typeof data.shifts[0]) => {
-		return data.shifts.filter((s) => 
+		return data.shifts.filter((s: any) => 
 			s.id !== shift.id && 
 			s.startOffset < shift.endOffset &&
 			s.endOffset > shift.startOffset
@@ -70,15 +70,9 @@
 									<div class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 mb-3 tracking-wide truncate max-w-full">
 										{shift.roleName}
 									</div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div class="space-y-0.5">
-                                            <p class="text-muted-foreground text-[9px] font-bold uppercase tracking-widest">Start</p>
-                                            <p class="text-sm font-bold text-foreground">{formatOffset(shift.startOffset)}</p>
-                                        </div>
-                                        <div class="space-y-0.5">
-                                            <p class="text-muted-foreground text-[9px] font-bold uppercase tracking-widest">Slut</p>
-                                            <p class="text-sm font-bold text-foreground">{formatOffset(shift.endOffset)}</p>
-                                        </div>
+                                    <div class="space-y-0.5">
+                                        <p class="text-muted-foreground text-[9px] font-bold uppercase tracking-widest">Arbetspass</p>
+                                        <p class="text-sm font-bold text-foreground">{formatShiftTime(shift.startOffset, shift.endOffset)}</p>
                                     </div>
 								</div>
 								

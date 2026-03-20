@@ -36,9 +36,14 @@ export const actions: Actions = {
         const userId = data.get('userId')?.toString();
         const roleId = data.get('roleId')?.toString();
         const startDay = parseInt(data.get('startDay')?.toString() || '0');
-        const startTime = data.get('startTime')?.toString();
+        const startHour = data.get('startHour')?.toString() || '00';
+        const startMinute = data.get('startMinute')?.toString() || '00';
+        const startTime = `${startHour}:${startMinute}`;
+
         const endDay = parseInt(data.get('endDay')?.toString() || '0');
-        const endTime = data.get('endTime')?.toString();
+        const endHour = data.get('endHour')?.toString() || '00';
+        const endMinute = data.get('endMinute')?.toString() || '00';
+        const endTime = `${endHour}:${endMinute}`;
         
         if (!userId || !roleId || !startTime || !endTime) {
             return fail(400, { error: 'Alla fält krävs' });
