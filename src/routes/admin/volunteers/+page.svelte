@@ -2,6 +2,23 @@
 	import { enhance } from '$app/forms';
     import defaultPfp from "$lib/assets/default-pfp.svg";
 	let { data, form } = $props();
+
+    let newUserFileName = $state("");
+    let uploadingIds = $state<Set<string>>(new Set());
+
+    const handleFileChange = (e: Event, id: string | null = null) => {
+        const input = e.target as HTMLInputElement;
+        const fileName = input.files?.[0]?.name || "";
+        if (id === null) {
+            newUserFileName = fileName;
+        } else {
+            if (fileName) {
+                uploadingIds.add(id);
+                // @ts-ignore - submit is valid on form
+                input.form?.requestSubmit();
+            }
+        }
+    };
 </script>
 
 <svelte:head>
@@ -22,11 +39,21 @@
 
 	<div class="bg-card border border-border rounded shadow-sm">
 		<div class="p-3 border-b border-border/50 bg-muted/20">
-			<form method="POST" action="?/addUser" use:enhance enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-3">
+			<form method="POST" action="?/addUser" use:enhance={() => {
+                return async ({ update }) => {
+                    newUserFileName = "";
+                    await update();
+                };
+            }} enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-3">
 				<input type="text" name="name" placeholder="Ny volontärs namn" required class="flex-1 px-3 py-1.5 bg-input border border-input-border text-foreground rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-muted-foreground text-xs" />
                 <div class="flex-1 flex items-center gap-2">
-                    <label class="text-[10px] font-bold text-muted-foreground uppercase whitespace-nowrap">Profilbild:</label>
-                    <input type="file" name="imageFile" accept="image/*" class="flex-1 text-[10px] text-muted-foreground file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/30" />
+                    <label class="cursor-pointer group flex items-center gap-2 px-3 py-1.5 bg-muted/50 border border-dashed border-input-border rounded hover:border-primary/50 transition-all overflow-hidden max-w-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary shrink-0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                        <span class="text-[10px] font-bold text-muted-foreground truncate">
+                            {newUserFileName || "Välj bild..."}
+                        </span>
+                        <input type="file" name="imageFile" accept="image/*" class="hidden" onchange={handleFileChange} />
+                    </label>
                 </div>
 				<button class="px-4 py-1.5 bg-primary text-primary-foreground font-bold rounded hover:opacity-90 transition-opacity text-xs whitespace-nowrap">Lägg till</button>
 			</form>
@@ -35,19 +62,34 @@
             {#each data.users as user}
                 <div class="flex justify-between items-center group p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-all">
                     <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <img src={user.imageUrl || defaultPfp} alt={user.name} class="w-10 h-10 rounded-lg object-cover border border-border shadow-sm shrink-0 bg-muted/50" />
+                        <div class="relative">
+                            <img src={user.imageUrl || defaultPfp} alt={user.name} class="w-10 h-10 rounded-lg object-cover border border-border shadow-sm shrink-0 bg-muted/50 {uploadingIds.has(user.id) ? 'opacity-30' : ''}" />
+                            {#if uploadingIds.has(user.id)}
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            {/if}
+                        </div>
                         <div class="flex flex-col min-w-0 flex-1">
                             <span class="font-bold text-foreground text-sm truncate">{user.name}</span>
-                            <form method="POST" action="?/updateUser" use:enhance enctype="multipart/form-data" class="mt-1.5 flex items-center gap-2">
+                            <form method="POST" action="?/updateUser" use:enhance={() => {
+                                return async ({ update }) => {
+                                    uploadingIds.delete(user.id);
+                                    await update();
+                                };
+                            }} enctype="multipart/form-data" class="mt-1.5">
                                 <input type="hidden" name="id" value={user.id} />
-                                <label class="text-[9px] font-bold text-muted-foreground/60 uppercase whitespace-nowrap">Uppdatera bild:</label>
-                                <input 
-                                    type="file" 
-                                    name="imageFile" 
-                                    accept="image/*"
-                                    class="text-[9px] text-muted-foreground/50 file:mr-1.5 file:py-0.5 file:px-1.5 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-muted file:text-muted-foreground hover:file:bg-border transition-all"
-                                    onchange={(e) => e.currentTarget.form?.requestSubmit()}
-                                />
+                                <label class="inline-flex items-center gap-1.5 cursor-pointer text-[9px] font-bold text-muted-foreground/60 hover:text-primary transition-colors uppercase tracking-wider">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                                    Uppdatera bild
+                                    <input 
+                                        type="file" 
+                                        name="imageFile" 
+                                        accept="image/*"
+                                        class="hidden"
+                                        onchange={(e) => handleFileChange(e, user.id)}
+                                    />
+                                </label>
                             </form>
                         </div>
                     </div>
