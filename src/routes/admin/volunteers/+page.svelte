@@ -72,16 +72,22 @@
                         </div>
                         <div class="flex flex-col min-w-0 flex-1">
                             <span class="font-bold text-foreground text-sm truncate">{user.name}</span>
+                            <span class="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{user.shiftCount} inbokade pass</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 ml-4">
+                        <!-- Update/Remove Image Group -->
+                        <div class="flex gap-2">
                             <form method="POST" action="?/updateUser" use:enhance={() => {
                                 return async ({ update }) => {
                                     uploadingIds.delete(user.id);
                                     await update();
                                 };
-                            }} enctype="multipart/form-data" class="mt-1.5">
+                            }} enctype="multipart/form-data">
                                 <input type="hidden" name="id" value={user.id} />
-                                <label class="inline-flex items-center gap-1.5 cursor-pointer text-[9px] font-bold text-muted-foreground/60 hover:text-primary transition-colors uppercase tracking-wider">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-                                    Uppdatera bild
+                                <label class="cursor-pointer flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all shadow-sm border border-primary/10" title="Uppdatera bild">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider">Ändra</span>
                                     <input 
                                         type="file" 
                                         name="imageFile" 
@@ -91,24 +97,31 @@
                                     />
                                 </label>
                             </form>
+                            
+                            {#if user.imageUrl}
+                                <form method="POST" action="?/removeImage" use:enhance>
+                                    <input type="hidden" name="id" value={user.id} />
+                                    <button class="flex items-center gap-2 px-3 py-1.5 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-lg transition-all shadow-sm border border-secondary/10" title="Ta bort bild">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><circle cx="12" cy="13" r="3"/></svg>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Ta bort bild</span>
+                                    </button>
+                                </form>
+                            {/if}
                         </div>
-                    </div>
-                    <div class="flex items-center gap-2 ml-4">
-                        {#if user.shiftCount > 0}
-                            <div class="text-[9px] font-bold text-amber-500 uppercase bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20" title="Har inbokade pass">
-                                {user.shiftCount} pass
-                            </div>
-                        {:else}
-                            <form method="POST" action="?/deleteUser" use:enhance>
-                                <input type="hidden" name="id" value={user.id} />
-                                <button 
-                                    class="text-secondary hover:text-secondary-foreground text-[10px] font-bold px-2 py-1 hover:bg-secondary/20 rounded transition-all whitespace-nowrap"
-                                    title="Ta bort volontär"
-                                >
-                                    Ta bort
-                                </button>
-                            </form>
-                        {/if}
+
+                        <div class="w-px h-6 bg-border/50 mx-1"></div>
+
+                        <form method="POST" action="?/deleteUser" use:enhance>
+                            <input type="hidden" name="id" value={user.id} />
+                            <button 
+                                disabled={user.shiftCount > 0}
+                                class="flex items-center gap-2 px-3 py-1.5 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-lg transition-all shadow-sm border border-secondary/10 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
+                                title={user.shiftCount > 0 ? "Kan inte ta bort volontär med arbetspass" : "Ta bort volontär"}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                <span class="text-[10px] font-bold uppercase tracking-wider">Ta bort volontär</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             {/each}

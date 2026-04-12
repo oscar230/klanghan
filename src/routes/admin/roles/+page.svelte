@@ -79,16 +79,20 @@
                                 <p class="text-[10px] text-muted-foreground leading-snug break-words">{role.description}</p>
                             {/if}
                         </div>
-                        <div class="flex gap-1 items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="flex gap-2 items-center">
                             <button 
                                 onclick={() => editingId = role.id}
-                                class="text-primary hover:text-primary-foreground text-[10px] font-bold px-2 py-1 hover:bg-primary/20 rounded transition-all whitespace-nowrap"
+                                class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all shadow-sm border border-primary/10"
                             >
-                                Ändra
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                <span class="text-[10px] font-bold uppercase tracking-wider">Ändra</span>
                             </button>
                             <form method="POST" action="?/deleteRole" use:enhance>
                                 <input type="hidden" name="id" value={role.id} />
-                                <button class="text-secondary hover:text-secondary-foreground text-[10px] font-bold px-2 py-1 hover:bg-secondary/20 rounded transition-all whitespace-nowrap">Ta bort</button>
+                                <button class="flex items-center gap-2 px-3 py-1.5 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-lg transition-all shadow-sm border border-secondary/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider">Ta bort</span>
+                                </button>
                             </form>
                         </div>
                     </div>

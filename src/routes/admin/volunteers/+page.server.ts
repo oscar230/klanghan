@@ -99,6 +99,17 @@ export const actions: Actions = {
 			deleteImageFile(oldImageUrl);
 		}
 	},
+	removeImage: async ({ request }) => {
+		const data = await request.formData();
+		const id = data.get('id')?.toString();
+		if (!id) return fail(400, { error: 'ID krävs' });
+
+		const currentUser = await db.select().from(users).where(eq(users.id, id)).get();
+		const oldImageUrl = currentUser?.imageUrl || null;
+
+		await db.update(users).set({ imageUrl: null }).where(eq(users.id, id));
+		deleteImageFile(oldImageUrl);
+	},
 	deleteUser: async ({ request }) => {
 		const data = await request.formData();
 		const id = data.get('id')?.toString();
