@@ -41,10 +41,10 @@
                     
                     <div class="relative pl-4 space-y-4 before:absolute before:left-[21px] before:top-2 before:bottom-2 before:w-px before:bg-border/60">
                         {#each day.items as item}
-                            <div class="relative z-10">
+                            <div class="relative z-10 {item.isOverlap ? '-mt-3' : ''}">
                                 <!-- Marker -->
                                 <div class="absolute left-[-22px] top-6 w-3 h-3 rounded-full border-2 bg-background z-20 
-                                    {item.type === 'shift' ? 'border-primary' : 'border-amber-500'}"></div>
+                                    {item.type === 'shift' ? (item.isOverlap ? 'border-orange-500' : 'border-primary') : 'border-amber-500'}"></div>
 
                                 {#if item.type === 'gap'}
                                     <div class="bg-background border-2 border-amber-500/30 rounded-2xl p-4 flex items-center justify-between shadow-sm relative overflow-hidden group">
@@ -65,21 +65,19 @@
                                         </div>
                                     </div>
                                 {:else}
-                                    <div class="bg-card border border-border rounded-2xl p-4 shadow-sm hover:border-primary/40 transition-all flex items-center justify-between relative overflow-hidden">
-                                        {#if item.isOverlap}
-                                            <div class="absolute top-0 right-0">
-                                                <div class="bg-secondary/10 text-secondary text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-bl-lg border-l border-b border-secondary/20">
-                                                    Överlapp
-                                                </div>
-                                            </div>
-                                        {/if}
+                                    <div class="bg-card border border-border rounded-2xl p-4 shadow-sm hover:border-primary/40 transition-all flex items-center justify-between relative overflow-hidden {item.isOverlap ? 'border-l-orange-500 border-l-4 bg-orange-500/[0.02]' : ''}">
                                         <div class="flex items-center gap-4">
                                             <img src={item.userImageUrl || defaultPfp} alt={item.userName} class="w-10 h-10 rounded-lg object-cover border border-border shadow-sm bg-muted/50" />
                                             <div>
                                                 <p class="text-xs font-bold text-foreground">{item.userName}</p>
-                                                <p class="text-[10px] font-medium text-muted-foreground">
-                                                    {formatOffset(item.startOffset).split(' ')[1]} - {formatOffset(item.endOffset).split(' ')[1]}
-                                                </p>
+                                                <div class="flex flex-col">
+                                                    <p class="text-[10px] font-medium text-muted-foreground">
+                                                        {formatOffset(item.startOffset).split(' ')[1]} - {formatOffset(item.endOffset).split(' ')[1]}
+                                                    </p>
+                                                    {#if item.isOverlap}
+                                                        <span class="text-[8px] font-black uppercase text-orange-500 tracking-wider mt-0.5">Överlapp</span>
+                                                    {/if}
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="text-[10px] font-bold text-primary/70 bg-primary/5 px-2 py-1 rounded border border-primary/10">
