@@ -3,6 +3,16 @@
 	let { data, form } = $props();
 
     let editingId = $state<string | null>(null);
+    let activeMenuId = $state<string | null>(null);
+
+    const toggleMenu = (e: MouseEvent, id: string) => {
+        e.stopPropagation();
+        activeMenuId = activeMenuId === id ? null : id;
+    };
+
+    if (typeof window !== 'undefined') {
+        window.onclick = () => activeMenuId = null;
+    }
 </script>
 
 <svelte:head>
@@ -72,14 +82,16 @@
                         </form>
                     </div>
                 {:else}
-                    <div class="flex justify-between items-start group p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-all">
+                    <div class="flex justify-between items-start group p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-all relative">
                         <div class="flex flex-col gap-0.5 max-w-[70%]">
                             <span class="font-medium text-foreground text-xs">{role.name}</span>
                             {#if role.description}
                                 <p class="text-[10px] text-muted-foreground leading-snug break-words">{role.description}</p>
                             {/if}
                         </div>
-                        <div class="flex gap-2 items-center">
+                        
+                        <!-- Desktop Actions -->
+                        <div class="hidden sm:flex gap-2 items-center">
                             <button 
                                 onclick={() => editingId = role.id}
                                 class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all shadow-sm border border-primary/10"
@@ -95,6 +107,35 @@
                                 </button>
                             </form>
                         </div>
+
+                        <!-- Mobile Actions -->
+                        <div class="sm:hidden relative">
+                            <button 
+                                onclick={(e) => toggleMenu(e, role.id)}
+                                class="w-10 h-10 flex items-center justify-center bg-muted border border-border rounded-lg text-muted-foreground hover:text-foreground transition-all"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                            </button>
+
+                            {#if activeMenuId === role.id}
+                                <div class="absolute right-0 top-12 z-50 w-40 bg-card border border-border rounded-xl shadow-xl p-2 space-y-1 animate-in fade-in zoom-in duration-100 origin-top-right backdrop-blur-md">
+                                    <button 
+                                        onclick={() => { editingId = role.id; activeMenuId = null; }}
+                                        class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted rounded-lg text-xs font-bold text-primary transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        Ändra
+                                    </button>
+                                    <form method="POST" action="?/deleteRole" use:enhance>
+                                        <input type="hidden" name="id" value={role.id} />
+                                        <button class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted rounded-lg text-xs font-bold text-secondary transition-colors text-left uppercase">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                            Ta bort
+                                        </button>
+                                    </form>
+                                </div>
+                            {/if}
+                        </div>
                     </div>
                 {/if}
             {/each}
@@ -107,4 +148,5 @@
         </div>
 	</div>
 </div>
+
 
