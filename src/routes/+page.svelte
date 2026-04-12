@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { formatOffset, formatShiftTime } from "$lib/time";
 	import type { PageData } from "./$types";
+    import defaultPfp from "$lib/assets/default-pfp.svg";
 	let { data } = $props<{ data: PageData }>();
 
 	let selectedUserId = $state("");
@@ -156,17 +157,7 @@
 												<li
 													class="flex items-center gap-3 bg-muted/10 p-2 rounded-lg border border-transparent hover:border-border/50 transition-colors"
 												>
-                                                    {#if cw.imageUrl}
-                                                        <img src={cw.imageUrl} alt={cw.userName} class="shrink-0 w-7 h-7 rounded-sm object-cover border border-border/50 shadow-sm bg-muted/50" />
-                                                    {:else}
-                                                        <div
-                                                            class="shrink-0 w-7 h-7 rounded-sm bg-secondary/10 text-secondary flex items-center justify-center font-bold text-xs border border-secondary/20 shadow-sm"
-                                                        >
-                                                            {cw.userName
-                                                                .charAt(0)
-                                                                .toUpperCase()}
-                                                        </div>
-                                                    {/if}
+                                                    <img src={cw.imageUrl || defaultPfp} alt={cw.userName} class="shrink-0 w-7 h-7 rounded-sm object-cover border border-border/50 shadow-sm bg-muted/50" />
 													<div class="flex-1 min-w-0">
 														<p
 															class="font-bold text-foreground text-xs truncate"

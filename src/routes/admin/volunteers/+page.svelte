@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+    import defaultPfp from "$lib/assets/default-pfp.svg";
 	let { data, form } = $props();
 </script>
 
@@ -34,11 +35,7 @@
             {#each data.users as user}
                 <div class="flex justify-between items-center group p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-all">
                     <div class="flex items-center gap-3 flex-1 min-w-0">
-                        {#if user.imageUrl}
-                            <img src={user.imageUrl} alt={user.name} class="w-10 h-10 rounded-lg object-cover border border-border shadow-sm shrink-0 bg-muted/50" />
-                        {:else}
-                            <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary font-bold text-sm border border-secondary/20 shadow-sm shrink-0">{user.name.charAt(0).toUpperCase()}</div>
-                        {/if}
+                        <img src={user.imageUrl || defaultPfp} alt={user.name} class="w-10 h-10 rounded-lg object-cover border border-border shadow-sm shrink-0 bg-muted/50" />
                         <div class="flex flex-col min-w-0 flex-1">
                             <span class="font-bold text-foreground text-sm truncate">{user.name}</span>
                             <form method="POST" action="?/updateUser" use:enhance enctype="multipart/form-data" class="mt-1.5 flex items-center gap-2">
