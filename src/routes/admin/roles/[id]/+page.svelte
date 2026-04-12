@@ -239,7 +239,7 @@
         </div>
         <div class="space-y-1">
             <h4 class="text-xs font-bold text-foreground">
-                Tips för luckor i schemat
+                Tips: Luckor i schemat
             </h4>
             <p class="text-[10px] text-muted-foreground leading-relaxed">
                 Tidsluckor "Lucka i schemat" identifieras som perioder utan
@@ -247,9 +247,33 @@
                 hjälper dig att se till att dörrar aldrig lämnas obevakade!
             </p>
         </div>
+    </div>
+
+    <div
+        class="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 items-start"
+    >
+        <div
+            class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="text-primary"
+                ><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path
+                    d="M12 8h.01"
+                /></svg
+            >
+        </div>
         <div class="space-y-1">
             <h4 class="text-xs font-bold text-foreground">
-                Tips för överlapp i schemat
+                Tips: Överlapp i schemat
             </h4>
             <p class="text-[10px] text-muted-foreground leading-relaxed">
                 Överlapp i schemat markeras med en orange kant på passet för den

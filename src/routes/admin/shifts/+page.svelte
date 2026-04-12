@@ -11,12 +11,13 @@
 
     let { data, form } = $props<{ data: PageData; form: any }>();
 
-    function hasOverlap(shift: typeof data.shifts[0]) {
-        return data.shifts.some((s: any) => 
-            s.id !== shift.id && 
-            s.userId === shift.userId && 
-            s.startOffset < shift.endOffset && 
-            s.endOffset > shift.startOffset
+    function hasOverlap(shift: (typeof data.shifts)[0]) {
+        return data.shifts.some(
+            (s: any) =>
+                s.id !== shift.id &&
+                s.userId === shift.userId &&
+                s.startOffset < shift.endOffset &&
+                s.endOffset > shift.startOffset,
         );
     }
 </script>
@@ -198,11 +199,27 @@
                 </thead>
                 <tbody class="divide-y divide-border bg-card">
                     {#each data.shifts as shift (shift.id)}
-                        <tr class="hover:bg-muted/30 transition-colors {hasOverlap(shift) ? 'bg-red-950/20' : ''}">
-                            <td class="px-4 py-2 font-semibold {hasOverlap(shift) ? 'text-red-400' : 'text-foreground'}">
+                        <tr
+                            class="hover:bg-muted/30 transition-colors {hasOverlap(
+                                shift,
+                            )
+                                ? 'bg-red-950/20'
+                                : ''}"
+                        >
+                            <td
+                                class="px-4 py-2 font-semibold {hasOverlap(
+                                    shift,
+                                )
+                                    ? 'text-red-400'
+                                    : 'text-foreground'}"
+                            >
                                 {shift.userName}
                                 {#if hasOverlap(shift)}
-                                    <span class="ml-2 text-red-500 font-extrabold text-[9px] uppercase bg-red-950/60 px-1 py-0.5 rounded border border-red-900/50 shadow-sm" title="Krockar med ett annat arbetspass!">⚠️ Krock</span>
+                                    <span
+                                        class="ml-2 text-red-500 font-extrabold text-[9px] uppercase bg-red-950/60 px-1 py-0.5 rounded border border-red-900/50 shadow-sm"
+                                        title="Krockar med ett annat arbetspass!"
+                                        >⚠️ Krock</span
+                                    >
                                 {/if}
                             </td>
                             <td class="px-4 py-2 text-foreground font-medium">
@@ -215,20 +232,58 @@
                                     shift.endOffset,
                                 )}</td
                             >
-                            <td class="px-4 py-2 flex items-center justify-end gap-2 text-right">
-                                <form method="POST" action="?/updateShiftUser" use:enhance class="inline-flex items-center">
-                                    <input type="hidden" name="shiftId" value={shift.id} />
+                            <td
+                                class="px-4 py-2 flex items-center justify-end gap-2 text-right"
+                            >
+                                <form
+                                    method="POST"
+                                    action="?/updateShiftUser"
+                                    use:enhance
+                                    class="inline-flex items-center"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="shiftId"
+                                        value={shift.id}
+                                    />
                                     <div class="relative">
-                                        <select name="userId" onchange={(e) => e.currentTarget.form?.requestSubmit()} class="px-2 py-1 bg-secondary/10 text-secondary hover:bg-secondary/20 hover:text-secondary-foreground border border-secondary/20 rounded font-bold text-xs appearance-none outline-none focus:ring-1 focus:ring-primary cursor-pointer pr-6 transition-all" title="Byt volontär">
+                                        <select
+                                            name="userId"
+                                            onchange={(e) =>
+                                                e.currentTarget.form?.requestSubmit()}
+                                            class="px-2 py-1 bg-secondary/10 text-secondary hover:bg-secondary/20 hover:text-secondary-foreground border border-secondary/20 rounded font-bold text-xs appearance-none outline-none focus:ring-1 focus:ring-primary cursor-pointer pr-6 transition-all"
+                                            title="Byt volontär"
+                                        >
                                             {#each data.users as user}
                                                 {#if user.id === shift.userId}
-                                                    <option value={user.id} selected class="text-foreground bg-popover font-medium">{user.name}</option>
+                                                    <option
+                                                        value={user.id}
+                                                        selected
+                                                        class="text-foreground bg-popover font-medium"
+                                                        >{user.name}</option
+                                                    >
                                                 {:else}
-                                                    <option value={user.id} class="text-foreground bg-popover font-medium">{user.name}</option>
+                                                    <option
+                                                        value={user.id}
+                                                        class="text-foreground bg-popover font-medium"
+                                                        >{user.name}</option
+                                                    >
                                                 {/if}
                                             {/each}
                                         </select>
-                                        <svg class="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-secondary pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        <svg
+                                            class="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-secondary pointer-events-none"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            ><path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M19 9l-7 7-7-7"
+                                            ></path></svg
+                                        >
                                     </div>
                                 </form>
                                 <form
@@ -262,6 +317,74 @@
                     {/if}
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <div
+        class="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 items-start"
+    >
+        <div
+            class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="text-primary"
+                ><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path
+                    d="M12 8h.01"
+                /></svg
+            >
+        </div>
+        <div class="space-y-1">
+            <h4 class="text-xs font-bold text-foreground">
+                Tips: Se luckor i schemat
+            </h4>
+            <p class="text-[10px] text-muted-foreground leading-relaxed">
+                Gå till sidan "Roller" och välj den roll du vill visa alla
+                schemalagda pass för. Då kan du se luckor i schemat för just den
+                rollen.
+            </p>
+        </div>
+    </div>
+
+    <div
+        class="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 items-start"
+    >
+        <div
+            class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="text-primary"
+                ><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path
+                    d="M12 8h.01"
+                /></svg
+            >
+        </div>
+        <div class="space-y-1">
+            <h4 class="text-xs font-bold text-foreground">
+                Tips: Krock i schemat
+            </h4>
+            <p class="text-[10px] text-muted-foreground leading-relaxed">
+                En dubbelbokad volontär markeras med en röd text. Volotärer bör
+                inte vara schemalagda på flera pass samtidigt, om så krävs skapa
+                istället en ny roll som täcker uppdraget för den volontären.
+            </p>
         </div>
     </div>
 </div>
