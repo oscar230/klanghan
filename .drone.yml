@@ -15,11 +15,26 @@ steps:
     registry: ghcr.io
     repo: ghcr.io/oscar230/klanghan
     username:
-      from_secret: REGISTRY_USER
+      from_secret: registry_username
     password:
-      from_secret: REGISTRY_PASSWORD
+      from_secret: registry_password
   when:
     branch:
       - main
     event:
       - push
+
+- name: deploy
+  image: alpine:latest
+  environment:
+    WATCHTOWER_HOST:
+      from_secret: watchtower-host
+    WATCHTOWER_AUTH_TOKEN:
+      from_secret: watchtower-token
+  commands:
+    - apk add --no-cache curl
+    - |
+      curl -H "Authorization: Bearer $WATCHTOWER_AUTH_TOKEN" "https://$WATCHTOWER_HOST/v1/update"
+  when:
+    status:
+      - success
