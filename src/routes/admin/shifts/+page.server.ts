@@ -34,36 +34,41 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
     addShift: async ({ request }) => {
         const data = await request.formData();
+        
+        const getVal = (name: string) => data.get(name)?.toString() || '00';
+        const getDayVal = (name: string) => parseInt(data.get(name)?.toString() || '0');
+
         const userId = data.get('userId')?.toString();
         const roleId = data.get('roleId')?.toString();
-        const startDay = parseInt(data.get('startDay')?.toString() || '0');
-        const startHour = data.get('startHour')?.toString() || '00';
-        const startMinute = data.get('startMinute')?.toString() || '00';
-        const startTime = `${startHour}:${startMinute}`;
-
-        const endDay = parseInt(data.get('endDay')?.toString() || '0');
-        const endHour = data.get('endHour')?.toString() || '00';
-        const endMinute = data.get('endMinute')?.toString() || '00';
-        const endTime = `${endHour}:${endMinute}`;
         
-        if (!userId || !roleId || !startTime || !endTime) {
-            return fail(400, { error: 'Alla fält krävs' });
+        if (!userId || !roleId) {
+            return fail(400, { error: 'Volontär och roll krävs' });
         }
+
+        // Parse start and end times
+        const startTime = `${getVal('startHour')}:${getVal('startMinute')}`;
+        const endTime = `${getVal('endHour')}:${getVal('endMinute')}`;
         
-        const startOffset = parseOffset(startDay, startTime);
-        const endOffset = parseOffset(endDay, endTime);
+        const startOffset = parseOffset(getDayVal('startDay'), startTime);
+        const endOffset = parseOffset(getDayVal('endDay'), endTime);
         
         if (endOffset <= startOffset) {
              return fail(400, { error: 'Sluttid måste vara efter starttid' });
         }
         
-        await db.insert(shifts).values({
-            userId,
-            roleId,
-            startOffset,
-            endOffset
-        });
+        try {
+            await db.insert(shifts).values({
+                userId,
+                roleId,
+                startOffset,
+                endOffset
+            });
+        } catch (e) {
+            console.error('Failed to add shift', e);
+            return fail(500, { error: 'Misslyckades att spara arbetspasset' });
+        }
     },
+
     
     deleteShift: async ({ request }) => {
         const data = await request.formData();

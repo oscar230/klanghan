@@ -22,10 +22,12 @@ export const db = drizzle(sqlite, { schema });
 export const runMigrations = async () => {
 	console.log('Running automatic SQLite schemas migrations...');
 	try {
-	    // SQLite migrate is synchronous in better-sqlite3, but wrapper handles it
-	    migrate(db, { migrationsFolder: './drizzle' });
+	    // Ensure we use an absolute path for Docker and bundled environments
+	    const migrationsPath = path.resolve(process.cwd(), 'drizzle');
+	    migrate(db, { migrationsFolder: migrationsPath });
 	    console.log('Migrations complete.');
 	} catch (e) {
 	    console.error('Failed to run migrations', e);
 	}
 };
+

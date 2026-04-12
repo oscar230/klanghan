@@ -7,16 +7,22 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const password = data.get('password');
 		
-		if (password === env.ADMIN_PASSWORD) {
+		if (!env.ADMIN_PASSWORD) {
+			return fail(500, { error: 'Server misconfigured: ADMIN_PASSWORD not set' });
+		}
+
+		if (password === env.ADMIN_PASSWORD && env.ADMIN_PASSWORD !== '') {
 			cookies.set('admin_auth', 'true', {
 				path: '/',
 				httpOnly: true,
-				secure: import.meta.env.PROD,
+				secure: !import.meta.env.DEV,
+				sameSite: 'lax',
 				maxAge: 60 * 60 * 24 * 7 // 1 week
 			});
 			throw redirect(303, '/admin');
 		}
 
-		return fail(401, { error: 'Invalid password' });
+		return fail(401, { error: 'Ogiltigt lösenord' });
 	}
 };
+
