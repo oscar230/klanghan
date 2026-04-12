@@ -1,11 +1,22 @@
 import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { roles } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { roles, shifts } from '$lib/server/db/schema';
+import { eq, sql } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	const allRoles = await db.select().from(roles).orderBy(roles.name);
+	const allRoles = await db
+        .select({
+            id: roles.id,
+            name: roles.name,
+            description: roles.description,
+            shiftCount: sql<number>`count(${shifts.id})`
+        })
+        .from(roles)
+        .leftJoin(shifts, eq(roles.id, shifts.roleId))
+        .groupBy(roles.id)
+        .orderBy(roles.name);
+
 	return { roles: allRoles };
 };
 
@@ -29,8 +40,16 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const id = data.get('id')?.toString();
 		if (!id) return fail(400, { error: 'ID krävs' });
+
+        // Protection: Check if role is in use
+        const roleShifts = await db.select().from(shifts).where(eq(shifts.roleId, id)).limit(1);
+        if (roleShifts.length > 0) {
+            return fail(400, { error: 'Kan inte ta bort en roll som har inbokade arbetspass' });
+        }
+
 		await db.delete(roles).where(eq(roles.id, id));
 	},
+
     updateRole: async ({ request }) => {
 		const data = await request.formData();
 		const id = data.get('id')?.toString();

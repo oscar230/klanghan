@@ -186,6 +186,20 @@
             {/if}
         </div>
 	</div>
+
+    <div class="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 items-start animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </div>
+        <div class="space-y-1">
+            <h4 class="text-xs font-bold text-foreground">Administrativt tips</h4>
+            <p class="text-[10px] text-muted-foreground leading-relaxed">
+                För att hålla festivalets schema stabilt kan du inte ta bort roller eller volontärer som har inbokade arbetspass. 
+                Om du absolut behöver ta bort något, se till att först ta bort eller flytta deras pass i schemat.
+            </p>
+        </div>
+    </div>
 </div>
+
 
 

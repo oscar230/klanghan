@@ -82,7 +82,10 @@
                 {:else}
                     <div class="flex justify-between items-start group p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-all relative">
                         <div class="flex flex-col gap-0.5 max-w-[70%]">
-                            <span class="font-medium text-foreground text-xs">{role.name}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-foreground text-xs">{role.name}</span>
+                                <span class="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">{role.shiftCount} pass</span>
+                            </div>
                             {#if role.description}
                                 <p class="text-[10px] text-muted-foreground leading-snug break-words">{role.description}</p>
                             {/if}
@@ -99,7 +102,11 @@
                             </button>
                             <form method="POST" action="?/deleteRole" use:enhance>
                                 <input type="hidden" name="id" value={role.id} />
-                                <button class="flex items-center gap-2 px-3 py-1.5 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-lg transition-all shadow-sm border border-secondary/10">
+                                <button 
+                                    disabled={role.shiftCount > 0}
+                                    class="flex items-center gap-2 px-3 py-1.5 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-lg transition-all shadow-sm border border-secondary/10 disabled:opacity-20"
+                                    title={role.shiftCount > 0 ? "Kan inte ta bort roll med arbetspass" : "Ta bort roll"}
+                                >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                                     <span class="text-[10px] font-bold uppercase tracking-wider">Ta bort</span>
                                 </button>
@@ -126,7 +133,10 @@
                                     </button>
                                     <form method="POST" action="?/deleteRole" use:enhance>
                                         <input type="hidden" name="id" value={role.id} />
-                                        <button class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted rounded-lg text-xs font-bold text-secondary transition-colors text-left uppercase">
+                                        <button 
+                                            disabled={role.shiftCount > 0}
+                                            class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted rounded-lg text-xs font-bold text-secondary transition-colors text-left uppercase disabled:opacity-30"
+                                        >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                                             Ta bort
                                         </button>
@@ -145,6 +155,20 @@
             {/if}
         </div>
 	</div>
+
+    <div class="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 items-start animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </div>
+        <div class="space-y-1">
+            <h4 class="text-xs font-bold text-foreground">Administrativt tips</h4>
+            <p class="text-[10px] text-muted-foreground leading-relaxed">
+                För att hålla festivalets schema stabilt kan du inte ta bort roller eller volontärer som har inbokade arbetspass. 
+                Om du absolut behöver ta bort något, se till att först ta bort eller flytta deras pass i schemat.
+            </p>
+        </div>
+    </div>
 </div>
+
 
 
