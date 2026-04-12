@@ -38,13 +38,12 @@ export const load: PageServerLoad = async ({ params }) => {
         if (dayShifts.length === 0) return { dayName, items: [] };
 
         const items: any[] = [];
-        let lastEnd = -1;
-
-        // Sort by startOffset just in case, though the query orders them
         const sortedShifts = [...dayShifts].sort((a, b) => a.startOffset - b.startOffset);
 
+        let lastEnd = -1;
+
         for (const shift of sortedShifts) {
-            // If this is the first shift or there's a gap
+            // Only insert a gap if there is NO coverage at all between shifts
             if (lastEnd !== -1 && shift.startOffset > lastEnd) {
                 items.push({
                     type: 'gap',
@@ -53,8 +52,11 @@ export const load: PageServerLoad = async ({ params }) => {
                 });
             }
             
+            const isOverlap = lastEnd !== -1 && shift.startOffset < lastEnd;
+
             items.push({
                 type: 'shift',
+                isOverlap,
                 ...shift
             });
 
