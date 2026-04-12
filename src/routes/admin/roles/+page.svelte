@@ -34,11 +34,9 @@
 	<div class="bg-card border border-border rounded shadow-sm">
 		<div class="p-3 border-b border-border/50 bg-muted/20">
 			<form method="POST" action="?/addRole" use:enhance class="flex flex-col gap-3">
-                <div class="flex flex-col sm:flex-row gap-2">
-				    <input type="text" name="name" placeholder="Ny roll" required class="flex-1 px-3 py-1.5 bg-input border border-input-border text-foreground rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-muted-foreground text-xs" />
-				    <button class="px-4 py-1.5 bg-primary text-primary-foreground font-bold rounded hover:opacity-90 transition-opacity text-xs whitespace-nowrap">Lägg till roll</button>
-                </div>
+				<input type="text" name="name" placeholder="Ny roll" required class="w-full px-3 py-1.5 bg-input border border-input-border text-foreground rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-muted-foreground text-xs font-medium" />
                 <textarea name="description" placeholder="Beskrivning av rollen (frivilligt)" rows="2" class="w-full px-3 py-1.5 bg-input border border-input-border text-foreground rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-muted-foreground text-xs"></textarea>
+				<button class="w-full sm:w-auto px-6 py-2 bg-primary text-primary-foreground font-bold rounded hover:opacity-90 transition-opacity text-xs self-end">Lägg till roll</button>
 			</form>
 		</div>
         <div class="p-2 space-y-1 max-h-[500px] overflow-y-auto">
