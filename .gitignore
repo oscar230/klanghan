@@ -24,4 +24,5 @@ vite.config.ts.timestamp-*
 
 # Database
 data/*.db
-data/sqlite.db
+data/*.db-shm
+data/*.db-wal
