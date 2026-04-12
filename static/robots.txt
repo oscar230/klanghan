@@ -1,3 +1,4 @@
-# allow crawling everything by default
+# Disallow all crawling to keep the site private
 User-agent: *
-Disallow:
+Disallow: /
+
