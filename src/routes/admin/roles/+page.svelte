@@ -93,6 +93,14 @@
                         
                         <!-- Desktop Actions -->
                         <div class="hidden sm:flex gap-2 items-center">
+                            <a 
+                                href="/admin/roles/{role.id}"
+                                class="flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground rounded-lg transition-all shadow-sm border border-border"
+                                title="Visa schema"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                <span class="text-[10px] font-bold uppercase tracking-wider">Visa schema</span>
+                            </a>
                             <button 
                                 onclick={() => editingId = role.id}
                                 class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all shadow-sm border border-primary/10"
@@ -123,7 +131,14 @@
                             </button>
 
                             {#if activeMenuId === role.id}
-                                <div class="absolute right-0 top-12 z-50 w-40 bg-card border border-border rounded-xl shadow-xl p-2 space-y-1 animate-in fade-in zoom-in duration-100 origin-top-right backdrop-blur-md">
+                                <div class="absolute right-0 top-12 z-50 w-44 bg-card border border-border rounded-xl shadow-xl p-2 space-y-1 animate-in fade-in zoom-in duration-100 origin-top-right backdrop-blur-md">
+                                    <a 
+                                        href="/admin/roles/{role.id}"
+                                        class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                        Visa schema
+                                    </a>
                                     <button 
                                         onclick={() => { editingId = role.id; activeMenuId = null; }}
                                         class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted rounded-lg text-xs font-bold text-primary transition-colors"
