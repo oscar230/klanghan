@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	let { data, form } = $props();
+
+    let editingId = $state<string | null>(null);
 </script>
 
 <svelte:head>
@@ -29,20 +31,68 @@
                 <textarea name="description" placeholder="Beskrivning av rollen (frivilligt)" rows="2" class="w-full px-3 py-1.5 bg-input border border-input-border text-foreground rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-muted-foreground text-xs"></textarea>
 			</form>
 		</div>
-        <div class="p-2 space-y-1 max-h-96 overflow-y-auto">
+        <div class="p-2 space-y-1 max-h-[500px] overflow-y-auto">
             {#each data.roles as role}
-                <div class="flex justify-between items-start group p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-all">
-                    <div class="flex flex-col gap-0.5 max-w-[80%]">
-                        <span class="font-medium text-foreground text-xs">{role.name}</span>
-                        {#if role.description}
-                            <p class="text-[10px] text-muted-foreground leading-snug">{role.description}</p>
-                        {/if}
+                {#if editingId === role.id}
+                    <div class="p-3 bg-muted/30 rounded border border-primary/30 animate-in fade-in duration-200">
+                        <form method="POST" action="?/updateRole" use:enhance={() => {
+                            editingId = null;
+                            return async ({ update }) => {
+                                await update();
+                            }
+                        }} class="space-y-2">
+                            <input type="hidden" name="id" value={role.id} />
+                            <input 
+                                type="text" 
+                                name="name" 
+                                value={role.name} 
+                                required 
+                                class="w-full px-3 py-1.5 bg-input border border-input-border text-foreground rounded focus:ring-1 focus:ring-primary outline-none text-xs font-bold"
+                            />
+                            <textarea 
+                                name="description" 
+                                value={role.description} 
+                                rows="3"
+                                class="w-full px-3 py-1.5 bg-input border border-input-border text-foreground rounded focus:ring-1 focus:ring-primary outline-none text-xs leading-snug"
+                            ></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button 
+                                    type="button" 
+                                    onclick={() => editingId = null}
+                                    class="px-3 py-1 text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    Avbryt
+                                </button>
+                                <button 
+                                    class="px-3 py-1 bg-primary text-primary-foreground font-bold rounded text-[10px] hover:opacity-90 transition-opacity"
+                                >
+                                    Spara ändringar
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    <form method="POST" action="?/deleteRole" use:enhance class="mt-0.5">
-                        <input type="hidden" name="id" value={role.id} />
-                        <button class="text-secondary hover:text-secondary-foreground text-[10px] font-bold px-2 py-1 hover:bg-secondary/20 rounded transition-all whitespace-nowrap">Ta bort</button>
-                    </form>
-                </div>
+                {:else}
+                    <div class="flex justify-between items-start group p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-all">
+                        <div class="flex flex-col gap-0.5 max-w-[70%]">
+                            <span class="font-medium text-foreground text-xs">{role.name}</span>
+                            {#if role.description}
+                                <p class="text-[10px] text-muted-foreground leading-snug break-words">{role.description}</p>
+                            {/if}
+                        </div>
+                        <div class="flex gap-1 items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                                onclick={() => editingId = role.id}
+                                class="text-primary hover:text-primary-foreground text-[10px] font-bold px-2 py-1 hover:bg-primary/20 rounded transition-all whitespace-nowrap"
+                            >
+                                Ändra
+                            </button>
+                            <form method="POST" action="?/deleteRole" use:enhance>
+                                <input type="hidden" name="id" value={role.id} />
+                                <button class="text-secondary hover:text-secondary-foreground text-[10px] font-bold px-2 py-1 hover:bg-secondary/20 rounded transition-all whitespace-nowrap">Ta bort</button>
+                            </form>
+                        </div>
+                    </div>
+                {/if}
             {/each}
             
             {#if data.roles.length === 0}
@@ -53,3 +103,4 @@
         </div>
 	</div>
 </div>
+

@@ -30,5 +30,24 @@ export const actions: Actions = {
 		const id = data.get('id')?.toString();
 		if (!id) return fail(400, { error: 'ID krävs' });
 		await db.delete(roles).where(eq(roles.id, id));
-	}
+	},
+    updateRole: async ({ request }) => {
+		const data = await request.formData();
+		const id = data.get('id')?.toString();
+        const name = data.get('name')?.toString();
+        const description = data.get('description')?.toString() || null;
+        
+		if (!id || !name) return fail(400, { error: 'ID och namn krävs' });
+		
+        try {
+            await db.update(roles)
+                .set({ name, description })
+                .where(eq(roles.id, id));
+        } catch (e: any) {
+            if (e.message && e.message.includes('UNIQUE constraint failed')) {
+                return fail(400, { error: 'En roll med det namnet finns redan' });
+            }
+			return fail(400, { error: 'Misslyckades att uppdatera roll' });
+        }
+    }
 };

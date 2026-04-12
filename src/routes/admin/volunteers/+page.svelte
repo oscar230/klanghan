@@ -21,31 +21,34 @@
 
 	<div class="bg-card border border-border rounded shadow-sm">
 		<div class="p-3 border-b border-border/50 bg-muted/20">
-			<form method="POST" action="?/addUser" use:enhance class="flex gap-2">
-				<input type="text" name="name" placeholder="Ny volontärs namn" required class="w-1/2 px-3 py-1.5 bg-input border border-input-border text-foreground rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-muted-foreground text-xs" />
-                <input type="url" name="imageUrl" placeholder="Bild-URL (frivilligt)" class="flex-1 px-3 py-1.5 bg-input border border-input-border text-foreground rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-muted-foreground text-xs" />
-				<button class="px-4 py-1.5 bg-primary text-primary-foreground font-bold rounded hover:opacity-90 transition-opacity text-xs">Lägg till</button>
+			<form method="POST" action="?/addUser" use:enhance enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-3">
+				<input type="text" name="name" placeholder="Ny volontärs namn" required class="flex-1 px-3 py-1.5 bg-input border border-input-border text-foreground rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-muted-foreground text-xs" />
+                <div class="flex-1 flex items-center gap-2">
+                    <label class="text-[10px] font-bold text-muted-foreground uppercase whitespace-nowrap">Profilbild:</label>
+                    <input type="file" name="imageFile" accept="image/*" class="flex-1 text-[10px] text-muted-foreground file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/30" />
+                </div>
+				<button class="px-4 py-1.5 bg-primary text-primary-foreground font-bold rounded hover:opacity-90 transition-opacity text-xs whitespace-nowrap">Lägg till</button>
 			</form>
 		</div>
-        <div class="p-2 space-y-1 max-h-96 overflow-y-auto">
+        <div class="p-2 space-y-1 max-h-[500px] overflow-y-auto">
             {#each data.users as user}
                 <div class="flex justify-between items-center group p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-all">
                     <div class="flex items-center gap-3 flex-1 min-w-0">
                         {#if user.imageUrl}
-                            <img src={user.imageUrl} alt={user.name} class="w-8 h-8 rounded-full object-cover border border-border shadow-sm shrink-0" />
+                            <img src={user.imageUrl} alt={user.name} class="w-10 h-10 rounded-lg object-cover border border-border shadow-sm shrink-0 bg-muted/50" />
                         {:else}
-                            <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold text-xs border border-secondary/20 shadow-sm shrink-0">{user.name.charAt(0).toUpperCase()}</div>
+                            <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary font-bold text-sm border border-secondary/20 shadow-sm shrink-0">{user.name.charAt(0).toUpperCase()}</div>
                         {/if}
                         <div class="flex flex-col min-w-0 flex-1">
-                            <span class="font-bold text-foreground text-xs truncate">{user.name}</span>
-                            <form method="POST" action="?/updateUser" use:enhance class="mt-1 flex items-center gap-2">
+                            <span class="font-bold text-foreground text-sm truncate">{user.name}</span>
+                            <form method="POST" action="?/updateUser" use:enhance enctype="multipart/form-data" class="mt-1.5 flex items-center gap-2">
                                 <input type="hidden" name="id" value={user.id} />
+                                <label class="text-[9px] font-bold text-muted-foreground/60 uppercase whitespace-nowrap">Uppdatera bild:</label>
                                 <input 
-                                    type="url" 
-                                    name="imageUrl" 
-                                    value={user.imageUrl || ''} 
-                                    placeholder="Ändra bild-URL" 
-                                    class="flex-1 bg-transparent border-none p-0 text-[10px] text-muted-foreground focus:ring-0 placeholder:text-muted-foreground/50 h-auto"
+                                    type="file" 
+                                    name="imageFile" 
+                                    accept="image/*"
+                                    class="text-[9px] text-muted-foreground/50 file:mr-1.5 file:py-0.5 file:px-1.5 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-muted file:text-muted-foreground hover:file:bg-border transition-all"
                                     onchange={(e) => e.currentTarget.form?.requestSubmit()}
                                 />
                             </form>
@@ -56,21 +59,25 @@
                             <div class="text-[9px] font-bold text-amber-500 uppercase bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20" title="Har inbokade pass">
                                 {user.shiftCount} pass
                             </div>
+                        {:else}
+                            <form method="POST" action="?/deleteUser" use:enhance>
+                                <input type="hidden" name="id" value={user.id} />
+                                <button 
+                                    class="text-secondary hover:text-secondary-foreground text-[10px] font-bold px-2 py-1 hover:bg-secondary/20 rounded transition-all whitespace-nowrap"
+                                    title="Ta bort volontär"
+                                >
+                                    Ta bort
+                                </button>
+                            </form>
                         {/if}
-                        <form method="POST" action="?/deleteUser" use:enhance>
-                            <input type="hidden" name="id" value={user.id} />
-                            <button 
-                                disabled={user.shiftCount > 0}
-                                class="text-secondary hover:text-secondary-foreground text-[10px] font-bold px-2 py-1 hover:bg-secondary/20 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-                                title={user.shiftCount > 0 ? "Kan inte ta bort volontär med arbetspass" : "Ta bort volontär"}
-                            >
-                                Ta bort
-                            </button>
-                        </form>
                     </div>
                 </div>
             {/each}
             
+            {#each Array(Math.max(0, 3 - data.users.length)).fill(0) as _}
+                <div class="h-12 invisible"></div>
+            {/each}
+
             {#if data.users.length === 0}
                 <div class="text-center py-6 text-muted-foreground border border-dashed border-border/50 rounded text-xs">
                     Inga volontärer hittades.
@@ -79,3 +86,4 @@
         </div>
 	</div>
 </div>
+

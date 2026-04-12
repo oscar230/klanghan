@@ -12,7 +12,7 @@
 	const getCoworkers = (shift: (typeof data.shifts)[0]) => {
 		return data.shifts.filter(
 			(s: any) =>
-				s.id !== shift.id &&
+				s.userId !== selectedUserId &&
 				s.startOffset < shift.endOffset &&
 				s.endOffset > shift.startOffset,
 		);
