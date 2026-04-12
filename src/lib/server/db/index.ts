@@ -17,7 +17,11 @@ if (dbPath !== ':memory:') {
 }
 
 const sqlite = new Database(dbPath);
+sqlite.pragma('journal_mode = WAL');
+sqlite.pragma('busy_timeout = 5000');
+
 export const db = drizzle(sqlite, { schema });
+
 
 export const runMigrations = async () => {
 	console.log('Running automatic SQLite schemas migrations...');
