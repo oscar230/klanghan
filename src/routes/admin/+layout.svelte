@@ -48,8 +48,8 @@
 	</header>
 
 	<!-- Main Content -->
-	<main class="flex-1 p-4 overflow-y-auto">
-		<div class="max-w-6xl mx-auto w-full">
+	<main class="flex-1 p-4 lg:p-6 2xl:px-10 overflow-y-auto">
+		<div class="w-full max-w-[120rem] mx-auto">
 			{@render children()}
 		</div>
 	</main>

@@ -40,7 +40,7 @@
     <title>Volontärer - Administratör</title>
 </svelte:head>
 
-<div class="space-y-4 max-w-2xl">
+<div class="space-y-4">
     <div>
         <h2 class="text-xl font-bold text-foreground tracking-tight">
             Volontärer
@@ -123,7 +123,7 @@
                 >
             </form>
         </div>
-        <div class="p-2 space-y-1 max-h-[500px] overflow-y-auto">
+        <div class="p-2 grid content-start gap-1 lg:grid-cols-2 2xl:grid-cols-3 max-h-[500px] lg:max-h-[calc(100vh-18rem)] overflow-y-auto">
             {#each data.users as user}
                 <div
                     class="flex justify-between items-center group p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-all relative"
@@ -481,13 +481,9 @@
                 </div>
             {/each}
 
-            {#each Array(Math.max(0, 3 - data.users.length)).fill(0) as _}
-                <div class="h-12 invisible"></div>
-            {/each}
-
             {#if data.users.length === 0}
                 <div
-                    class="text-center py-6 text-muted-foreground border border-dashed border-border/50 rounded text-xs"
+                    class="col-span-full text-center py-6 text-muted-foreground border border-dashed border-border/50 rounded text-xs"
                 >
                     Inga volontärer hittades.
                 </div>

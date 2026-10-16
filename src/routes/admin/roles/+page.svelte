@@ -18,7 +18,7 @@
     <title>Roller - Administratör</title>
 </svelte:head>
 
-<div class="space-y-4 max-w-2xl">
+<div class="space-y-4">
     <div>
         <h2 class="text-xl font-bold text-foreground tracking-tight">Roller</h2>
         <p class="text-muted-foreground mt-0.5 text-xs">
@@ -61,7 +61,7 @@
                 >
             </form>
         </div>
-        <div class="p-2 space-y-1 max-h-[500px] overflow-y-auto">
+        <div class="p-2 grid content-start gap-1 lg:grid-cols-2 2xl:grid-cols-3 max-h-[500px] lg:max-h-[calc(100vh-18rem)] overflow-y-auto">
             {#each data.roles as role}
                 {#if editingId === role.id}
                     <div
@@ -400,7 +400,7 @@
 
             {#if data.roles.length === 0}
                 <div
-                    class="text-center py-6 text-muted-foreground border border-dashed border-border/50 rounded text-xs"
+                    class="col-span-full text-center py-6 text-muted-foreground border border-dashed border-border/50 rounded text-xs"
                 >
                     Inga roller hittades.
                 </div>

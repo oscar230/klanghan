@@ -320,6 +320,7 @@
         </div>
     </div>
 
+    <div class="grid gap-4 lg:grid-cols-2">
     <div
         class="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 items-start"
     >
@@ -386,5 +387,6 @@
                 istället en ny roll som täcker uppdraget för den volontären.
             </p>
         </div>
+    </div>
     </div>
 </div>

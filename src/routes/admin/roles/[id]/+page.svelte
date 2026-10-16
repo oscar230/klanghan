@@ -8,7 +8,7 @@
     <title>{data.role.name} - Schema</title>
 </svelte:head>
 
-<div class="space-y-6 max-w-2xl px-1">
+<div class="space-y-6 px-1">
     <div class="flex items-center justify-between">
         <div>
             <h2 class="text-xl font-bold text-foreground tracking-tight">
@@ -74,7 +74,7 @@
             </p>
         </div>
     {:else}
-        <div class="space-y-8">
+        <div class="grid gap-8 lg:grid-cols-2 2xl:grid-cols-3 items-start">
             {#each data.days as day}
                 <div class="space-y-3">
                     <h3
