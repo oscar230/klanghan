@@ -2,14 +2,26 @@
     import { enhance } from "$app/forms";
     import defaultPfp from "$lib/assets/default-pfp.svg";
     import { SvelteSet } from "svelte/reactivity";
+    import { downscaleImage } from "$lib/resizeImage";
     let { data, form } = $props();
 
     let newUserFileName = $state("");
     let uploadingIds = new SvelteSet<string>();
     let activeMenuId = $state<string | null>(null);
 
-    const handleFileChange = (e: Event, id: string | null = null) => {
+    const handleFileChange = async (e: Event, id: string | null = null) => {
         const input = e.target as HTMLInputElement;
+        const original = input.files?.[0];
+        if (original) {
+            if (id !== null) uploadingIds.add(id);
+            // Keep uploads small (Lambda payload limit); never throws.
+            const resized = await downscaleImage(original);
+            if (resized !== original) {
+                const dt = new DataTransfer();
+                dt.items.add(resized);
+                input.files = dt.files;
+            }
+        }
         const fileName = input.files?.[0]?.name || "";
         if (id === null) {
             newUserFileName = fileName;

@@ -89,7 +89,7 @@
                     >
                         {#each day.items as item}
                             <div
-                                class="relative z-10 {item.isOverlap
+                                class="relative z-10 {item.type === "shift" && item.isOverlap
                                     ? '-mt-3'
                                     : ''}"
                             >
@@ -167,7 +167,7 @@
                                     >
                                         <div class="flex items-center gap-4">
                                             <img
-                                                src={item.userImageUrl ||
+                                                src={item.imageUrl ||
                                                     defaultPfp}
                                                 alt={item.userName}
                                                 class="w-10 h-10 rounded-lg object-cover border border-border shadow-sm bg-muted/50"

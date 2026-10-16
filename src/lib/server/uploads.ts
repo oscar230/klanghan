@@ -1,11 +1,9 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import type { Store } from './store/types';
 
-export const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads');
-export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
-
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Lambda caps a request at 6 MB including base64 overhead, which leaves about 4.5 MB of
+// file. The admin UI downscales photos in the browser, so this is only a backstop.
+export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 export class UploadError extends Error {}
 
@@ -32,25 +30,17 @@ function sniffImage(b: Buffer): ImageType | null {
 	return null;
 }
 
-const MIME_BY_EXT: Record<string, string> = {
-	'.png': 'image/png',
-	'.jpg': 'image/jpeg',
-	'.jpeg': 'image/jpeg',
-	'.gif': 'image/gif',
-	'.webp': 'image/webp'
-};
-
-export const mimeForFile = (fileName: string): string | undefined =>
-	MIME_BY_EXT[path.extname(fileName).toLowerCase()];
-
 /**
  * Stores an uploaded image and returns its public URL, or null when no file
  * was submitted. Throws UploadError for files that are too large or not images.
  */
-export async function saveImage(file: FormDataEntryValue | null): Promise<string | null> {
+export async function saveImage(
+	store: Store,
+	file: FormDataEntryValue | null
+): Promise<string | null> {
 	if (!(file instanceof File) || file.size === 0) return null;
 	if (file.size > MAX_UPLOAD_BYTES) {
-		throw new UploadError('Bilden är för stor (max 5 MB)');
+		throw new UploadError('Bilden är för stor (max 4 MB)');
 	}
 
 	const buffer = Buffer.from(await file.arrayBuffer());
@@ -60,17 +50,16 @@ export async function saveImage(file: FormDataEntryValue | null): Promise<string
 	}
 
 	const fileName = `${randomUUID()}${type.ext}`;
-	await fs.promises.writeFile(path.join(UPLOAD_DIR, fileName), buffer);
+	await store.putImage(fileName, buffer, type.mime);
 	return `/uploads/${fileName}`;
 }
 
-export function deleteImageFile(imageUrl: string | null | undefined): void {
-	if (!imageUrl || !imageUrl.startsWith('/uploads/')) return;
-
-	const filePath = path.join(UPLOAD_DIR, path.basename(imageUrl));
+/** Best effort: a leftover file is harmless, a failed request is not. */
+export async function deleteImageFile(store: Store, imageUrl: string | null | undefined) {
+	if (!imageUrl?.startsWith('/uploads/')) return;
 	try {
-		fs.rmSync(filePath, { force: true });
+		await store.deleteImage(imageUrl.slice('/uploads/'.length));
 	} catch (e) {
-		console.error(`Failed to delete image file: ${filePath}`, e);
+		console.error(`Failed to delete image ${imageUrl}`, e);
 	}
 }
