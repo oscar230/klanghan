@@ -1,10 +1,32 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { formatOffset, formatShiftTime } from "$lib/time";
 	import type { PageData } from "./$types";
     import defaultPfp from "$lib/assets/default-pfp.svg";
 	let { data }: { data: PageData } = $props();
 
+	const STORAGE_KEY = "klanghan:selectedUserId";
 	let selectedUserId = $state("");
+
+	// Remember who the visitor is, so returning to the schedule is one tap.
+	onMount(() => {
+		try {
+			const saved = localStorage.getItem(STORAGE_KEY);
+			if (saved && data.users.some((u: { id: string }) => u.id === saved)) {
+				selectedUserId = saved;
+			}
+		} catch {
+			// Storage can be unavailable (private mode); the selection just won't persist.
+		}
+	});
+
+	const rememberSelection = () => {
+		try {
+			if (selectedUserId) localStorage.setItem(STORAGE_KEY, selectedUserId);
+		} catch {
+			// ignore
+		}
+	};
 
 	let myShifts = $derived(
 		data.shifts.filter((s: any) => s.userId === selectedUserId),
@@ -48,14 +70,14 @@
 			</div>
 			<a
 				href="/admin"
-				class="px-3 py-1.5 bg-card/80 backdrop-blur-sm text-primary font-bold rounded shadow-sm border border-border hover:bg-muted hover:border-primary/50 transition-all text-[11px] uppercase tracking-wider"
+				class="px-3 py-2 sm:py-1.5 bg-card/80 backdrop-blur-sm text-primary font-bold rounded shadow-sm border border-border hover:bg-muted hover:border-primary/50 transition-all text-[11px] uppercase tracking-wider"
 			>
 				Administratör
 			</a>
 		</div>
 
 		<div
-			class="bg-card/80 backdrop-blur-md p-4 rounded-xl shadow-md border border-border flex items-center gap-4"
+			class="bg-card/80 backdrop-blur-md p-4 rounded-xl shadow-md border border-border flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
 		>
 			<label
 				for="volunteer-select"
@@ -65,7 +87,8 @@
 			<select
 				id="volunteer-select"
 				bind:value={selectedUserId}
-				class="w-full sm:w-72 px-3 py-2 bg-input/80 border border-input-border text-foreground rounded-md focus:ring-1 focus:ring-primary outline-none transition-all cursor-pointer font-medium shadow-inner text-sm"
+				onchange={rememberSelection}
+				class="w-full sm:w-72 px-3 py-2.5 sm:py-2 bg-input/80 border border-input-border text-foreground rounded-md focus:ring-1 focus:ring-primary outline-none transition-all cursor-pointer font-medium shadow-inner text-base sm:text-sm"
 			>
 				<option value="" disabled selected>Välj ditt namn...</option>
 				{#each data.users as user}
@@ -110,17 +133,17 @@
 								>
 									<div class="inline-flex flex-col mb-3">
                                         <div
-                                            class="inline-flex items-center self-start px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 tracking-wide truncate max-w-full"
+                                            class="inline-flex items-center self-start px-2 py-0.5 rounded text-xs sm:text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 tracking-wide truncate max-w-full"
                                         >
                                             {shift.roleName}
                                         </div>
                                         {#if shift.roleDescription}
-                                            <p class="text-[10px] text-muted-foreground mt-1.5 leading-snug max-w-full italic pr-2">"{shift.roleDescription}"</p>
+                                            <p class="text-xs sm:text-[10px] text-muted-foreground mt-1.5 leading-snug max-w-full italic pr-2">"{shift.roleDescription}"</p>
                                         {/if}
                                     </div>
 									<div class="space-y-0.5">
 										<p
-											class="text-muted-foreground text-[9px] font-bold uppercase tracking-widest"
+											class="text-muted-foreground text-[10px] sm:text-[9px] font-bold uppercase tracking-widest"
 										>
 											Arbetspass
 										</p>
@@ -137,7 +160,7 @@
 
 								<div class="flex-1">
 									<h3
-										class="text-[9px] font-bold text-secondary uppercase tracking-widest mb-3"
+										class="text-[10px] sm:text-[9px] font-bold text-secondary uppercase tracking-widest mb-3"
 									>
 										Arbetar med
 									</h3>
@@ -157,15 +180,15 @@
 												<li
 													class="flex items-center gap-3 bg-muted/10 p-2 rounded-lg border border-transparent hover:border-border/50 transition-colors"
 												>
-                                                    <img src={cw.imageUrl || defaultPfp} alt={cw.userName} class="shrink-0 w-7 h-7 rounded-sm object-cover border border-border/50 shadow-sm bg-muted/50" />
+                                                    <img src={cw.imageUrl || defaultPfp} alt="" loading="lazy" class="shrink-0 w-9 h-9 sm:w-7 sm:h-7 rounded-sm object-cover border border-border/50 shadow-sm bg-muted/50" />
 													<div class="flex-1 min-w-0">
 														<p
-															class="font-bold text-foreground text-xs truncate"
+															class="font-bold text-foreground text-sm sm:text-xs truncate"
 														>
 															{cw.userName}
 														</p>
 														<p
-															class="text-[10px] text-muted-foreground font-medium mt-0.5 truncate"
+															class="text-xs sm:text-[10px] text-muted-foreground font-medium mt-0.5 truncate"
 														>
 															{cw.roleName}
 															<span
