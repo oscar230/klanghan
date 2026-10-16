@@ -1,68 +1,63 @@
 # KlangHan
 
-Volunteer scheduling for Klanglandet. Visitors pick their name on the public page to see their shifts and who they work with; an admin manages volunteers, roles and shifts under `/admin`.
+Volunteer schedule for Klanglandet. Volunteers pick their name on the public page to see their shifts and coworkers; an admin manages volunteers, roles and shifts at `/admin`.
 
-SvelteKit + Tailwind. The whole app runs in a single AWS Lambda and keeps all data in S3: one `schedule.json` document plus the uploaded photos. There is no database. Locally the same code stores the same files in a folder.
+One SvelteKit app, designed to run in a single AWS Lambda with all data in S3 (one `schedule.json` plus photos). No database. Locally the same data lives in the `data/` folder.
 
-## Configuration
-
-| Variable         | Required | Description                                                                                                   |
-| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
-| `ADMIN_PASSWORD` | yes      | Password for `/admin`. Also signs session cookies, so changing it signs everyone out.                          |
-| `STORAGE`        | no       | `local` (files in `DATA_DIR`) or `s3`. Defaults to `s3` on Lambda and `local` everywhere else.                |
-| `DATA_DIR`       | no       | Folder for the local backend. Default `data`.                                                                 |
-| `S3_BUCKET`      | s3 only  | Bucket holding `schedule.json` and `uploads/`.                                                                |
-| `ORIGIN`         | `npm start` / docker over http | e.g. `http://localhost:3000`. Without it adapter-node assumes https and rejects form posts. Not needed for `npm run dev` or on Lambda. |
-
-Copy `.env.example` to `.env` to get started.
-
-## Run and demo it locally
+## Test
 
 ```sh
-cp .env.example .env
 npm ci
-npm run seed      # fill data/ with fake volunteers, roles, shifts and avatars
-npm run dev       # http://localhost:5173  (admin: /admin, password from .env)
-npm run unseed    # remove exactly the fake data again; anything you created is kept
+npm test          # storage, concurrency and scheduling-rule tests
+npm run check     # type check
 ```
 
-The demo data includes a double-booked volunteer ("Krock") on the shifts page and an uncovered gap in the Teknik role's Saturday, so the warnings can be shown. `seed` is repeatable: it replaces the previous demo data. Both commands refuse to touch an S3 bucket unless you add `--allow-s3`.
-
-Other ways to run it:
+## Demo locally
 
 ```sh
-npm run build && npm start      # the production build, reads .env
-npm test                        # storage, concurrency and scheduling-rule tests
-npm run check                   # svelte-check
+cp .env.example .env     # set ADMIN_PASSWORD
+npm run seed             # add fake volunteers, roles and shifts
+npm run dev              # http://localhost:5173, admin at /admin
+npm run unseed           # remove the fake data again (your own data is kept)
+```
+
+The demo data includes a double-booked volunteer and an uncovered gap, so the warnings are visible.
+
+Production build or container (needs `ORIGIN` when served over plain http):
+
+```sh
+npm run build && npm start
 
 docker build -t klanghan .
-docker run --rm -p 3000:3000 -e ADMIN_PASSWORD=choose-a-password -e ORIGIN=http://localhost:3000 -v "$PWD/data:/app/data" klanghan
+docker run --rm -p 3000:3000 -e ADMIN_PASSWORD=secret -e ORIGIN=http://localhost:3000 -v "$PWD/data:/app/data" klanghan
 ```
-
-(With a bind mount the host folder must be writable by uid 1000, the image's `node` user.)
 
 ## Deploy to AWS
 
-`template.yaml` is an AWS SAM template: a private, versioned S3 bucket and one container-image Lambda with a Function URL. The image uses the [AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter) to run the unmodified Node server.
+Needs the AWS CLI, [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) and Docker.
 
 ```sh
 sam build
-sam deploy --guided          # asks for AdminPassword; outputs FunctionUrl and BucketName
+sam deploy --guided      # asks for the admin password; prints the site URL and bucket name
 ```
 
-To carry existing data over from a local folder (or from the old SQLite database):
+To publish data you already have locally:
 
 ```sh
-python3 scripts/import-sqlite.py            # only if you still have data/sqlite.db -> data/schedule.json
-S3_BUCKET=<BucketName> npm run push:s3      # copies schedule.json + uploads; refuses to overwrite a bucket that has data
+S3_BUCKET=<bucket from the output> npm run push:s3
 ```
 
-Things worth knowing:
+Not yet deployed or tested on real AWS, so expect to fix small things on the first run.
 
-* **Concurrent edits.** Every save is a conditional write (`If-Match` on the ETag). If two admins save at the same moment, the loser re-reads and retries instead of overwriting. Bucket versioning keeps 30 days of old `schedule.json` versions, so a bad edit can be rolled back from the S3 console.
-* **Photos** are downscaled to 512 px in the browser before upload, which keeps requests well under Lambda's 6 MB payload limit. The server rejects anything over 4 MB or not actually an image.
-* **Login throttling** is in memory per Lambda instance, so it slows guessing down but is not a hard lockout. Pick a long password.
-* **`ADMIN_PASSWORD` is a plain environment variable** on the function. See the note in `template.yaml` for moving it to SSM Parameter Store.
+## Configuration
+
+| Variable         | Description                                                                 |
+| ---------------- | --------------------------------------------------------------------------- |
+| `ADMIN_PASSWORD` | Required. Admin login; changing it signs everyone out.                      |
+| `STORAGE`        | `local` or `s3`. Defaults to `s3` on Lambda, `local` elsewhere.             |
+| `DATA_DIR`       | Local data folder. Default `data`.                                          |
+| `S3_BUCKET`      | Bucket name when `STORAGE=s3`.                                              |
+| `ORIGIN`         | e.g. `http://localhost:3000`. Needed for `npm start`/docker over http only. |
 
 ## Licenses
 
