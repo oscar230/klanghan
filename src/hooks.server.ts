@@ -4,7 +4,8 @@ import { runMigrations } from '$lib/server/db';
 import { SESSION_COOKIE, verifySessionToken } from '$lib/server/auth';
 
 if (!building) {
-	runMigrations().catch(console.error);
+	// Don't serve traffic against a database whose schema could not be brought up to date.
+	runMigrations().catch(() => process.exit(1));
 }
 
 const LOGIN_PATH = '/admin/login';

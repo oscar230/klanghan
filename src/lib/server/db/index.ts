@@ -32,6 +32,7 @@ export const runMigrations = async () => {
 	    console.log('Migrations complete.');
 	} catch (e) {
 	    console.error('Failed to run migrations', e);
+	    throw e;
 	}
 };
 
