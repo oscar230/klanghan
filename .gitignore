@@ -27,3 +27,6 @@ data/*.db
 data/*.db-shm
 data/*.db-wal
 data/uploads/*
+
+# Visual Studio Code
+.vscode/
