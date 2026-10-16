@@ -24,13 +24,21 @@ npm run check
 
 Migrations in `drizzle/` run automatically on startup. After changing `src/lib/server/db/schema.ts`, generate a new one with `npx drizzle-kit generate`.
 
-## Docker
+## Running locally
 
 ```sh
-ADMIN_PASSWORD=choose-a-password docker compose up --build
+npm run dev            # dev server with hot reload
+npm run build && npm start   # production build, reads .env
 ```
 
-The app listens on port 3000. The image raises `BODY_SIZE_LIMIT` to 8M so phone photos can be uploaded; keep any reverse proxy's upload limit at least that high. If running behind a proxy, set `ADDRESS_HEADER` (e.g. `X-Forwarded-For`) so login rate limiting sees the real client address.
+Or as a container, which is how the production build is packaged:
+
+```sh
+docker build -t klanghan .
+docker run --rm -p 3000:3000 -e ADMIN_PASSWORD=choose-a-password -v "$PWD/data:/app/data" klanghan
+```
+
+The app listens on port 3000. The image raises `BODY_SIZE_LIMIT` to 8M so phone photos can be uploaded; keep any reverse proxy's upload limit at least that high. Behind a proxy, set `ADDRESS_HEADER` (e.g. `X-Forwarded-For`) so login rate limiting sees the real client address.
 
 ## Licenses
 
