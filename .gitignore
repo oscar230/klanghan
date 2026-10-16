@@ -30,3 +30,6 @@ data/uploads/*
 
 # Visual Studio Code
 .vscode/
+# Local storage and AWS SAM
+data/schedule.json
+.aws-sam
