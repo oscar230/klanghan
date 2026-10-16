@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Klanghan - schedule site and admin in a single container Lambda, data in a private S3 bucket
+
+Parameters:
+  AdminPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    Description: Admin password (also used as the session-signing secret)
+
+Resources:
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      # Versioning makes an accidental bad write of schedule.json recoverable
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireNoncurrentVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+
+  AppFunction:
+    Type: AWS::Serverless::Function
+    # Container image built from ./Dockerfile (includes the Lambda Web Adapter)
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: .
+    Properties:
+      PackageType: Image
+      MemorySize: 512
+      Timeout: 15
+      # No ReservedConcurrentExecutions on purpose: new AWS accounts have a total
+      # concurrency limit of ~10 and reserving any would fail (it must leave 10 unreserved).
+      FunctionUrlConfig:
+        AuthType: NONE
+      Environment:
+        Variables:
+          STORAGE: s3
+          S3_BUCKET: !Ref DataBucket
+          # Behind the Lambda Web Adapter every connection comes from localhost. Take the real
+          # client address from the Function URL's X-Forwarded-For (last entry = added by AWS,
+          # so a client-supplied value cannot spoof it); the login rate limit keys on it.
+          ADDRESS_HEADER: x-forwarded-for
+          XFF_DEPTH: '1'
+          # NOTE: a plain env var is visible in the console/API to anyone with
+          # lambda:GetFunctionConfiguration. Upgrade path: store it as an SSM
+          # Parameter Store SecureString and read it at startup (needs ssm:GetParameter + kms:Decrypt).
+          ADMIN_PASSWORD: !Ref AdminPassword
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+                - s3:DeleteObject
+              Resource: !Sub '${DataBucket.Arn}/*'
+            # Without ListBucket S3 answers a missing key with 403 instead of 404, which would
+            # break the first read of a fresh bucket (no schedule.json yet).
+            - Effect: Allow
+              Action: s3:ListBucket
+              Resource: !GetAtt DataBucket.Arn
+
+Outputs:
+  FunctionUrl:
+    Description: Public URL of the site (admin at /admin)
+    Value: !GetAtt AppFunctionUrl.FunctionUrl
+  BucketName:
+    Description: S3 bucket holding schedule.json and uploads
+    Value: !Ref DataBucket

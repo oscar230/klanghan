@@ -1,11 +1,29 @@
+# dependencies and build output (rebuilt inside the image)
 node_modules
-.svelte-kit
 build
+.svelte-kit
+.output
+
+# local data and secrets
 data
 .env
+.env.*
+
+# VCS / CI / editor
 .git
 .gitattributes
-README.md
+.gitignore
+.github
+.vscode
+
+# SAM / deployment artefacts
+.aws-sam
+template.yaml
+samconfig.toml
+
+# misc
 Dockerfile
 .dockerignore
-npm-debug.log
+README.md
+npm-debug.log*
+*.log
