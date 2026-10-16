@@ -1,10 +1,11 @@
 <script lang="ts">
     import { enhance } from "$app/forms";
     import defaultPfp from "$lib/assets/default-pfp.svg";
+    import { SvelteSet } from "svelte/reactivity";
     let { data, form } = $props();
 
     let newUserFileName = $state("");
-    let uploadingIds = $state<Set<string>>(new Set());
+    let uploadingIds = new SvelteSet<string>();
     let activeMenuId = $state<string | null>(null);
 
     const handleFileChange = (e: Event, id: string | null = null) => {
@@ -21,16 +22,19 @@
         }
     };
 
+    const enhanceUpload = (id: string) => () => async ({ update }: { update: () => Promise<void> }) => {
+        uploadingIds.delete(id);
+        await update();
+    };
+
     const toggleMenu = (e: MouseEvent, id: string) => {
         e.stopPropagation();
         activeMenuId = activeMenuId === id ? null : id;
     };
-
-    // Close menu when clicking elsewhere
-    if (typeof window !== "undefined") {
-        window.onclick = () => (activeMenuId = null);
-    }
 </script>
+
+<!-- Close the row menu when clicking elsewhere -->
+<svelte:window onclick={() => (activeMenuId = null)} />
 
 <svelte:head>
     <title>Volontärer - Administratör</title>
@@ -165,12 +169,7 @@
                                 <form
                                     method="POST"
                                     action="?/updateUser"
-                                    use:enhance={() => {
-                                        return async ({ update }) => {
-                                            uploadingIds.delete(user.id);
-                                            await update();
-                                        };
-                                    }}
+                                    use:enhance={enhanceUpload(user.id)}
                                     enctype="multipart/form-data"
                                 >
                                     <input
@@ -317,6 +316,7 @@
                         <div class="sm:hidden relative">
                             <button
                                 onclick={(e) => toggleMenu(e, user.id)}
+                                aria-label="Fler åtgärder för {user.name}"
                                 class="w-10 h-10 flex items-center justify-center bg-muted border border-border rounded-lg text-muted-foreground hover:text-foreground transition-all"
                             >
                                 <svg
@@ -338,13 +338,15 @@
                             </button>
 
                             {#if activeMenuId === user.id}
+                                <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
                                 <div
+                                    onclick={(e) => e.stopPropagation()}
                                     class="absolute right-0 top-12 z-50 w-48 bg-card border border-border rounded-xl shadow-xl p-2 space-y-1 animate-in fade-in zoom-in duration-100 origin-top-right backdrop-blur-md"
                                 >
                                     <form
                                         method="POST"
                                         action="?/updateUser"
-                                        use:enhance
+                                        use:enhance={enhanceUpload(user.id)}
                                         enctype="multipart/form-data"
                                     >
                                         <input

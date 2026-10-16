@@ -9,7 +9,7 @@
     } from "$lib/time";
     import type { PageData } from "./$types";
 
-    let { data, form } = $props<{ data: PageData; form: any }>();
+    let { data, form }: { data: PageData; form: any } = $props();
 
     function hasOverlap(shift: (typeof data.shifts)[0]) {
         return data.shifts.some(
@@ -89,9 +89,9 @@
                 </div>
 
                 <div class="min-w-[180px]">
-                    <label
+                    <span
                         class="block text-[10px] font-bold text-primary uppercase mb-1"
-                        >Start</label
+                        >Start</span
                     >
                     <div class="flex gap-1 items-center">
                         <select
@@ -128,9 +128,9 @@
                 </div>
 
                 <div class="min-w-[180px]">
-                    <label
+                    <span
                         class="block text-[10px] font-bold text-primary uppercase mb-1"
-                        >Slut</label
+                        >Slut</span
                     >
                     <div class="flex gap-1 items-center">
                         <select
@@ -309,7 +309,7 @@
                     {#if data.shifts.length === 0}
                         <tr>
                             <td
-                                colspan="5"
+                                colspan="4"
                                 class="px-4 py-6 text-center text-muted-foreground border-t border-border border-dashed"
                                 >Inga arbetspass schemalagda ännu.</td
                             >

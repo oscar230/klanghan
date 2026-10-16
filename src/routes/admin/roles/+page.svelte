@@ -9,11 +9,10 @@
         e.stopPropagation();
         activeMenuId = activeMenuId === id ? null : id;
     };
-
-    if (typeof window !== "undefined") {
-        window.onclick = () => (activeMenuId = null);
-    }
 </script>
+
+<!-- Close the row menu when clicking elsewhere -->
+<svelte:window onclick={() => (activeMenuId = null)} />
 
 <svelte:head>
     <title>Roller - Administratör</title>
@@ -257,6 +256,7 @@
                         <div class="sm:hidden relative">
                             <button
                                 onclick={(e) => toggleMenu(e, role.id)}
+                                aria-label="Fler åtgärder för {role.name}"
                                 class="w-10 h-10 flex items-center justify-center bg-muted border border-border rounded-lg text-muted-foreground hover:text-foreground transition-all"
                             >
                                 <svg
@@ -278,7 +278,9 @@
                             </button>
 
                             {#if activeMenuId === role.id}
+                                <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
                                 <div
+                                    onclick={(e) => e.stopPropagation()}
                                     class="absolute right-0 top-12 z-50 w-44 bg-card border border-border rounded-xl shadow-xl p-2 space-y-1 animate-in fade-in zoom-in duration-100 origin-top-right backdrop-blur-md"
                                 >
                                     <a

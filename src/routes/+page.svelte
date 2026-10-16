@@ -2,7 +2,7 @@
 	import { formatOffset, formatShiftTime } from "$lib/time";
 	import type { PageData } from "./$types";
     import defaultPfp from "$lib/assets/default-pfp.svg";
-	let { data } = $props<{ data: PageData }>();
+	let { data }: { data: PageData } = $props();
 
 	let selectedUserId = $state("");
 

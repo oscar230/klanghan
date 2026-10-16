@@ -23,8 +23,8 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
 	addRole: async ({ request }) => {
 		const data = await request.formData();
-		const name = data.get('name')?.toString();
-        const description = data.get('description')?.toString() || null;
+		const name = data.get('name')?.toString().trim();
+        const description = data.get('description')?.toString().trim() || null;
 		if (!name) return fail(400, { error: 'Rollnamn krävs' });
 		
 		try {
@@ -53,8 +53,8 @@ export const actions: Actions = {
     updateRole: async ({ request }) => {
 		const data = await request.formData();
 		const id = data.get('id')?.toString();
-        const name = data.get('name')?.toString();
-        const description = data.get('description')?.toString() || null;
+        const name = data.get('name')?.toString().trim();
+        const description = data.get('description')?.toString().trim() || null;
         
 		if (!id || !name) return fail(400, { error: 'ID och namn krävs' });
 		
