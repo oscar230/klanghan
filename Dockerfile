@@ -33,6 +33,8 @@ VOLUME ["/app/data"]
 
 ENV NODE_ENV=production
 ENV DATABASE_URL=/app/data/sqlite.db
+# adapter-node rejects request bodies over 512K by default, which blocks phone photo uploads
+ENV BODY_SIZE_LIMIT=8M
 
 EXPOSE 3000
 CMD ["node", "build/index.js"]

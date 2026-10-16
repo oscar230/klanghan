@@ -1,49 +1,9 @@
 import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { shifts, users } from '$lib/server/db/schema';
+import { eq, sql } from 'drizzle-orm';
+import { UploadError, deleteImageFile, saveImage } from '$lib/server/uploads';
 import type { Actions, PageServerLoad } from './$types';
-import fs from 'node:fs';
-import path from 'node:path';
-import { randomUUID } from 'node:crypto';
-
-import { sql } from 'drizzle-orm';
-import { shifts } from '$lib/server/db/schema';
-
-const UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads');
-
-// Ensure upload directory exists
-if (!fs.existsSync(UPLOAD_DIR)) {
-	fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-async function saveImage(file: File): Promise<string | null> {
-	if (!file || file.size === 0 || !(file instanceof File)) return null;
-
-	const ext = path.extname(file.name) || '.png';
-	const fileName = `${randomUUID()}${ext}`;
-	const filePath = path.join(UPLOAD_DIR, fileName);
-
-	const arrayBuffer = await file.arrayBuffer();
-	fs.writeFileSync(filePath, Buffer.from(arrayBuffer));
-
-	return `/uploads/${fileName}`;
-}
-
-function deleteImageFile(imageUrl: string | null) {
-	if (!imageUrl || !imageUrl.startsWith('/uploads/')) return;
-
-	const fileName = path.basename(imageUrl);
-	const filePath = path.join(UPLOAD_DIR, fileName);
-
-	try {
-		if (fs.existsSync(filePath)) {
-			fs.unlinkSync(filePath);
-		}
-	} catch (e) {
-		console.error(`Failed to delete image file: ${filePath}`, e);
-	}
-}
 
 export const load: PageServerLoad = async () => {
 	const allUsers = await db
@@ -65,15 +25,21 @@ export const actions: Actions = {
 	addUser: async ({ request }) => {
 		const data = await request.formData();
 		const name = data.get('name')?.toString();
-		const imageFile = data.get('imageFile') as File;
 
-		if (!name) return fail(400, { error: 'Namn krävs' });
+		if (!name?.trim()) return fail(400, { error: 'Namn krävs' });
 
-		const imageUrl = await saveImage(imageFile);
+		let imageUrl: string | null;
+		try {
+			imageUrl = await saveImage(data.get('imageFile'));
+		} catch (e) {
+			if (e instanceof UploadError) return fail(400, { error: e.message });
+			throw e;
+		}
 
 		try {
-			await db.insert(users).values({ name, imageUrl });
+			await db.insert(users).values({ name: name.trim(), imageUrl });
 		} catch (e: any) {
+			deleteImageFile(imageUrl);
 			if (e.message && e.message.includes('UNIQUE constraint failed')) {
 				return fail(400, { error: 'En volontär med det namnet finns redan' });
 			}
@@ -83,15 +49,21 @@ export const actions: Actions = {
 	updateUser: async ({ request }) => {
 		const data = await request.formData();
 		const id = data.get('id')?.toString();
-		const imageFile = data.get('imageFile') as File;
 
 		if (!id) return fail(400, { error: 'ID krävs' });
 
 		// Fetch current user to get old image URL
 		const currentUser = await db.select().from(users).where(eq(users.id, id)).get();
-		const oldImageUrl = currentUser?.imageUrl || null;
+		if (!currentUser) return fail(404, { error: 'Volontären hittades inte' });
+		const oldImageUrl = currentUser.imageUrl || null;
 
-		const imageUrl = await saveImage(imageFile);
+		let imageUrl: string | null;
+		try {
+			imageUrl = await saveImage(data.get('imageFile'));
+		} catch (e) {
+			if (e instanceof UploadError) return fail(400, { error: e.message });
+			throw e;
+		}
 
 		if (imageUrl) {
 			await db.update(users).set({ imageUrl }).where(eq(users.id, id));
