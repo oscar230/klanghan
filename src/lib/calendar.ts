@@ -1,6 +1,4 @@
-import { DAYS } from './time';
-
-const MINUTES_PER_DAY = 24 * 60;
+import { DAYS, MINUTES_PER_DAY } from './time';
 
 /** What the calendar draws: a work shift or an artist's performance. */
 export interface CalendarEvent {

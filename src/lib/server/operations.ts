@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { DAYS } from '../time';
+import { DAYS, MINUTES_PER_DAY } from '../time';
 import type { Performance, Role, Schedule, Shift, Stage, User } from './store/types';
 
 /** A user-facing validation problem. `status` is the HTTP status to answer with. */
@@ -30,7 +30,6 @@ function cleanText(value: string, what: string, max = MAX_NAME_LENGTH): string {
 
 const cleanDescription = (value: string | null) =>
 	value === null || !value.trim() ? null : cleanText(value, 'Beskrivningen', MAX_DESCRIPTION_LENGTH);
-const MINUTES_PER_DAY = 24 * 60;
 
 export function addUser(s: Schedule, rawName: string, imageUrl: string | null): User {
 	const name = cleanText(rawName, 'Namn');

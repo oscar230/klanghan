@@ -3,7 +3,7 @@ export const DAYS = ['Fredag', 'Lördag', 'Söndag'];
 /** What something ending exactly at the festival's end (00:00 after the last day) is said to end on. */
 export const AFTER_FESTIVAL = 'Måndag';
 
-const MINUTES_PER_DAY = 24 * 60;
+export const MINUTES_PER_DAY = 24 * 60;
 
 /** Time of day ("HH:MM") for an offset. */
 export function formatClock(minutes: number): string {
@@ -18,10 +18,10 @@ export function parseClockTime(value: string): number | null {
 }
 
 export function formatOffset(minutes: number): string {
-    const dayIndex = Math.floor(minutes / (24 * 60));
+    const dayIndex = Math.floor(minutes / MINUTES_PER_DAY);
     const dayName = dayIndex >= DAYS.length ? AFTER_FESTIVAL : DAYS[dayIndex];
     
-    const hour = Math.floor((minutes % (24 * 60)) / 60);
+    const hour = Math.floor((minutes % MINUTES_PER_DAY) / 60);
     const minute = minutes % 60;
     
     const hStr = hour.toString().padStart(2, '0');

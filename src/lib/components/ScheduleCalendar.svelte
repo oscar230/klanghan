@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import Avatar from './Avatar.svelte';
 	import { layoutDays, type CalendarEvent } from '$lib/calendar';
-	import { formatClock, formatShiftTime } from '$lib/time';
+	import { MINUTES_PER_DAY, formatClock, formatShiftTime } from '$lib/time';
 
 	/**
 	 * Read-only overview of work shifts and artist performances, one column per festival day (like a
@@ -33,7 +33,7 @@
 	// Start the view at the first shift of the festival rather than at midnight
 	let firstShiftMarker = $state<HTMLElement>();
 	let firstStart = $derived(
-		events.length ? Math.min(...events.map((e) => e.startOffset % (24 * 60))) : 8 * 60
+		events.length ? Math.min(...events.map((e) => e.startOffset % MINUTES_PER_DAY)) : 8 * 60
 	);
 	let stickyHeader = $state<HTMLElement>();
 	onMount(() => {

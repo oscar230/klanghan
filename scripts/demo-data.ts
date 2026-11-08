@@ -1,4 +1,5 @@
 import { deflateSync } from 'node:zlib';
+import { MINUTES_PER_DAY } from '../src/lib/time';
 import type { Performance, Role, Schedule, Shift, Stage, User } from '../src/lib/server/store/types';
 
 /** Everything this script creates carries this id/file prefix, so it can be removed again cleanly. */
@@ -145,8 +146,8 @@ export function buildDemo() {
 		(busy.get(userId) ?? []).some(([a, b]) => a < to && b > from);
 
 	for (const [roleIdx, day, fromHour, toHour, people] of PLAN) {
-		const startOffset = day * 1440 + fromHour * 60;
-		const endOffset = day * 1440 + toHour * 60;
+		const startOffset = day * MINUTES_PER_DAY + fromHour * 60;
+		const endOffset = day * MINUTES_PER_DAY + toHour * 60;
 		for (let p = 0; p < people; p++) {
 			// The next volunteer in this role's rotation who is free, so the demo has few accidental double-bookings
 			let n = cursor.get(roleIdx) ?? roleIdx * 2;
@@ -187,8 +188,8 @@ export function buildDemo() {
 		stageId: stages[stage].id,
 		artist,
 		genre,
-		startOffset: day * 1440 + Math.round(from * 60),
-		endOffset: day * 1440 + Math.round(to * 60)
+		startOffset: day * MINUTES_PER_DAY + Math.round(from * 60),
+		endOffset: day * MINUTES_PER_DAY + Math.round(to * 60)
 	}));
 
 	return { users, roles, shifts, stages, performances, images };

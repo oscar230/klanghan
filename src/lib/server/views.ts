@@ -1,4 +1,4 @@
-import { DAYS } from '../time';
+import { DAYS, MINUTES_PER_DAY } from '../time';
 import type { Performance, Schedule, Shift } from './store/types';
 
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, 'sv');
@@ -90,8 +90,8 @@ export function roleTimeline(s: Schedule, roleId: string) {
 	const shifts = shiftDetails(s).filter((sh) => sh.roleId === roleId);
 
 	return DAYS.map((dayName, dayIndex) => {
-		const dayStart = dayIndex * 24 * 60;
-		const dayEnd = dayStart + 24 * 60;
+		const dayStart = dayIndex * MINUTES_PER_DAY;
+		const dayEnd = dayStart + MINUTES_PER_DAY;
 		const items: TimelineItem[] = [];
 		// A shift from an earlier day that runs into this day covers (and overlaps) the start of it
 		const spill = Math.max(-1, ...shifts.filter((x) => x.startOffset < dayStart).map((x) => x.endOffset));

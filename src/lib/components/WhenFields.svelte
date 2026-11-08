@@ -1,6 +1,6 @@
 <script lang="ts">
 	import TimeSelect from './TimeSelect.svelte';
-	import { AFTER_FESTIVAL, DAYS, formatClock } from '$lib/time';
+	import { AFTER_FESTIVAL, DAYS, MINUTES_PER_DAY, formatClock } from '$lib/time';
 
 	/** A day and a 24-hour time, for a start or an end. Posts `<prefix>Day`, `<prefix>Hour` and `<prefix>Minute`. */
 	let {
@@ -18,7 +18,7 @@
 	<div class="grid grid-cols-2 gap-2">
 		<select name="{prefix}Day" required aria-label="{label}dag" class="field">
 			{#each days as day, i}
-				<option value={i} selected={offset !== null && i === Math.floor(offset / 1440)}>{day}</option>
+				<option value={i} selected={offset !== null && i === Math.floor(offset / MINUTES_PER_DAY)}>{day}</option>
 			{/each}
 		</select>
 		<TimeSelect name={prefix} {label} value={offset === null ? null : formatClock(offset)} />
