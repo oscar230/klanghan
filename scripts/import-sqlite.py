@@ -42,6 +42,8 @@ schedule = {
         }
         for r in db.execute("select * from shifts")
     ],
+    "stages": [],
+    "performances": [],
 }
 
 dst.write_text(json.dumps(schedule, indent=2, ensure_ascii=False))

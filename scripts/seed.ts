@@ -11,7 +11,12 @@ await repo.update((s) => {
 	s.users.push(...demo.users);
 	s.roles.push(...demo.roles);
 	s.shifts.push(...demo.shifts);
+	s.stages.push(...demo.stages);
+	s.performances.push(...demo.performances);
 });
 
-console.log(`Added ${demo.users.length} volunteers, ${demo.roles.length} roles and ${demo.shifts.length} shifts.`);
+console.log(
+	`Added ${demo.users.length} volunteers, ${demo.roles.length} roles, ${demo.shifts.length} shifts, ` +
+		`${demo.stages.length} stages and ${demo.performances.length} performances.`
+);
 console.log('Remove them again with: npm run unseed');

@@ -241,6 +241,44 @@ test('roles saved by older versions are normalised to satisfy the supervisor rul
 	assert.deepEqual([byId.d.isSupervisor, byId.d.supervisorRoleId], [false, null]);
 });
 
+test('stages and performances: rules and stage deletion', () => {
+	const s = emptySchedule();
+	const main = ops.addStage(s, 'Stora scenen');
+	assert.throws(() => ops.addStage(s, ' stora SCENEN '), DomainError); // unique, case-insensitively
+	const forest = ops.addStage(s, 'Skogsscenen');
+	ops.updateStage(s, forest.id, 'Lilla scenen');
+	assert.throws(() => ops.updateStage(s, forest.id, 'Stora scenen'), /finns redan/);
+	assert.throws(() => ops.updateStage(s, 'ghost', 'X'), /hittades inte/);
+
+	const act = { stageId: main.id, artist: 'Vera Solhem', genre: 'Folk', startOffset: 1200, endOffset: 1260 };
+	assert.throws(() => ops.addPerformance(s, { ...act, stageId: 'ghost' }), /Scenen finns inte/);
+	assert.throws(() => ops.addPerformance(s, { ...act, artist: '  ' }), /namn/);
+	assert.throws(() => ops.addPerformance(s, { ...act, genre: '' }), /Genre/);
+	assert.throws(() => ops.addPerformance(s, { ...act, endOffset: 1200 }), /Sluttid/);
+	assert.throws(() => ops.addPerformance(s, { ...act, endOffset: 99999 }), /Ogiltig tid/);
+
+	// Several artists may play at once, on the same or on different stages (overlaps are only flagged, see conflicts)
+	const a = ops.addPerformance(s, act);
+	ops.addPerformance(s, { ...act, stageId: forest.id, artist: 'Lerbäcken' });
+	assert.equal(s.performances.length, 2);
+
+	ops.updatePerformance(s, a.id, { ...act, artist: 'Vera', startOffset: 1230 });
+	assert.deepEqual([s.performances[0].artist, s.performances[0].startOffset], ['Vera', 1230]);
+	assert.throws(() => ops.updatePerformance(s, a.id, { ...act, endOffset: 5 }), /Sluttid/);
+	assert.equal(s.performances[0].artist, 'Vera'); // a rejected update changes nothing
+	assert.throws(() => ops.updatePerformance(s, 'ghost', act), /hittades inte/);
+
+	assert.throws(() => ops.deleteStage(s, main.id), /inbokade artister/);
+	ops.deletePerformance(s, a.id);
+	ops.deleteStage(s, main.id);
+	assert.deepEqual(s.stages.map((st) => st.name), ['Lilla scenen']);
+});
+
+test('older documents load with empty stages and performances', () => {
+	const s = normalizeSchedule({ users: [], roles: [], shifts: [] });
+	assert.deepEqual([s.stages, s.performances], [[], []]);
+});
+
 test('roleTimeline marks gaps and overlaps', () => {
 	const s = emptySchedule();
 	const a = ops.addUser(s, 'A', null);

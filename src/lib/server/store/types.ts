@@ -28,15 +28,40 @@ export interface Shift {
 	endOffset: number;
 }
 
+/** A stage where artists play. Several stages can be active at the same time. */
+export interface Stage {
+	id: string;
+	name: string;
+}
+
+/** One artist playing on one stage. Separate from the work shifts. */
+export interface Performance {
+	id: string;
+	stageId: string;
+	artist: string;
+	genre: string;
+	startOffset: number;
+	endOffset: number;
+}
+
 /** The whole dataset. It is stored as a single JSON document. */
 export interface Schedule {
 	version: 1;
 	users: User[];
 	roles: Role[];
 	shifts: Shift[];
+	stages: Stage[];
+	performances: Performance[];
 }
 
-export const emptySchedule = (): Schedule => ({ version: 1, users: [], roles: [], shifts: [] });
+export const emptySchedule = (): Schedule => ({
+	version: 1,
+	users: [],
+	roles: [],
+	shifts: [],
+	stages: [],
+	performances: []
+});
 
 /** Thrown by Store.writeSchedule when the document changed since it was read. */
 export class ConflictError extends Error {
@@ -82,6 +107,8 @@ export function normalizeSchedule(raw: unknown): Schedule {
 		version: 1,
 		users: Array.isArray(r.users) ? r.users : [],
 		roles,
-		shifts: Array.isArray(r.shifts) ? r.shifts : []
+		shifts: Array.isArray(r.shifts) ? r.shifts : [],
+		stages: Array.isArray(r.stages) ? r.stages : [],
+		performances: Array.isArray(r.performances) ? r.performances : []
 	};
 }

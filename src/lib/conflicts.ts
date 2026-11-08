@@ -11,7 +11,7 @@ export interface ConflictCheckShift {
 
 export type ConflictReason = 'double-booked' | 'supervisor-taken';
 
-const overlaps = (a: ConflictCheckShift, b: ConflictCheckShift) =>
+const overlaps = (a: { startOffset: number; endOffset: number }, b: { startOffset: number; endOffset: number }) =>
 	a.startOffset < b.endOffset && a.endOffset > b.startOffset;
 
 /**
@@ -43,3 +43,24 @@ export function describeConflicts(reasons: ConflictReason[], roleName: string): 
 			: `${roleName} är en ledande roll som bara kan innehas av en person åt gången, men någon annan har den samtidigt.`
 	);
 }
+
+/** The parts of a performance needed to tell whether it can actually be played. */
+export interface PerformanceCheck {
+	id: string;
+	stageId: string;
+	startOffset: number;
+	endOffset: number;
+}
+
+/** Ids of performances that overlap another performance on the same stage. Different stages may play at once. */
+export function findStageConflicts(performances: PerformanceCheck[]): Set<string> {
+	const found = new Set<string>();
+	for (const p of performances) {
+		if (performances.some((other) => other.id !== p.id && other.stageId === p.stageId && overlaps(p, other))) {
+			found.add(p.id);
+		}
+	}
+	return found;
+}
+
+export const STAGE_CONFLICT_MESSAGE = 'En annan artist spelar på samma scen samtidigt.';

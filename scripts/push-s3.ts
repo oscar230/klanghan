@@ -36,5 +36,5 @@ await remote.writeSchedule(schedule, null);
 
 console.log(
 	`Published ${schedule.users.length} volunteers, ${schedule.roles.length} roles, ` +
-		`${schedule.shifts.length} shifts and ${files.length} images to s3://${bucket}`
+		`${schedule.shifts.length} shifts, ${schedule.stages.length} stages, ${schedule.performances.length} performances and ${files.length} images to s3://${bucket}`
 );

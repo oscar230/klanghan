@@ -1,5 +1,5 @@
 import { DAYS } from '../time';
-import type { Schedule, Shift } from './store/types';
+import type { Performance, Schedule, Shift } from './store/types';
 
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, 'sv');
 const byStart = (a: Shift, b: Shift) => a.startOffset - b.startOffset || a.endOffset - b.endOffset;
@@ -55,6 +55,30 @@ export function rolesWithShiftCount(s: Schedule) {
 		/** The roles this one leads; while there are any, the role cannot be deleted. */
 		subordinateNames: s.roles.filter((x) => x.supervisorRoleId === r.id).map((x) => x.name).sort((a, b) => a.localeCompare(b, 'sv'))
 	}));
+}
+
+export function sortedStages(s: Schedule) {
+	return [...s.stages].sort(byName);
+}
+
+export function stagesWithPerformanceCount(s: Schedule) {
+	return sortedStages(s).map((st) => ({
+		...st,
+		performanceCount: s.performances.filter((p) => p.stageId === st.id).length
+	}));
+}
+
+const byPerformanceStart = (a: Performance, b: Performance) => a.startOffset - b.startOffset || a.endOffset - b.endOffset;
+
+/** Performances joined with their stage, in start order. */
+export function performanceDetails(s: Schedule) {
+	const stages = new Map(s.stages.map((st) => [st.id, st]));
+
+	return [...s.performances].sort(byPerformanceStart).flatMap((p) => {
+		const stage = stages.get(p.stageId);
+		if (!stage) return [];
+		return [{ ...p, stageName: stage.name }];
+	});
 }
 
 export type TimelineItem =

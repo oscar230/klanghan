@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { DAYS } from '../time';
-import type { Role, Schedule, Shift, User } from './store/types';
+import type { Performance, Role, Schedule, Shift, Stage, User } from './store/types';
 
 /** A user-facing validation problem. `status` is the HTTP status to answer with. */
 export class DomainError extends Error {
@@ -104,15 +104,19 @@ export function deleteRole(s: Schedule, id: string) {
 
 type ShiftInput = Omit<Shift, 'id'>;
 
-function checkShift(s: Schedule, { userId, roleId, startOffset, endOffset }: ShiftInput) {
-	if (!s.users.some((u) => u.id === userId) || !s.roles.some((r) => r.id === roleId)) {
-		throw new DomainError('Volontären eller rollen finns inte');
-	}
+function checkTimes(startOffset: number, endOffset: number) {
 	if (!Number.isInteger(startOffset) || !Number.isInteger(endOffset) || startOffset < 0) {
 		throw new DomainError('Ogiltig tid');
 	}
 	if (endOffset > DAYS.length * MINUTES_PER_DAY) throw new DomainError('Ogiltig tid');
 	if (endOffset <= startOffset) throw new DomainError('Sluttid måste vara efter starttid');
+}
+
+function checkShift(s: Schedule, { userId, roleId, startOffset, endOffset }: ShiftInput) {
+	if (!s.users.some((u) => u.id === userId) || !s.roles.some((r) => r.id === roleId)) {
+		throw new DomainError('Volontären eller rollen finns inte');
+	}
+	checkTimes(startOffset, endOffset);
 }
 
 export function addShift(s: Schedule, input: ShiftInput): Shift {
@@ -132,4 +136,54 @@ export function updateShift(s: Schedule, id: string, input: ShiftInput) {
 
 export function deleteShift(s: Schedule, id: string) {
 	s.shifts = s.shifts.filter((sh) => sh.id !== id);
+}
+
+export function addStage(s: Schedule, name: string): Stage {
+	if (s.stages.some((st) => sameName(st.name, name))) throw new DomainError('En scen med det namnet finns redan');
+	const stage: Stage = { id: randomUUID(), name };
+	s.stages.push(stage);
+	return stage;
+}
+
+export function updateStage(s: Schedule, id: string, name: string) {
+	const stage = s.stages.find((st) => st.id === id);
+	if (!stage) throw new DomainError('Scenen hittades inte', 404);
+	if (s.stages.some((st) => st.id !== id && sameName(st.name, name))) {
+		throw new DomainError('En scen med det namnet finns redan');
+	}
+	stage.name = name;
+}
+
+export function deleteStage(s: Schedule, id: string) {
+	if (s.performances.some((p) => p.stageId === id)) {
+		throw new DomainError('Kan inte ta bort en scen som har inbokade artister');
+	}
+	s.stages = s.stages.filter((st) => st.id !== id);
+}
+
+export type PerformanceInput = Omit<Performance, 'id'>;
+
+function checkPerformance(s: Schedule, { stageId, artist, genre, startOffset, endOffset }: PerformanceInput) {
+	if (!s.stages.some((st) => st.id === stageId)) throw new DomainError('Scenen finns inte');
+	if (!artist.trim()) throw new DomainError('Artistens namn krävs');
+	if (!genre.trim()) throw new DomainError('Genre krävs');
+	checkTimes(startOffset, endOffset);
+}
+
+export function addPerformance(s: Schedule, input: PerformanceInput): Performance {
+	checkPerformance(s, input);
+	const performance: Performance = { id: randomUUID(), ...input };
+	s.performances.push(performance);
+	return performance;
+}
+
+export function updatePerformance(s: Schedule, id: string, input: PerformanceInput) {
+	const performance = s.performances.find((p) => p.id === id);
+	if (!performance) throw new DomainError('Spelningen hittades inte', 404);
+	checkPerformance(s, input);
+	Object.assign(performance, input);
+}
+
+export function deletePerformance(s: Schedule, id: string) {
+	s.performances = s.performances.filter((p) => p.id !== id);
 }

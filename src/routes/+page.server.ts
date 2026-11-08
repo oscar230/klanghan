@@ -1,5 +1,5 @@
 import { getRepo } from '$lib/server/data';
-import { shiftDetails, sortedUsers } from '$lib/server/views';
+import { performanceDetails, shiftDetails, sortedUsers } from '$lib/server/views';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -8,6 +8,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	return {
 		users: sortedUsers(schedule),
 		shifts: shiftDetails(schedule),
+		performances: performanceDetails(schedule),
 		wide: url.searchParams.get('view') === 'calendar'
 	};
 };

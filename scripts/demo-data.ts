@@ -1,5 +1,5 @@
 import { deflateSync } from 'node:zlib';
-import type { Role, Schedule, Shift, User } from '../src/lib/server/store/types';
+import type { Performance, Role, Schedule, Shift, Stage, User } from '../src/lib/server/store/types';
 
 /** Everything this script creates carries this id/file prefix, so it can be removed again cleanly. */
 export const DEMO_PREFIX = 'demo-';
@@ -40,6 +40,33 @@ for (const day of [0, 1, 2]) {
 	PLAN.push([6, day, 10, 16, 1], [6, day, 16, 22, 1]); // Säkerhetsansvarig
 	PLAN.push([7, day, 12, 18, 2], [7, day, 18, 24, 2]); // Trygghetsvärd
 }
+
+const STAGES = ['Stora scenen', 'Lilla scenen', 'Skogsscenen'];
+
+// [stage index, day, start hour, end hour, artist, genre]
+const ACTS: Array<[number, number, number, number, string, string]> = [
+	[0, 0, 18, 19, 'Nattfjärilarna', 'Indiepop'],
+	[0, 0, 20, 21.5, 'Vera Solhem', 'Singer-songwriter'],
+	[0, 0, 22, 23.5, 'Kosmonaut', 'Synth'],
+	[1, 0, 19, 20, 'Lerbäcken', 'Folk'],
+	[1, 0, 21, 22, 'Matilda & Maskinen', 'Elektro'],
+	[2, 0, 19.5, 20.5, 'Granris', 'Postrock'],
+	[0, 1, 15, 16, 'Små Hjul', 'Punk'],
+	[0, 1, 17, 18.5, 'Orkestern', 'Jazz'],
+	[0, 1, 20, 21.5, 'Ebba Rönn', 'Soul'],
+	[0, 1, 22, 24, 'Dj Tallbacka', 'House'],
+	[1, 1, 14, 15, 'Kvarnen', 'Folk'],
+	[1, 1, 16, 17, 'Tysta Torsdag', 'Ambient'],
+	[1, 1, 18.5, 19.5, 'Humlan', 'Indierock'],
+	[2, 1, 16, 17, 'Mossa', 'Postrock'],
+	[2, 1, 21, 22, 'Rötter', 'Reggae'],
+	[0, 2, 15, 16, 'Körlandet', 'Gospel'],
+	[0, 2, 17, 18.5, 'Svarta Svanar', 'Rock'],
+	[0, 2, 20, 22, 'Klanglandets husband', 'Pop'],
+	[1, 2, 14, 15.5, 'Lunden', 'Folk'],
+	[1, 2, 18, 19, 'Almqvist', 'Hiphop'],
+	[2, 2, 16.5, 17.5, 'Vindspel', 'Ambient']
+];
 
 /** A small round avatar so the demo shows photos. Hand-rolled PNG, no dependencies. */
 export function avatarPng(hue: number, size = 96): Buffer {
@@ -143,7 +170,17 @@ export function buildDemo() {
 			data: avatarPng((Number(u.id.split('-').pop()) * 47) % 360)
 		}));
 
-	return { users, roles, shifts, images };
+	const stages: Stage[] = STAGES.map((name, i) => ({ id: `${DEMO_PREFIX}stage-${i + 1}`, name }));
+	const performances: Performance[] = ACTS.map(([stage, day, from, to, artist, genre], i) => ({
+		id: `${DEMO_PREFIX}performance-${i + 1}`,
+		stageId: stages[stage].id,
+		artist,
+		genre,
+		startOffset: day * 1440 + Math.round(from * 60),
+		endOffset: day * 1440 + Math.round(to * 60)
+	}));
+
+	return { users, roles, shifts, stages, performances, images };
 }
 
 /** Removes demo records from a schedule. Returns the image files that belonged to them. */
@@ -154,5 +191,7 @@ export function stripDemo(s: Schedule): string[] {
 	s.users = s.users.filter((u) => !isDemo(u.id));
 	s.roles = s.roles.filter((r) => !isDemo(r.id));
 	s.shifts = s.shifts.filter((sh) => !isDemo(sh.id) && !isDemo(sh.userId) && !isDemo(sh.roleId));
+	s.stages = s.stages.filter((st) => !isDemo(st.id));
+	s.performances = s.performances.filter((p) => !isDemo(p.id) && !isDemo(p.stageId));
 	return files;
 }

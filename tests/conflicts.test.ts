@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { findConflicts, type ConflictCheckShift } from '../src/lib/conflicts';
+import { findConflicts, findStageConflicts, type ConflictCheckShift } from '../src/lib/conflicts';
 
 let n = 0;
 const shift = (userId: string, roleId: string, start: number, end: number, roleIsSupervisor = false): ConflictCheckShift => ({
@@ -45,4 +45,15 @@ test('conflicts: both reasons can apply to one shift', () => {
 	const found = findConflicts([a, b, c]);
 	assert.deepEqual(found.get(a.id), ['double-booked', 'supervisor-taken']);
 	assert.deepEqual(found.get(c.id), ['double-booked']);
+});
+
+test('conflicts: two artists on one stage at once conflict, on different stages they do not', () => {
+	const act = (id: string, stageId: string, start: number, end: number) => ({ id, stageId, startOffset: start, endOffset: end });
+	const found = findStageConflicts([
+		act('a', 'main', 600, 660),
+		act('b', 'main', 640, 700),
+		act('c', 'forest', 600, 700), // same time, other stage
+		act('d', 'main', 700, 760) // starts when b ends
+	]);
+	assert.deepEqual([...found].sort(), ['a', 'b']);
 });
