@@ -25,6 +25,10 @@
 	--color-muted: light-dark(#f1f3f4, #35363a);
 	--color-muted-foreground: light-dark(#5f6368, #9aa0a6);
 	--color-border: light-dark(#dadce0, #3c4043);
+	/* Slightly off the page colour, for cards that should stand out gently */
+	--color-card: light-dark(#f8f9fa, #292a2d);
+	/* Outline of form fields: stronger than --color-border so a field is visible against the page */
+	--color-field-border: light-dark(#80868b, #9aa0a6);
 
 	/* Blue is the only accent */
 	--color-primary: light-dark(#1a73e8, #8ab4f8);
@@ -97,7 +101,7 @@
 
 	/* Form fields */
 	.field {
-		@apply bg-background text-foreground border-border placeholder:text-muted-foreground block w-full rounded-lg border px-3 py-2.5 text-base focus:border-primary focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm;
+		@apply bg-background text-foreground border-field-border placeholder:text-muted-foreground block w-full rounded-lg border px-3 py-2.5 text-base focus:border-primary focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm;
 	}
 	.field-label {
 		@apply text-muted-foreground mb-1 block text-xs font-medium;

@@ -20,7 +20,7 @@
 			</a>
 		{:else}
 			<a href="/admin" class="icon-btn" aria-label="Administratör" title="Administratör">
-				<Icon name="lock" />
+				<Icon name="admin" />
 			</a>
 		{/if}
 		<ThemeToggle />

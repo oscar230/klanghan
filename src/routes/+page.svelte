@@ -45,7 +45,7 @@
 <p class="text-muted-foreground mt-1 mb-6 text-sm">Schema för dig och dina medvolontärer.</p>
 
 <label class="field-label" for="volunteer-select">Visa schema för</label>
-<select id="volunteer-select" bind:value={selectedUserId} onchange={rememberSelection} class="field">
+<select id="volunteer-select" bind:value={selectedUserId} onchange={rememberSelection} class="field bg-muted">
 	<option value="" disabled>Välj ditt namn…</option>
 	{#each data.users as user}
 		<option value={user.id}>{user.name}</option>
@@ -61,7 +61,7 @@
 		<ul class="space-y-3">
 			{#each myShifts as shift (shift.id)}
 				{@const coworkers = getCoworkers(shift)}
-				<li class="border-border rounded-2xl border p-4">
+				<li class="bg-card border-border rounded-2xl border p-4">
 					<p class="font-medium">{formatShiftTime(shift.startOffset, shift.endOffset)}</p>
 					<p class="mt-1">
 						<span class="chip bg-primary-soft text-primary">{shift.roleName}</span>
