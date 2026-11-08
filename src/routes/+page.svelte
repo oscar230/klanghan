@@ -6,10 +6,12 @@
 	import ShiftSummary from '$lib/components/ShiftSummary.svelte';
 	import ScheduleCalendar from '$lib/components/ScheduleCalendar.svelte';
 	import CalendarLayers from '$lib/components/CalendarLayers.svelte';
+	import PersonRow from '$lib/components/PersonRow.svelte';
 	import PerformanceSummary from '$lib/components/PerformanceSummary.svelte';
 	import ViewSwitch from '$lib/components/ViewSwitch.svelte';
 	import { performanceEvent, shiftEvent } from '$lib/calendar';
-	import { formatClock, formatShiftTime } from '$lib/time';
+	import { groupByPerson } from '$lib/people';
+	import { formatShiftTime } from '$lib/time';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -115,16 +117,8 @@
 							</p>
 						{:else}
 							<ul class="list border-t-0 border-b-0">
-								{#each supervisors as sv (sv.id)}
-									<li class="list-row min-h-14">
-										<Avatar src={sv.imageUrl} name={sv.userName} size={36} />
-										<div class="min-w-0 flex-1">
-											<p class="truncate text-sm font-medium">{sv.userName}</p>
-											<p class="text-muted-foreground truncate text-sm">
-												{sv.roleName} · {formatClock(sv.startOffset)} – {formatClock(sv.endOffset)}
-											</p>
-										</div>
-									</li>
+								{#each groupByPerson(supervisors) as person (person.userId)}
+									<PersonRow {person} />
 								{/each}
 							</ul>
 						{/if}
@@ -135,16 +129,8 @@
 						<p class="text-muted-foreground text-sm">Du arbetar ensam på detta pass.</p>
 					{:else}
 						<ul class="list border-b-0 border-t-0">
-							{#each coworkers as cw}
-								<li class="list-row min-h-14">
-									<Avatar src={cw.imageUrl} name={cw.userName} size={36} />
-									<div class="min-w-0 flex-1">
-										<p class="truncate text-sm font-medium">{cw.userName}</p>
-										<p class="text-muted-foreground truncate text-sm">
-											{cw.roleName} · {formatClock(cw.startOffset)} – {formatClock(cw.endOffset)}
-										</p>
-									</div>
-								</li>
+							{#each groupByPerson(coworkers) as person (person.userId)}
+								<PersonRow {person} />
 							{/each}
 						</ul>
 					{/if}

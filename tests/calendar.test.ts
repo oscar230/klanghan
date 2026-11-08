@@ -38,3 +38,10 @@ test('calendar: a shift across midnight is split over both days', () => {
 	assert.deepEqual([saturday.start, saturday.end, saturday.continuesIntoNextDay, saturday.continuesFromPreviousDay], [0, 120, false, true]);
 	assert.equal(layoutDay([night], 2).length, 0);
 });
+
+test('people: overlapping shifts of one volunteer become one entry, in first-seen order', async () => {
+	const { groupByPerson } = await import('../src/lib/people');
+	const s = (id: string, userId: string) => ({ id, userId, userName: userId.toUpperCase(), imageUrl: null });
+	const people = groupByPerson([s('1', 'bo'), s('2', 'ida'), s('3', 'bo'), s('4', 'bo')]);
+	assert.deepEqual(people.map((p) => [p.userId, p.shifts.map((x) => x.id)]), [['bo', ['1', '3', '4']], ['ida', ['2']]]);
+});
