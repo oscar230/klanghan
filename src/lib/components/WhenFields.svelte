@@ -23,4 +23,7 @@
 		</select>
 		<TimeSelect name={prefix} {label} value={offset === null ? null : formatClock(offset)} />
 	</div>
+	{#if prefix === 'end'}
+		<p class="text-muted-foreground mt-1 text-xs">{AFTER_FESTIVAL} går bara att välja med klockan 00:00, när festivalen slutar.</p>
+	{/if}
 </fieldset>
