@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import Avatar from '$lib/components/Avatar.svelte';
-	import Dialog from '$lib/components/Dialog.svelte';
+	import DetailsDialog from '$lib/components/DetailsDialog.svelte';
 	import ShiftSummary from '$lib/components/ShiftSummary.svelte';
 	import ScheduleCalendar from '$lib/components/ScheduleCalendar.svelte';
 	import CalendarLayers from '$lib/components/CalendarLayers.svelte';
@@ -140,24 +140,10 @@
 	{/if}
 {/if}
 
-<Dialog open={selected !== null} title="Arbetspass" onclose={() => (selected = null)}>
-	{#if selected}
-		<div class="space-y-4 px-6 py-1">
-			<ShiftSummary shift={selected} />
-		</div>
-		<div class="flex justify-end px-6 pt-4 pb-6">
-			<button type="button" class="btn btn-text" onclick={() => (selected = null)}>Stäng</button>
-		</div>
-	{/if}
-</Dialog>
+<DetailsDialog open={selected !== null} title="Arbetspass" onclose={() => (selected = null)}>
+	{#if selected}<ShiftSummary shift={selected} />{/if}
+</DetailsDialog>
 
-<Dialog open={selectedPerformance !== null} title="Artist" onclose={() => (selectedPerformance = null)}>
-	{#if selectedPerformance}
-		<div class="space-y-4 px-6 py-1">
-			<PerformanceSummary performance={selectedPerformance} />
-		</div>
-		<div class="flex justify-end px-6 pt-4 pb-6">
-			<button type="button" class="btn btn-text" onclick={() => (selectedPerformance = null)}>Stäng</button>
-		</div>
-	{/if}
-</Dialog>
+<DetailsDialog open={selectedPerformance !== null} title="Artist" onclose={() => (selectedPerformance = null)}>
+	{#if selectedPerformance}<PerformanceSummary performance={selectedPerformance} />{/if}
+</DetailsDialog>

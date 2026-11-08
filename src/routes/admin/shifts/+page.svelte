@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import Avatar from '$lib/components/Avatar.svelte';
-	import Dialog from '$lib/components/Dialog.svelte';
+	import DetailsDialog from '$lib/components/DetailsDialog.svelte';
 	import ShiftSummary from '$lib/components/ShiftSummary.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import Modal from '$lib/components/Modal.svelte';
@@ -167,41 +167,37 @@
 	<Icon name="plus" /> Nytt pass
 </button>
 
-<Dialog open={selected !== null} title="Arbetspass" onclose={() => (selected = null)}>
+<DetailsDialog open={selected !== null} title="Arbetspass" onclose={() => (selected = null)}>
 	{#if selected}
-		<div class="space-y-4 px-6 py-1">
-			<ShiftSummary shift={selected} />
-			{#each describeConflicts(conflicts.get(selected.id) ?? [], selected.roleName) as message}
-				<p class="text-danger text-sm">
-					<span class="bg-danger text-danger-foreground rounded-full px-2 py-0.5 text-xs">Krock</span>
-					{message}
-				</p>
-			{/each}
-		</div>
-		<div class="flex items-center gap-2 px-6 pt-4 pb-6">
-			<form method="POST" action="?/deleteShift" use:enhance={deleteSelected} class="mr-auto">
+		<ShiftSummary shift={selected} />
+		{#each describeConflicts(conflicts.get(selected.id) ?? [], selected.roleName) as message}
+			<p class="text-danger text-sm">
+				<span class="bg-danger text-danger-foreground rounded-full px-2 py-0.5 text-xs">Krock</span>
+				{message}
+			</p>
+		{/each}
+	{/if}
+	{#snippet start()}
+		{#if selected}
+			<form method="POST" action="?/deleteShift" use:enhance={deleteSelected}>
 				<input type="hidden" name="id" value={selected.id} />
 				<button class="btn btn-danger -ml-4"><Icon name="trash" size={18} /> Ta bort</button>
 			</form>
-			<button type="button" class="btn btn-text" onclick={() => (selected = null)}>Stäng</button>
-			<button type="button" class="btn btn-primary" onclick={() => selected && edit(selected)}>
-				<Icon name="pencil" size={18} /> Ändra
-			</button>
-		</div>
-	{/if}
-</Dialog>
+		{/if}
+	{/snippet}
+	{#snippet end()}
+		<button type="button" class="btn btn-primary" onclick={() => selected && edit(selected)}>
+			<Icon name="pencil" size={18} /> Ändra
+		</button>
+	{/snippet}
+</DetailsDialog>
 
-<Dialog open={selectedPerformance !== null} title="Artist" onclose={() => (selectedPerformance = null)}>
-	{#if selectedPerformance}
-		<div class="space-y-4 px-6 py-1">
-			<PerformanceSummary performance={selectedPerformance} />
-		</div>
-		<div class="flex items-center justify-end gap-2 px-6 pt-4 pb-6">
-			<a href="/admin/artists" class="btn btn-text">Hantera artister</a>
-			<button type="button" class="btn btn-primary" onclick={() => (selectedPerformance = null)}>Stäng</button>
-		</div>
-	{/if}
-</Dialog>
+<DetailsDialog open={selectedPerformance !== null} title="Artist" onclose={() => (selectedPerformance = null)}>
+	{#if selectedPerformance}<PerformanceSummary performance={selectedPerformance} />{/if}
+	{#snippet end()}
+		<a href="/admin/artists" class="btn btn-primary">Hantera artister</a>
+	{/snippet}
+</DetailsDialog>
 
 <Modal open={adding} title="Nytt arbetspass" action="?/addShift" submitLabel="Schemalägg" onclose={() => (adding = false)}>
 	{@render shiftFields(null)}

@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import ArtistFilters from '$lib/components/ArtistFilters.svelte';
-	import Dialog from '$lib/components/Dialog.svelte';
+	import DetailsDialog from '$lib/components/DetailsDialog.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import PerformanceSummary from '$lib/components/PerformanceSummary.svelte';
@@ -176,29 +176,30 @@
 	<Icon name="plus" /> Ny spelning
 </button>
 
-<Dialog open={selected !== null} title="Artist" onclose={() => (selected = null)}>
+<DetailsDialog open={selected !== null} title="Artist" onclose={() => (selected = null)}>
 	{#if selected}
-		<div class="space-y-4 px-6 py-1">
-			<PerformanceSummary performance={selected} />
-			{#if conflicts.has(selected.id)}
-				<p class="text-danger text-sm">
-					<span class="bg-danger text-danger-foreground rounded-full px-2 py-0.5 text-xs">Krock</span>
-					{STAGE_CONFLICT_MESSAGE}
-				</p>
-			{/if}
-		</div>
-		<div class="flex items-center gap-2 px-6 pt-4 pb-6">
-			<form method="POST" action="?/deletePerformance" use:enhance={deleteSelected} class="mr-auto">
+		<PerformanceSummary performance={selected} />
+		{#if conflicts.has(selected.id)}
+			<p class="text-danger text-sm">
+				<span class="bg-danger text-danger-foreground rounded-full px-2 py-0.5 text-xs">Krock</span>
+				{STAGE_CONFLICT_MESSAGE}
+			</p>
+		{/if}
+	{/if}
+	{#snippet start()}
+		{#if selected}
+			<form method="POST" action="?/deletePerformance" use:enhance={deleteSelected}>
 				<input type="hidden" name="id" value={selected.id} />
 				<button class="btn btn-danger -ml-4"><Icon name="trash" size={18} /> Ta bort</button>
 			</form>
-			<button type="button" class="btn btn-text" onclick={() => (selected = null)}>Stäng</button>
-			<button type="button" class="btn btn-primary" onclick={() => selected && edit(selected)}>
-				<Icon name="pencil" size={18} /> Ändra
-			</button>
-		</div>
-	{/if}
-</Dialog>
+		{/if}
+	{/snippet}
+	{#snippet end()}
+		<button type="button" class="btn btn-primary" onclick={() => selected && edit(selected)}>
+			<Icon name="pencil" size={18} /> Ändra
+		</button>
+	{/snippet}
+</DetailsDialog>
 
 <Modal open={adding} title="Ny spelning" action="?/addPerformance" submitLabel="Lägg till" onclose={() => (adding = false)}>
 	{@render fields(null)}

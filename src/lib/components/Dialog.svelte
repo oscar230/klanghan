@@ -18,8 +18,11 @@
 
 	$effect(() => {
 		if (!dialog) return;
-		if (open && !dialog.open) dialog.showModal();
-		else if (!open && dialog.open) dialog.close();
+		if (open && !dialog.open) {
+			dialog.showModal();
+			// Content that wants the first focus (instead of the first control in the DOM) marks itself
+			dialog.querySelector<HTMLElement>('[data-autofocus]')?.focus();
+		} else if (!open && dialog.open) dialog.close();
 	});
 </script>
 

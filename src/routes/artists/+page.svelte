@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import ArtistFilters from '$lib/components/ArtistFilters.svelte';
 	import CalendarLayers from '$lib/components/CalendarLayers.svelte';
-	import Dialog from '$lib/components/Dialog.svelte';
+	import DetailsDialog from '$lib/components/DetailsDialog.svelte';
 	import PerformanceSummary from '$lib/components/PerformanceSummary.svelte';
 	import ScheduleCalendar from '$lib/components/ScheduleCalendar.svelte';
 	import ShiftSummary from '$lib/components/ShiftSummary.svelte';
@@ -94,24 +94,10 @@
 	{/if}
 {/if}
 
-<Dialog open={selectedPerformance !== null} title="Artist" onclose={() => (selectedPerformance = null)}>
-	{#if selectedPerformance}
-		<div class="space-y-4 px-6 py-1">
-			<PerformanceSummary performance={selectedPerformance} />
-		</div>
-		<div class="flex justify-end px-6 pt-4 pb-6">
-			<button type="button" class="btn btn-text" onclick={() => (selectedPerformance = null)}>Stäng</button>
-		</div>
-	{/if}
-</Dialog>
+<DetailsDialog open={selectedPerformance !== null} title="Artist" onclose={() => (selectedPerformance = null)}>
+	{#if selectedPerformance}<PerformanceSummary performance={selectedPerformance} />{/if}
+</DetailsDialog>
 
-<Dialog open={selectedShift !== null} title="Arbetspass" onclose={() => (selectedShift = null)}>
-	{#if selectedShift}
-		<div class="space-y-4 px-6 py-1">
-			<ShiftSummary shift={selectedShift} />
-		</div>
-		<div class="flex justify-end px-6 pt-4 pb-6">
-			<button type="button" class="btn btn-text" onclick={() => (selectedShift = null)}>Stäng</button>
-		</div>
-	{/if}
-</Dialog>
+<DetailsDialog open={selectedShift !== null} title="Arbetspass" onclose={() => (selectedShift = null)}>
+	{#if selectedShift}<ShiftSummary shift={selectedShift} />{/if}
+</DetailsDialog>
