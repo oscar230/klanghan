@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
+	import ShiftSummary from '$lib/components/ShiftSummary.svelte';
 	import ScheduleCalendar from '$lib/components/ScheduleCalendar.svelte';
 	import ViewSwitch from '$lib/components/ViewSwitch.svelte';
 	import { formatClock, formatShiftTime } from '$lib/time';
@@ -38,10 +39,16 @@
 
 	let myShifts = $derived(data.shifts.filter((s) => s.userId === selectedUserId));
 
-	const getCoworkers = (shift: (typeof data.shifts)[number]) =>
+	type Shift = (typeof data.shifts)[number];
+
+	const overlapping = (shift: Shift) =>
 		data.shifts.filter(
 			(s) => s.userId !== selectedUserId && s.startOffset < shift.endOffset && s.endOffset > shift.startOffset
 		);
+
+	// People in the role that leads this shift's role who are working at the same time
+	const getSupervisors = (shift: Shift) =>
+		shift.supervisorRoleId ? overlapping(shift).filter((s) => s.roleId === shift.supervisorRoleId) : [];
 </script>
 
 <svelte:head>
@@ -76,7 +83,8 @@
 	{:else}
 		<ul class="space-y-3">
 			{#each myShifts as shift (shift.id)}
-				{@const coworkers = getCoworkers(shift)}
+				{@const supervisors = getSupervisors(shift)}
+				{@const coworkers = overlapping(shift).filter((s) => !supervisors.includes(s))}
 				<li class="bg-card border-border rounded-2xl border p-4">
 					<p class="font-medium">{formatShiftTime(shift.startOffset, shift.endOffset)}</p>
 					<p class="mt-1">
@@ -84,6 +92,31 @@
 					</p>
 					{#if shift.roleDescription}
 						<p class="text-muted-foreground mt-2 text-sm">{shift.roleDescription}</p>
+					{/if}
+
+					{#if shift.supervisorRoleName}
+						<h3 class="text-muted-foreground mt-4 mb-1 text-xs font-medium">
+							Behöver du hjälp? Fråga {shift.supervisorRoleName}
+						</h3>
+						{#if supervisors.length === 0}
+							<p class="text-muted-foreground text-sm">
+								Ingen {shift.supervisorRoleName.toLowerCase()} arbetar under det här passet.
+							</p>
+						{:else}
+							<ul class="list border-t-0 border-b-0">
+								{#each supervisors as sv (sv.id)}
+									<li class="list-row min-h-14">
+										<Avatar src={sv.imageUrl} name={sv.userName} size={36} />
+										<div class="min-w-0 flex-1">
+											<p class="truncate text-sm font-medium">{sv.userName}</p>
+											<p class="text-muted-foreground truncate text-sm">
+												{sv.roleName} · {formatClock(sv.startOffset)} – {formatClock(sv.endOffset)}
+											</p>
+										</div>
+									</li>
+								{/each}
+							</ul>
+						{/if}
 					{/if}
 
 					<h3 class="text-muted-foreground mt-4 mb-1 text-xs font-medium">Arbetar med</h3>
@@ -113,17 +146,7 @@
 <Dialog open={selected !== null} title="Arbetspass" onclose={() => (selected = null)}>
 	{#if selected}
 		<div class="space-y-4 px-6 py-1">
-			<div class="flex items-center gap-3">
-				<Avatar src={selected.imageUrl} name={selected.userName} size={48} />
-				<div class="min-w-0">
-					<p class="truncate font-medium">{selected.userName}</p>
-					<p class="text-muted-foreground text-sm">{selected.roleName}</p>
-				</div>
-			</div>
-			<p>{formatShiftTime(selected.startOffset, selected.endOffset)}</p>
-			{#if selected.roleDescription}
-				<p class="text-muted-foreground text-sm">{selected.roleDescription}</p>
-			{/if}
+			<ShiftSummary shift={selected} />
 		</div>
 		<div class="flex justify-end px-6 pt-4 pb-6">
 			<button type="button" class="btn btn-text" onclick={() => (selected = null)}>Stäng</button>

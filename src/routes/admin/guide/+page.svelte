@@ -36,17 +36,34 @@
 			En roll kan bara tas bort när inget arbetspass använder den. <em>Visa schema</em> visar alla pass för rollen,
 			dag för dag.
 		</p>
+		<p class="mt-2">
+			En roll kan <em>ledas av</em> en annan roll, till exempel att <em>Trygghetsvärd</em> leds av
+			<em>Säkerhetsansvarig</em>. Volontärer med rollen ser då, på sitt schema, vem med den ledande rollen som
+			arbetar under passet och som de kan fråga om hjälp. En roll som leder andra roller kan inte tas bort förrän
+			kopplingen tagits bort: ändra den underordnade rollen och välj <em>Ingen</em> under <em>Leds av</em>.
+		</p>
 	</section>
 
 	<section>
 		<h2 class="mb-2 text-lg font-medium">Schema</h2>
 		<p>
-			Under <em>Schema</em> bokar du in en volontär på en roll med start och slut. Med <em>Byt volontär</em> flyttar du
-			ett pass till någon annan och med <em>Ta bort</em> tar du bort passet.
+			Under <em>Schema</em> bokar du in en volontär på en roll med start och slut. Med <em>Ändra</em> byter du
+			volontär, roll eller tider för ett pass och med <em>Ta bort</em> tar du bort det. Tider anges alltid med 24-timmarsklocka.
 		</p>
 		<p class="mt-2">
 			Är en volontär bokad på flera pass samtidigt markeras passen med <em>Krock</em>. Det går att spara ändå, men
 			volontärer bör normalt inte ha flera pass på en gång. Behövs det, skapa hellre en egen roll som täcker uppdraget.
+		</p>
+	</section>
+
+	<section>
+		<h2 class="mb-2 text-lg font-medium">Kalendern</h2>
+		<p>
+			Välj <em>Kalender</em> högst upp på sidan <em>Schema</em> för en överblick med en kolumn per dag och
+			klockslagen längs sidan. Pass som sker samtidigt ligger bredvid varandra; i smala kolumner står texten på
+			högkant. På smala skärmar visas en dag i taget. Tryck på ett pass för att se detaljer, ändra eller ta bort det.
+			Pass där volontären är dubbelbokad får en mörk ram. Volontärerna har samma kalender på startsidan, men utan
+			möjlighet att ändra.
 		</p>
 	</section>
 
@@ -65,7 +82,8 @@
 	<section>
 		<h2 class="mb-2 text-lg font-medium">Övrigt</h2>
 		<ul class="list-disc space-y-1 pl-5">
-			<li>Kalenderikonen högst upp till höger visar det publika schemat som volontärerna ser.</li>
+			<li>Admin-ikonen med streck över högst upp till höger lämnar administrationen och visar det publika schemat som volontärerna ser.</li>
+			<li>Pilen ut ur rutan loggar ut, efter en fråga om du verkligen vill det.</li>
 			<li>Månen och solen byter mellan ljust och mörkt läge. Som standard följer appen enhetens inställning.</li>
 			<li>På smala skärmar finns radens åtgärder bakom en meny med tre punkter.</li>
 		</ul>

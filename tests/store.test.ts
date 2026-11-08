@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 import { S3Client } from '@aws-sdk/client-s3';
 import { LocalStore } from '../src/lib/server/store/local';
 import { S3Store } from '../src/lib/server/store/s3';
-import { ConflictError, emptySchedule, type Store } from '../src/lib/server/store/types';
+import { ConflictError, emptySchedule, normalizeSchedule, type Store } from '../src/lib/server/store/types';
 import { createStore } from '../src/lib/server/store';
 import { createRepository } from '../src/lib/server/repository';
 import * as ops from '../src/lib/server/operations';
@@ -92,7 +92,7 @@ function contract(name: string, withStore: (run: (s: Store) => Promise<void>) =>
 	test(`${name}: round-trips and rejects stale writes`, () =>
 		withStore(async (store) => {
 			const first = await store.readSchedule();
-			first.schedule.roles.push({ id: 'r1', name: 'Entré', description: null });
+			first.schedule.roles.push({ id: 'r1', name: 'Entré', description: null, supervisorRoleId: null });
 			const etag1 = await store.writeSchedule(first.schedule, first.etag);
 
 			const reread = await store.readSchedule();
@@ -101,7 +101,7 @@ function contract(name: string, withStore: (run: (s: Store) => Promise<void>) =>
 
 			// A second writer that still holds the original (null) etag must lose
 			await assert.rejects(store.writeSchedule(emptySchedule(), null), ConflictError);
-			reread.schedule.roles.push({ id: 'r2', name: 'Teknik', description: null });
+			reread.schedule.roles.push({ id: 'r2', name: 'Teknik', description: null, supervisorRoleId: null });
 			await store.writeSchedule(reread.schedule, etag1);
 			await assert.rejects(store.writeSchedule(reread.schedule, etag1), ConflictError);
 		}));
@@ -181,6 +181,33 @@ test('operations enforce the scheduling rules', () => {
 	ops.deleteRole(s, role.id);
 	ops.deleteUser(s, user.id);
 	assert.equal(s.users.length + s.roles.length + s.shifts.length, 0);
+});
+
+test('a role can be led by another role, without loops, and the leader stays until the link is broken', () => {
+	const s = emptySchedule();
+	const chief = ops.addRole(s, 'Säkerhetsansvarig', null);
+	const guard = ops.addRole(s, 'Trygghetsvärd', null, chief.id);
+	assert.equal(guard.supervisorRoleId, chief.id);
+	assert.equal(chief.supervisorRoleId, null);
+
+	assert.throws(() => ops.addRole(s, 'Spöke', null, 'ghost'), /finns inte/);
+	assert.throws(() => ops.updateRole(s, chief.id, chief.name, null, chief.id), /egen/);
+	assert.throws(() => ops.updateRole(s, chief.id, chief.name, null, guard.id), /cirkel/); // loop of two
+	const third = ops.addRole(s, 'Gäst', null, guard.id);
+	assert.throws(() => ops.updateRole(s, chief.id, chief.name, null, third.id), /cirkel/); // loop of three
+	assert.equal(chief.supervisorRoleId, null); // rejected changes leave the role as it was
+
+	assert.throws(() => ops.deleteRole(s, chief.id), /leder andra/);
+	ops.deleteRole(s, third.id); // a role without subordinates can go, taking its link with it
+	assert.throws(() => ops.deleteRole(s, chief.id), /leder andra/);
+	ops.updateRole(s, guard.id, guard.name, null, null); // break the link
+	ops.deleteRole(s, chief.id);
+	assert.deepEqual(s.roles.map((r) => r.name), ['Trygghetsvärd']);
+});
+
+test('roles saved before supervisors existed load without one', () => {
+	const s = normalizeSchedule({ roles: [{ id: 'r', name: 'Bar', description: null, supervisorRoleId: null }] });
+	assert.equal(s.roles[0].supervisorRoleId, null);
 });
 
 test('roleTimeline marks gaps and overlaps', () => {

@@ -11,13 +11,16 @@ const NAMES = [
 	'Maja Öberg', 'Nils Forsberg'
 ];
 
-const ROLES: Array<[string, string | null]> = [
-	['Entré', 'Välkomnar gäster, scannar biljetter och delar ut armband.'],
-	['Bar', 'Serverar och håller baren ren. Legitimera alltid vid osäkerhet.'],
-	['Kök', 'Förbereder och serverar mat till funktionärer och artister.'],
-	['Teknik', 'Hjälper till med ljud, ljus och scenbyten.'],
-	['Städ', null],
-	['Info', 'Svarar på frågor och hänvisar rätt.']
+// [name, description, index of the leading role]
+const ROLES: Array<[string, string | null, number | null]> = [
+	['Entré', 'Välkomnar gäster, scannar biljetter och delar ut armband.', null],
+	['Bar', 'Serverar och håller baren ren. Legitimera alltid vid osäkerhet.', null],
+	['Kök', 'Förbereder och serverar mat till funktionärer och artister.', null],
+	['Teknik', 'Hjälper till med ljud, ljus och scenbyten.', null],
+	['Städ', null, null],
+	['Info', 'Svarar på frågor och hänvisar rätt.', null],
+	['Säkerhetsansvarig', 'Leder säkerhetsarbetet och är den man vänder sig till när något inträffar.', null],
+	['Trygghetsvärd', 'Finns till för gästernas trygghet och hänvisar vidare till säkerhetsansvarig vid behov.', 6]
 ];
 
 // [role index, day, start hour, end hour, how many people]
@@ -34,6 +37,8 @@ for (const day of [0, 1, 2]) {
 	PLAN.push([3, day, 10, 14, 1]);
 	if (day !== 1) PLAN.push([3, day, 14, 18, 1]);
 	PLAN.push([3, day, 18, 23, 2]);
+	PLAN.push([6, day, 10, 16, 1], [6, day, 16, 22, 1]); // Säkerhetsansvarig
+	PLAN.push([7, day, 12, 18, 2], [7, day, 18, 24, 2]); // Trygghetsvärd
 }
 
 /** A small round avatar so the demo shows photos. Hand-rolled PNG, no dependencies. */
@@ -98,10 +103,11 @@ export function buildDemo() {
 		// Leave a few without a photo so the default avatar is shown too
 		imageUrl: i % 4 === 3 ? null : `/uploads/${DEMO_PREFIX}${i + 1}.png`
 	}));
-	const roles: Role[] = ROLES.map(([name, description], i) => ({
+	const roles: Role[] = ROLES.map(([name, description, supervisor], i) => ({
 		id: `${DEMO_PREFIX}role-${i + 1}`,
 		name,
-		description
+		description,
+		supervisorRoleId: supervisor === null ? null : `${DEMO_PREFIX}role-${supervisor + 1}`
 	}));
 
 	const shifts: Shift[] = [];

@@ -48,28 +48,61 @@ export function deleteUser(s: Schedule, id: string): string | null {
 	return user.imageUrl;
 }
 
-export function addRole(s: Schedule, name: string, description: string | null): Role {
+/** A role may be led by one other role. Rejects unknown roles and links that would make roles lead each other. */
+function checkSupervisor(s: Schedule, roleId: string, supervisorRoleId: string | null) {
+	if (!supervisorRoleId) return;
+	if (supervisorRoleId === roleId) throw new DomainError('En roll kan inte vara sin egen överordnade');
+
+	const byId = new Map(s.roles.map((r) => [r.id, r]));
+	if (!byId.has(supervisorRoleId)) throw new DomainError('Den överordnade rollen finns inte');
+
+	// Walking up from the supervisor must never reach the role itself
+	const seen = new Set<string>();
+	for (let id: string | null = supervisorRoleId; id && !seen.has(id); id = byId.get(id)?.supervisorRoleId ?? null) {
+		if (id === roleId) throw new DomainError('Rollerna skulle leda varandra i en cirkel');
+		seen.add(id);
+	}
+}
+
+export function addRole(
+	s: Schedule,
+	name: string,
+	description: string | null,
+	supervisorRoleId: string | null = null
+): Role {
 	if (s.roles.some((r) => sameName(r.name, name))) {
 		throw new DomainError('En roll med det namnet finns redan');
 	}
-	const role: Role = { id: randomUUID(), name, description };
+	const role: Role = { id: randomUUID(), name, description, supervisorRoleId };
+	checkSupervisor(s, role.id, supervisorRoleId);
 	s.roles.push(role);
 	return role;
 }
 
-export function updateRole(s: Schedule, id: string, name: string, description: string | null) {
+export function updateRole(
+	s: Schedule,
+	id: string,
+	name: string,
+	description: string | null,
+	supervisorRoleId: string | null
+) {
 	const role = s.roles.find((r) => r.id === id);
 	if (!role) throw new DomainError('Rollen hittades inte', 404);
 	if (s.roles.some((r) => r.id !== id && sameName(r.name, name))) {
 		throw new DomainError('En roll med det namnet finns redan');
 	}
+	checkSupervisor(s, id, supervisorRoleId);
 	role.name = name;
 	role.description = description;
+	role.supervisorRoleId = supervisorRoleId;
 }
 
 export function deleteRole(s: Schedule, id: string) {
 	if (s.shifts.some((sh) => sh.roleId === id)) {
 		throw new DomainError('Kan inte ta bort en roll som har inbokade arbetspass');
+	}
+	if (s.roles.some((r) => r.supervisorRoleId === id)) {
+		throw new DomainError('Kan inte ta bort en roll som leder andra roller. Ta bort kopplingen först.');
 	}
 	s.roles = s.roles.filter((r) => r.id !== id);
 }

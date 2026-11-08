@@ -26,6 +26,18 @@
 		<label class="field-label" for="role-description">Beskrivning (frivilligt)</label>
 		<textarea id="role-description" name="description" rows="4" class="field">{role?.description ?? ''}</textarea>
 	</div>
+	<div>
+		<label class="field-label" for="role-supervisor">Leds av (frivilligt)</label>
+		<select id="role-supervisor" name="supervisorRoleId" class="field">
+			<option value="">Ingen</option>
+			{#each data.roles.filter((other) => other.id !== role?.id) as other}
+				<option value={other.id} selected={other.id === role?.supervisorRoleId}>{other.name}</option>
+			{/each}
+		</select>
+		<p class="text-muted-foreground mt-1 text-xs">
+			Volontärer med den här rollen får se vem som leder dem om de behöver hjälp.
+		</p>
+	</div>
 {/snippet}
 
 <h1 class="text-2xl">Roller</h1>
@@ -39,7 +51,12 @@
 			<li class="list-row">
 				<div class="min-w-0 flex-1">
 					<p class="truncate font-medium">{role.name}</p>
-					<p class="text-muted-foreground text-sm">{role.shiftCount} pass</p>
+					<p class="text-muted-foreground text-sm">
+						{role.shiftCount} pass{role.supervisorName ? ` · Leds av ${role.supervisorName}` : ''}
+					</p>
+					{#if role.subordinateNames.length}
+						<p class="text-muted-foreground text-sm">Leder {role.subordinateNames.join(', ')}</p>
+					{/if}
 					{#if role.description}
 						<p class="text-muted-foreground mt-1 line-clamp-2 text-sm break-words">{role.description}</p>
 					{/if}
@@ -56,8 +73,12 @@
 						<input type="hidden" name="id" value={role.id} />
 						<button
 							class="action action-danger"
-							disabled={role.shiftCount > 0}
-							title={role.shiftCount > 0 ? 'Kan inte ta bort en roll med arbetspass' : undefined}
+							disabled={role.shiftCount > 0 || role.subordinateNames.length > 0}
+							title={role.shiftCount > 0
+								? 'Kan inte ta bort en roll med arbetspass'
+								: role.subordinateNames.length > 0
+									? 'Kan inte ta bort en roll som leder andra roller. Ta bort kopplingen först.'
+									: undefined}
 						>
 							<Icon name="trash" size={18} /> Ta bort
 						</button>

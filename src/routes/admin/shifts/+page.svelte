@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
+	import ShiftSummary from '$lib/components/ShiftSummary.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import RowActions from '$lib/components/RowActions.svelte';
@@ -150,17 +151,7 @@
 <Dialog open={selected !== null} title="Arbetspass" onclose={() => (selected = null)}>
 	{#if selected}
 		<div class="space-y-4 px-6 py-1">
-			<div class="flex items-center gap-3">
-				<Avatar src={selected.imageUrl} name={selected.userName} size={48} />
-				<div class="min-w-0">
-					<p class="truncate font-medium">{selected.userName}</p>
-					<p class="text-muted-foreground text-sm">{selected.roleName}</p>
-				</div>
-			</div>
-			<p>{formatShiftTime(selected.startOffset, selected.endOffset)}</p>
-			{#if selected.roleDescription}
-				<p class="text-muted-foreground text-sm">{selected.roleDescription}</p>
-			{/if}
+			<ShiftSummary shift={selected} />
 			{#if conflicts.has(selected.id)}
 				<p class="text-sm">
 					<span class="bg-foreground text-background rounded-full px-2 py-0.5 text-xs">Krock</span>

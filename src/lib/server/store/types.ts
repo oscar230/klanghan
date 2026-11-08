@@ -8,6 +8,8 @@ export interface Role {
 	id: string;
 	name: string;
 	description: string | null;
+	/** The role that leads this one, e.g. "Säkerhetsansvarig" for "Trygghetsvärd". */
+	supervisorRoleId: string | null;
 }
 
 export interface Shift {
@@ -59,7 +61,7 @@ export function normalizeSchedule(raw: unknown): Schedule {
 	return {
 		version: 1,
 		users: Array.isArray(r.users) ? r.users : [],
-		roles: Array.isArray(r.roles) ? r.roles : [],
+		roles: Array.isArray(r.roles) ? r.roles.map((role) => ({ ...role, supervisorRoleId: role.supervisorRoleId ?? null })) : [],
 		shifts: Array.isArray(r.shifts) ? r.shifts : []
 	};
 }

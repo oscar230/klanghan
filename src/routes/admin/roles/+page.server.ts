@@ -16,10 +16,11 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const name = field(data, 'name');
 		const description = field(data, 'description') || null;
+		const supervisorRoleId = field(data, 'supervisorRoleId') || null;
 		if (!name) return fail(400, { error: 'Rollnamn krävs' });
 
 		try {
-			await getRepo().update((s) => addRole(s, name, description));
+			await getRepo().update((s) => addRole(s, name, description, supervisorRoleId));
 		} catch (e) {
 			return failFrom(e);
 		}
@@ -41,10 +42,11 @@ export const actions: Actions = {
 		const id = field(data, 'id');
 		const name = field(data, 'name');
 		const description = field(data, 'description') || null;
+		const supervisorRoleId = field(data, 'supervisorRoleId') || null;
 		if (!id || !name) return fail(400, { error: 'ID och namn krävs' });
 
 		try {
-			await getRepo().update((s) => updateRole(s, id, name, description));
+			await getRepo().update((s) => updateRole(s, id, name, description, supervisorRoleId));
 		} catch (e) {
 			return failFrom(e);
 		}

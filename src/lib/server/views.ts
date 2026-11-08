@@ -30,6 +30,8 @@ export function shiftDetails(s: Schedule) {
 				imageUrl: user.imageUrl,
 				roleName: role.name,
 				roleDescription: role.description,
+				supervisorRoleId: role.supervisorRoleId,
+				supervisorRoleName: roles.get(role.supervisorRoleId ?? '')?.name ?? null,
 				startOffset: shift.startOffset,
 				endOffset: shift.endOffset
 			}
@@ -47,7 +49,10 @@ export function usersWithShiftCount(s: Schedule) {
 export function rolesWithShiftCount(s: Schedule) {
 	return sortedRoles(s).map((r) => ({
 		...r,
-		shiftCount: s.shifts.filter((sh) => sh.roleId === r.id).length
+		shiftCount: s.shifts.filter((sh) => sh.roleId === r.id).length,
+		supervisorName: s.roles.find((x) => x.id === r.supervisorRoleId)?.name ?? null,
+		/** The roles this one leads; while there are any, the role cannot be deleted. */
+		subordinateNames: s.roles.filter((x) => x.supervisorRoleId === r.id).map((x) => x.name).sort((a, b) => a.localeCompare(b, 'sv'))
 	}));
 }
 
