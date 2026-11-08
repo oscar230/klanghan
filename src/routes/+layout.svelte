@@ -14,6 +14,14 @@
 
 	let confirmingLogout = $state(false);
 
+	// On narrow screens the tabs scroll sideways; keep the current one in view
+	let tabBar = $state<HTMLElement>();
+	$effect(() => {
+		page.url.pathname;
+		const current = tabBar?.querySelector<HTMLElement>('[aria-current=page]');
+		if (tabBar && current) tabBar.scrollLeft = current.offsetLeft - (tabBar.clientWidth - current.offsetWidth) / 2;
+	});
+
 	let inAdmin = $derived(page.url.pathname === '/admin' || page.url.pathname.startsWith('/admin/'));
 
 	// Tabs choose which data to look at (the view switch on the pages only changes how it is shown)
@@ -57,7 +65,7 @@
 		<ThemeToggle />
 	</div>
 	{#if tabs.length}
-		<nav aria-label={inAdmin ? 'Administratör' : 'Schema'} class="mx-auto flex overflow-x-auto px-2 {width}">
+		<nav bind:this={tabBar} aria-label={inAdmin ? 'Administratör' : 'Schema'} class="mx-auto flex overflow-x-auto px-2 {width}">
 			{#each tabs as [href, text]}
 				<a
 					{href}
