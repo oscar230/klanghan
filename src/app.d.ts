@@ -6,7 +6,10 @@ declare global {
 		interface Locals {
 			isAdmin: boolean;
 		}
-		// interface PageData {}
+		interface PageData {
+			/** Set by pages that want the wide layout (the calendar view). */
+			wide?: boolean;
+		}
 		// interface PageState {}
 		// interface Platform {}
 	}

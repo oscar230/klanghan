@@ -164,6 +164,17 @@ test('operations enforce the scheduling rules', () => {
 	assert.throws(() => ops.addShift(s, { userId: 'ghost', roleId: role.id, startOffset: 0, endOffset: 60 }), /finns inte/);
 	const shift = ops.addShift(s, { ...base, startOffset: 0, endOffset: 60 });
 
+	const other = ops.addUser(s, 'Lisa', null);
+	const bar = ops.addRole(s, 'Bar', null);
+	ops.updateShift(s, shift.id, { userId: other.id, roleId: bar.id, startOffset: 30, endOffset: 90 });
+	assert.deepEqual(s.shifts, [{ id: shift.id, userId: other.id, roleId: bar.id, startOffset: 30, endOffset: 90 }]);
+	assert.throws(() => ops.updateShift(s, shift.id, { userId: other.id, roleId: bar.id, startOffset: 90, endOffset: 30 }), /Sluttid/);
+	assert.throws(() => ops.updateShift(s, 'ghost', { userId: other.id, roleId: bar.id, startOffset: 0, endOffset: 30 }), /hittades inte/);
+	assert.equal(s.shifts[0].startOffset, 30); // a rejected update changes nothing
+	ops.updateShift(s, shift.id, { userId: user.id, roleId: role.id, startOffset: 0, endOffset: 60 });
+	ops.deleteRole(s, bar.id);
+	ops.deleteUser(s, other.id);
+
 	assert.throws(() => ops.deleteUser(s, user.id), /inbokade/);
 	assert.throws(() => ops.deleteRole(s, role.id), /inbokade/);
 	ops.deleteShift(s, shift.id);

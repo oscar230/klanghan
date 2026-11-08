@@ -2,11 +2,11 @@
 	import type { Snippet } from 'svelte';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
+	import Dialog from './Dialog.svelte';
 
 	/**
-	 * A form in a native <dialog>. The content is only rendered while `open`, so every
-	 * opening starts from a fresh form. Validation errors from the server stay in the
-	 * dialog; on success it closes and the page data is refreshed.
+	 * A form in a dialog. Validation errors from the server stay in the dialog; on
+	 * success it closes and the page data is refreshed.
 	 */
 	let {
 		open,
@@ -26,18 +26,12 @@
 		children: Snippet;
 	} = $props();
 
-	let dialog = $state<HTMLDialogElement>();
 	let error = $state<string | null>(null);
 	let submitting = $state(false);
 
+	// Each opening starts without the previous error
 	$effect(() => {
-		if (!dialog) return;
-		if (open && !dialog.open) {
-			error = null;
-			dialog.showModal();
-		} else if (!open && dialog.open) {
-			dialog.close();
-		}
+		if (open) error = null;
 	});
 
 	const submit: SubmitFunction = () => {
@@ -55,30 +49,20 @@
 	};
 </script>
 
-<!-- The dialog closes through Esc or the cancel button, not by clicking the backdrop, so typed text is not lost by accident. -->
-<dialog
-	bind:this={dialog}
-	onclose={onclose}
-	aria-labelledby="modal-title"
-	class="bg-surface text-foreground shadow-raised m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl p-0"
->
-	{#if open}
-		<form method="POST" {action} {enctype} use:enhance={submit} class="flex max-h-[calc(100dvh-2rem)] flex-col">
-			<h2 id="modal-title" class="px-6 pt-6 pb-4 text-xl">{title}</h2>
+<Dialog {open} {title} {onclose}>
+	<form method="POST" {action} {enctype} use:enhance={submit} class="flex min-h-0 flex-col">
+		<div class="space-y-4 overflow-y-auto px-6 py-1">
+			{@render children()}
+			{#if error}
+				<p role="alert" class="text-danger text-sm">{error}</p>
+			{/if}
+		</div>
 
-			<div class="space-y-4 overflow-y-auto px-6 py-1">
-				{@render children()}
-				{#if error}
-					<p role="alert" class="text-danger text-sm">{error}</p>
-				{/if}
-			</div>
-
-			<div class="flex justify-end gap-2 px-6 pt-4 pb-6">
-				<button type="button" class="btn btn-text" onclick={onclose}>Avbryt</button>
-				<button class="btn btn-primary" disabled={submitting}>
-					{submitting ? 'Sparar…' : submitLabel}
-				</button>
-			</div>
-		</form>
-	{/if}
-</dialog>
+		<div class="flex justify-end gap-2 px-6 pt-4 pb-6">
+			<button type="button" class="btn btn-text" onclick={onclose}>Avbryt</button>
+			<button class="btn btn-primary" disabled={submitting}>
+				{submitting ? 'Sparar…' : submitLabel}
+			</button>
+		</div>
+	</form>
+</Dialog>

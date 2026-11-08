@@ -8,7 +8,7 @@ export function formatClock(minutes: number): string {
     return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
 }
 
-/** Minutes since midnight for an "HH:MM" string (what <input type="time"> submits), or null if invalid. */
+/** Minutes since midnight for an "HH:MM" string, or null if invalid. */
 export function parseClockTime(value: string): number | null {
     const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value);
     return m ? Number(m[1]) * 60 + Number(m[2]) : null;

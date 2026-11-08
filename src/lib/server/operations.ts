@@ -74,8 +74,9 @@ export function deleteRole(s: Schedule, id: string) {
 	s.roles = s.roles.filter((r) => r.id !== id);
 }
 
-export function addShift(s: Schedule, input: Omit<Shift, 'id'>): Shift {
-	const { userId, roleId, startOffset, endOffset } = input;
+type ShiftInput = Omit<Shift, 'id'>;
+
+function checkShift(s: Schedule, { userId, roleId, startOffset, endOffset }: ShiftInput) {
 	if (!s.users.some((u) => u.id === userId) || !s.roles.some((r) => r.id === roleId)) {
 		throw new DomainError('Volontären eller rollen finns inte');
 	}
@@ -84,19 +85,23 @@ export function addShift(s: Schedule, input: Omit<Shift, 'id'>): Shift {
 	}
 	if (endOffset > DAYS.length * MINUTES_PER_DAY) throw new DomainError('Ogiltig tid');
 	if (endOffset <= startOffset) throw new DomainError('Sluttid måste vara efter starttid');
+}
 
+export function addShift(s: Schedule, input: ShiftInput): Shift {
+	checkShift(s, input);
 	const shift: Shift = { id: randomUUID(), ...input };
 	s.shifts.push(shift);
 	return shift;
 }
 
-export function deleteShift(s: Schedule, id: string) {
-	s.shifts = s.shifts.filter((sh) => sh.id !== id);
+/** Replaces every attribute of a shift (volunteer, role and times). */
+export function updateShift(s: Schedule, id: string, input: ShiftInput) {
+	const shift = s.shifts.find((sh) => sh.id === id);
+	if (!shift) throw new DomainError('Arbetspasset hittades inte', 404);
+	checkShift(s, input);
+	Object.assign(shift, input);
 }
 
-export function reassignShift(s: Schedule, shiftId: string, userId: string) {
-	const shift = s.shifts.find((sh) => sh.id === shiftId);
-	if (!shift) throw new DomainError('Arbetspasset hittades inte', 404);
-	findUser(s, userId);
-	shift.userId = userId;
+export function deleteShift(s: Schedule, id: string) {
+	s.shifts = s.shifts.filter((sh) => sh.id !== id);
 }

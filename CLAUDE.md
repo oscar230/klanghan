@@ -17,7 +17,7 @@ The whole app (public page and admin) runs in one AWS Lambda and stores everythi
 - **Routes** are thin: parse the form, call `getRepo().update(s => operation(s, ...))`, return `failFrom(e)` on error (`actions.ts` maps `DomainError`/`UploadError` to form failures). To add a mutation: add an operation, add a test, call it from an action.
 - **Uploads** (`uploads.ts`): images are identified by magic bytes (PNG/JPEG/GIF/WebP; never SVG), capped at 4 MB, stored with a generated name and served from `/uploads/<file>` by `src/routes/uploads/[...file]/+server.ts`. The volunteers page downscales photos to 512 px in the browser first (`src/lib/resizeImage.ts`), which is what keeps requests under Lambda's payload limit.
 - **Auth** (`src/lib/server/auth.ts`, `src/hooks.server.ts`): one shared admin password (`ADMIN_PASSWORD`). Login sets an HMAC-signed, expiring session cookie keyed on the password. `handle` guards everything under `/admin` (pages, `__data.json` and form actions; layout loads do not run for actions). Login attempts are rate limited in memory per client address.
-- **Time model** (`src/lib/time.ts`): a shift is `startOffset`/`endOffset` in minutes from Friday 00:00; `DAYS` is the festival length. The shift form posts a day index plus an `HH:MM` string from a native `<input type="time">`.
+- **Time model** (`src/lib/time.ts`): a shift is `startOffset`/`endOffset` in minutes from Friday 00:00; `DAYS` is the festival length. The shift form posts a day index plus hour and minute from native selects (`TimeSelect`); `<input type="time">` is deliberately not used because it follows the device locale and shows AM/PM, and the app must always show a 24-hour clock.
 
 ## Commands
 
@@ -53,7 +53,7 @@ Black and white with blue as the only accent and red for destructive actions and
 - **Lists** are a single column that the page scrolls (no inner scroll areas, no grids). Rows use `.list`/`.list-row`. Row actions go in `RowActions`: inline to the right of the row from 40rem, folded into one popover menu button below it. That one breakpoint is shared by all lists on purpose; do not add per-page breakpoints for actions.
 - **Forms open in modals** (`Modal.svelte`, a native `<dialog>` wrapping a form with `use:enhance`). Validation errors stay in the dialog; the dialog closes when the action succeeds. Adding is a bottom-right `.fab`. Buttons that act immediately (delete) use `submitWithNotice` and report failures in the top snackbar (`$lib/notice.svelte.ts`). Nothing should push other elements around when an action starts.
 - **Admin guide** (`/admin/guide`, "Handbok") holds the explanations and tips; do not put tip boxes on the other pages. Update it when functions change.
-- Prefer native controls (`<input type="time">`, `<select>`, `<dialog>`, popover) over libraries.
+- Prefer native controls (`<select>`, `<dialog>`, popover) over libraries.
 
 ## Style
 

@@ -7,11 +7,15 @@
 
 	let { children } = $props();
 
+	let width = $derived(page.data.wide ? 'max-w-screen-2xl' : 'max-w-3xl');
+	// The calendar's day header sticks below the app bar, so it needs to know how tall that is
+	let headerHeight = $state(0);
+
 	let inAdmin = $derived(page.url.pathname === '/admin' || page.url.pathname.startsWith('/admin/'));
 </script>
 
-<header class="bg-background border-border sticky top-0 z-30 border-b">
-	<div class="mx-auto flex h-16 max-w-3xl items-center gap-1 px-4">
+<header bind:clientHeight={headerHeight} class="bg-background border-border sticky top-0 z-30 border-b">
+	<div class="mx-auto flex h-16 items-center gap-1 px-4 {width}">
 		<a href={inAdmin ? '/admin' : '/'} class="mr-auto text-xl">Klanglandet</a>
 
 		{#if inAdmin}
@@ -26,7 +30,7 @@
 		<ThemeToggle />
 	</div>
 	{#if inAdmin && page.url.pathname !== '/admin/login'}
-		<nav aria-label="Administratör" class="mx-auto flex max-w-3xl overflow-x-auto px-2">
+		<nav aria-label="Administratör" class="mx-auto flex overflow-x-auto px-2 {width}">
 			{#each [['/admin/volunteers', 'Volontärer'], ['/admin/roles', 'Roller'], ['/admin/shifts', 'Schema'], ['/admin/guide', 'Handbok']] as [href, text]}
 				<a
 					{href}
@@ -40,7 +44,7 @@
 	{/if}
 </header>
 
-<main class="mx-auto max-w-3xl px-4 pt-6 pb-28">
+<main style:--header-h="{headerHeight}px" class="mx-auto px-4 pt-6 pb-28 {width}">
 	{@render children()}
 </main>
 
