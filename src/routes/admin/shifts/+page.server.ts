@@ -3,7 +3,7 @@ import { getRepo } from '$lib/server/data';
 import { addShift, deleteShift, reassignShift } from '$lib/server/operations';
 import { failFrom } from '$lib/server/actions';
 import { shiftDetails, sortedRoles, sortedUsers } from '$lib/server/views';
-import { DAYS, HOURS, QUARTERS, parseOffset } from '$lib/time';
+import { DAYS, parseClockTime, parseOffset } from '$lib/time';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -32,22 +32,17 @@ export const actions: Actions = {
 		const validDay = (d: number) => Number.isInteger(d) && d >= 0 && d < DAYS.length;
 		if (!validDay(startDay) || !validDay(endDay)) return fail(400, { error: 'Ogiltig dag' });
 
-		const [startHour, startMinute] = [text('startHour', '00'), text('startMinute', '00')];
-		const [endHour, endMinute] = [text('endHour', '00'), text('endMinute', '00')];
-		if (
-			!HOURS.includes(startHour) || !HOURS.includes(endHour) ||
-			!QUARTERS.includes(startMinute) || !QUARTERS.includes(endMinute)
-		) {
-			return fail(400, { error: 'Ogiltig tid' });
-		}
+		const startTime = parseClockTime(text('startTime'));
+		const endTime = parseClockTime(text('endTime'));
+		if (startTime === null || endTime === null) return fail(400, { error: 'Ogiltig tid' });
 
 		try {
 			await getRepo().update((s) =>
 				addShift(s, {
 					userId,
 					roleId,
-					startOffset: parseOffset(startDay, `${startHour}:${startMinute}`),
-					endOffset: parseOffset(endDay, `${endHour}:${endMinute}`)
+					startOffset: parseOffset(startDay, startTime),
+					endOffset: parseOffset(endDay, endTime)
 				})
 			);
 		} catch (e) {

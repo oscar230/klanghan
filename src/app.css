@@ -1,32 +1,117 @@
 @import "tailwindcss";
 
-@theme {
-  /* Earthy Dark Festival Palette */
-  --color-background: #0d120e;
-  --color-foreground: #eef2eb;
-
-  --color-card: #141c16;
-  --color-card-foreground: #eef2eb;
-  
-  --color-input: #1a241c;
-  --color-input-border: #2b392e;
-
-  --color-primary: #8a9a5b; /* Moss Green */
-  --color-primary-foreground: #0d120e;
-  
-  --color-secondary: #c98246; /* Clay Amber */
-  --color-secondary-foreground: #fff;
-  
-  --color-muted: #1c261e;
-  --color-muted-foreground: #8f9b92;
-
-  --color-border: #2b392e;
-
-  --radius-lg: 0.75rem;
-  --radius-md: calc(0.75rem - 2px);
-  --radius-sm: calc(0.75rem - 4px);
+/*
+ * Colours are written once with light-dark(). `color-scheme` follows the
+ * device by default; a saved choice from the theme toggle sets data-theme on
+ * <html> (see app.html and $lib/theme.ts) and overrides it.
+ */
+:root {
+	color-scheme: light dark;
+}
+:root[data-theme="light"] {
+	color-scheme: light;
+}
+:root[data-theme="dark"] {
+	color-scheme: dark;
 }
 
-body {
-  @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary;
+@theme {
+	--font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+	--color-background: light-dark(#ffffff, #202124);
+	--color-foreground: light-dark(#202124, #e8eaed);
+	/* Dialogs and menus sit on top of the page */
+	--color-surface: light-dark(#ffffff, #2d2e31);
+	--color-muted: light-dark(#f1f3f4, #35363a);
+	--color-muted-foreground: light-dark(#5f6368, #9aa0a6);
+	--color-border: light-dark(#dadce0, #3c4043);
+
+	/* Blue is the only accent */
+	--color-primary: light-dark(#1a73e8, #8ab4f8);
+	--color-primary-foreground: light-dark(#ffffff, #202124);
+	--color-primary-soft: light-dark(#e8f0fe, #2b3a55);
+
+	/* Red is only for destructive actions and errors */
+	--color-danger: light-dark(#d93025, #f28b82);
+	--color-danger-soft: light-dark(#fce8e6, #4a2b29);
+
+	--shadow-raised: 0 1px 3px rgb(0 0 0 / 0.3), 0 4px 8px 3px rgb(0 0 0 / 0.15);
+}
+
+@layer base {
+	html {
+		background-color: var(--color-background);
+	}
+	body {
+		@apply bg-background text-foreground antialiased;
+		font-size: 0.9375rem;
+	}
+	:focus-visible {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
+	}
+	button,
+	[role="button"],
+	label[for],
+	select,
+	summary {
+		cursor: pointer;
+	}
+	button:disabled {
+		cursor: not-allowed;
+	}
+	::selection {
+		background-color: var(--color-primary-soft);
+	}
+	dialog {
+		color: inherit;
+	}
+	dialog::backdrop {
+		background-color: rgb(0 0 0 / 0.5);
+	}
+}
+
+@layer components {
+	/* Buttons */
+	.btn {
+		@apply inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-sm font-medium whitespace-nowrap disabled:opacity-40;
+	}
+	.btn-primary {
+		@apply bg-primary text-primary-foreground hover:opacity-90 disabled:hover:opacity-40;
+	}
+	.btn-text {
+		@apply text-primary hover:bg-primary-soft disabled:hover:bg-transparent;
+	}
+	.btn-neutral {
+		@apply text-foreground hover:bg-muted disabled:hover:bg-transparent;
+	}
+	.btn-danger {
+		@apply text-danger hover:bg-danger-soft disabled:hover:bg-transparent;
+	}
+	.icon-btn {
+		@apply inline-flex size-10 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground;
+	}
+	.fab {
+		@apply bg-primary text-primary-foreground shadow-raised fixed right-4 bottom-4 z-20 inline-flex h-14 items-center gap-2 rounded-2xl px-5 text-sm font-medium hover:opacity-90;
+	}
+
+	/* Form fields */
+	.field {
+		@apply bg-background text-foreground border-border placeholder:text-muted-foreground block w-full rounded-lg border px-3 py-2.5 text-base focus:border-primary focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm;
+	}
+	.field-label {
+		@apply text-muted-foreground mb-1 block text-xs font-medium;
+	}
+
+	/* Lists: one column, separated by hairlines, scrolled by the page */
+	.list {
+		@apply border-border divide-border divide-y border-y;
+	}
+	.list-row {
+		@apply flex min-h-16 items-center gap-3 py-2;
+	}
+
+	.chip {
+		@apply bg-muted text-muted-foreground inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+	}
 }

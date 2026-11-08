@@ -13,8 +13,8 @@ export default defineConfig({
 				name: 'Klanglandet Schema',
 				short_name: 'Klanglandet',
 				description: 'Personal schema for Klanglandet participants',
-				theme_color: '#8a9a5b',
-				background_color: '#0d120e',
+				theme_color: '#ffffff',
+				background_color: '#ffffff',
 				display: 'standalone',
 				icons: [
 					{

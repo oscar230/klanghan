@@ -1,7 +1,18 @@
 export const DAYS = ['Fredag', 'Lördag', 'Söndag'];
 
-export const HOURS = Array.from({ length: 24 }).map((_, i) => i.toString().padStart(2, '0'));
-export const QUARTERS = ['00', '15', '30', '45'];
+const MINUTES_PER_DAY = 24 * 60;
+
+/** Time of day ("HH:MM") for an offset. */
+export function formatClock(minutes: number): string {
+    const t = minutes % MINUTES_PER_DAY;
+    return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+}
+
+/** Minutes since midnight for an "HH:MM" string (what <input type="time"> submits), or null if invalid. */
+export function parseClockTime(value: string): number | null {
+    const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value);
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+}
 
 export function formatOffset(minutes: number): string {
     const dayIndex = Math.floor(minutes / (24 * 60));
@@ -16,9 +27,8 @@ export function formatOffset(minutes: number): string {
     return `${dayName} ${hStr}:${mStr}`;
 }
 
-export function parseOffset(dayIndex: number, timeString: string): number {
-    const [h, m] = timeString.split(':').map(Number);
-    return (dayIndex * 24 * 60) + (h * 60) + (m || 0);
+export function parseOffset(dayIndex: number, clockMinutes: number): number {
+    return dayIndex * MINUTES_PER_DAY + clockMinutes;
 }
 
 export function getDuration(startOffset: number, endOffset: number): string {

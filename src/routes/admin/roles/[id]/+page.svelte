@@ -1,286 +1,60 @@
 <script lang="ts">
-    import { formatOffset, formatShiftTime, getDuration } from "$lib/time";
-    import defaultPfp from "$lib/assets/default-pfp.svg";
-    let { data } = $props();
+	import Avatar from '$lib/components/Avatar.svelte';
+	import Icon from '$lib/components/Icon.svelte';
+	import { formatClock, getDuration } from '$lib/time';
+
+	let { data } = $props();
 </script>
 
 <svelte:head>
-    <title>{data.role.name} - Schema</title>
+	<title>{data.role.name} - Schema</title>
 </svelte:head>
 
-<div class="space-y-6 px-1">
-    <div class="flex items-center justify-between">
-        <div>
-            <h2 class="text-xl font-bold text-foreground tracking-tight">
-                {data.role.name}
-            </h2>
-            <p class="text-muted-foreground mt-0.5 text-xs">
-                Fullständigt schema och täckning.
-            </p>
-        </div>
-        <a
-            href="/admin/roles"
-            class="flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground rounded-lg transition-all text-[10px] font-bold uppercase tracking-wider border border-border"
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg
-            >
-            Tillbaka
-        </a>
-    </div>
-
-    {#if data.days.length === 0}
-        <div
-            class="bg-card border border-border border-dashed rounded-xl p-12 text-center"
-        >
-            <div
-                class="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 text-muted-foreground"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    ><rect
-                        width="18"
-                        height="18"
-                        x="3"
-                        y="4"
-                        rx="2"
-                        ry="2"
-                    /><line x1="16" y1="2" x2="16" y2="6" /><line
-                        x1="8"
-                        y1="2"
-                        x2="8"
-                        y2="6"
-                    /><line x1="3" y1="10" x2="21" y2="10" /></svg
-                >
-            </div>
-            <p class="text-sm font-medium text-muted-foreground">
-                Inga arbetspass inbokade för denna roll än.
-            </p>
-        </div>
-    {:else}
-        <div class="grid gap-8 lg:grid-cols-2 2xl:grid-cols-3 items-start">
-            {#each data.days as day}
-                <div class="space-y-3">
-                    <h3
-                        class="text-sm font-bold text-foreground/80 flex items-center gap-2 px-1"
-                    >
-                        <span class="w-2 h-2 rounded-full bg-primary"></span>
-                        {day.dayName}
-                    </h3>
-
-                    <div
-                        class="relative pl-4 space-y-4 before:absolute before:left-[21px] before:top-2 before:bottom-2 before:w-px before:bg-border/60"
-                    >
-                        {#each day.items as item}
-                            <div
-                                class="relative z-10 {item.type === "shift" && item.isOverlap
-                                    ? '-mt-3'
-                                    : ''}"
-                            >
-                                <!-- Marker -->
-                                <div
-                                    class="absolute left-[-22px] top-6 w-3 h-3 rounded-full border-2 bg-background z-20
-                                    {item.type === 'shift'
-                                        ? item.isOverlap
-                                            ? 'border-orange-500'
-                                            : 'border-primary'
-                                        : 'border-amber-500'}"
-                                ></div>
-
-                                {#if item.type === "gap"}
-                                    <div
-                                        class="bg-background border-2 border-amber-500/30 rounded-2xl p-4 flex items-center justify-between shadow-sm relative overflow-hidden group"
-                                    >
-                                        <div
-                                            class="absolute left-0 top-0 bottom-0 w-1 bg-amber-500"
-                                        ></div>
-                                        <div
-                                            class="flex items-center gap-4 pl-2"
-                                        >
-                                            <div
-                                                class="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0"
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="20"
-                                                    height="20"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    stroke-width="2.5"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    ><path
-                                                        d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"
-                                                    /><path d="M12 9v4" /><path
-                                                        d="M12 17h.01"
-                                                    /></svg
-                                                >
-                                            </div>
-                                            <div>
-                                                <p
-                                                    class="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mb-0.5"
-                                                >
-                                                    Lucka i schemat
-                                                </p>
-                                                <p
-                                                    class="text-sm font-black text-foreground"
-                                                >
-                                                    {formatOffset(
-                                                        item.startOffset,
-                                                    ).split(" ")[1]} - {formatOffset(
-                                                        item.endOffset,
-                                                    ).split(" ")[1]}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="text-[10px] font-black text-amber-600 bg-amber-500/10 px-3 py-1.5 rounded-full border border-amber-500/20"
-                                        >
-                                            {getDuration(
-                                                item.startOffset,
-                                                item.endOffset,
-                                            )}
-                                        </div>
-                                    </div>
-                                {:else}
-                                    <div
-                                        class="bg-card border border-border rounded-2xl p-4 shadow-sm hover:border-primary/40 transition-all flex items-center justify-between relative overflow-hidden {item.isOverlap
-                                            ? 'border-l-orange-500 border-l-4 bg-orange-500/[0.02]'
-                                            : ''}"
-                                    >
-                                        <div class="flex items-center gap-4">
-                                            <img
-                                                src={item.imageUrl ||
-                                                    defaultPfp}
-                                                alt={item.userName}
-                                                class="w-10 h-10 rounded-lg object-cover border border-border shadow-sm bg-muted/50"
-                                            />
-                                            <div>
-                                                <p
-                                                    class="text-xs font-bold text-foreground"
-                                                >
-                                                    {item.userName}
-                                                </p>
-                                                <div class="flex flex-col">
-                                                    <p
-                                                        class="text-[10px] font-medium text-muted-foreground"
-                                                    >
-                                                        {formatOffset(
-                                                            item.startOffset,
-                                                        ).split(" ")[1]} - {formatOffset(
-                                                            item.endOffset,
-                                                        ).split(" ")[1]}
-                                                    </p>
-                                                    {#if item.isOverlap}
-                                                        <span
-                                                            class="text-[8px] font-black uppercase text-orange-500 tracking-wider mt-0.5"
-                                                            >Överlapp</span
-                                                        >
-                                                    {/if}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="text-[10px] font-bold text-primary/70 bg-primary/5 px-2 py-1 rounded border border-primary/10"
-                                        >
-                                            {getDuration(
-                                                item.startOffset,
-                                                item.endOffset,
-                                            )}
-                                        </div>
-                                    </div>
-                                {/if}
-                            </div>
-                        {/each}
-                    </div>
-                </div>
-            {/each}
-        </div>
-    {/if}
-
-    <div
-        class="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 items-start"
-    >
-        <div
-            class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="text-primary"
-                ><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path
-                    d="M12 8h.01"
-                /></svg
-            >
-        </div>
-        <div class="space-y-1">
-            <h4 class="text-xs font-bold text-foreground">
-                Tips: Luckor i schemat
-            </h4>
-            <p class="text-[10px] text-muted-foreground leading-relaxed">
-                Tidsluckor "Lucka i schemat" identifieras som perioder utan
-                bemanning mellan det första och sista passet för dagen. Detta
-                hjälper dig att se till att dörrar aldrig lämnas obevakade!
-            </p>
-        </div>
-    </div>
-
-    <div
-        class="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 items-start"
-    >
-        <div
-            class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="text-primary"
-                ><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path
-                    d="M12 8h.01"
-                /></svg
-            >
-        </div>
-        <div class="space-y-1">
-            <h4 class="text-xs font-bold text-foreground">
-                Tips: Överlapp i schemat
-            </h4>
-            <p class="text-[10px] text-muted-foreground leading-relaxed">
-                Överlapp i schemat markeras med en orange kant på passet för den
-                volontär som har överlappande pass direkt efteråt. Noter att
-                detta är fullt tillåtet då man ibland vill ha flera personer på
-                samma roll under samma tid.
-            </p>
-        </div>
-    </div>
+<div class="mb-6 flex items-center gap-2">
+	<a href="/admin/roles" class="icon-btn -ml-2" aria-label="Tillbaka till roller" title="Tillbaka till roller">
+		<Icon name="back" />
+	</a>
+	<div class="min-w-0">
+		<h1 class="truncate text-2xl">{data.role.name}</h1>
+		<p class="text-muted-foreground text-sm">Fullständigt schema och täckning.</p>
+	</div>
 </div>
+
+{#if data.days.length === 0}
+	<p class="text-muted-foreground py-12 text-center text-sm">Inga arbetspass inbokade för denna roll än.</p>
+{:else}
+	{#each data.days as day}
+		<section class="mb-8">
+			<h2 class="text-muted-foreground mb-1 text-sm font-medium">{day.dayName}</h2>
+			<ul class="list">
+				{#each day.items as item}
+					{#if item.type === 'gap'}
+						<li class="list-row border-border my-2 rounded-lg border border-dashed px-3">
+							<div class="flex-1">
+								<p class="font-medium">Lucka i schemat</p>
+								<p class="text-muted-foreground text-sm">
+									{formatClock(item.startOffset)} – {formatClock(item.endOffset)}
+								</p>
+							</div>
+							<span class="chip">{getDuration(item.startOffset, item.endOffset)}</span>
+						</li>
+					{:else}
+						<li class="list-row">
+							<Avatar src={item.imageUrl} name={item.userName} />
+							<div class="min-w-0 flex-1">
+								<p class="truncate font-medium">{item.userName}</p>
+								<p class="text-muted-foreground text-sm">
+									{formatClock(item.startOffset)} – {formatClock(item.endOffset)}
+								</p>
+							</div>
+							{#if item.isOverlap}
+								<span class="bg-foreground text-background rounded-full px-2 py-0.5 text-xs">Överlapp</span>
+							{/if}
+							<span class="chip">{getDuration(item.startOffset, item.endOffset)}</span>
+						</li>
+					{/if}
+				{/each}
+			</ul>
+		</section>
+	{/each}
+{/if}
