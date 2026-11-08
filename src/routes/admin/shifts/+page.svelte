@@ -108,9 +108,7 @@
 <p class="text-muted-foreground mt-1 mb-4 text-sm">Boka in volontärer på arbetspass under festivalen.</p>
 <div class="mb-6"><ViewSwitch /></div>
 
-{#if data.shifts.length === 0}
-	<p class="text-muted-foreground py-12 text-center text-sm">Inga arbetspass schemalagda ännu.</p>
-{:else}
+{#if data.shifts.length > 0}
 	<ShiftFilters
 		users={data.users}
 		roles={data.roles}
@@ -120,47 +118,49 @@
 		shown={visibleShifts.length}
 		total={data.shifts.length}
 	/>
+{/if}
 
-	{#if calendar}
-		<div class="mb-4"><CalendarLayers bind:shifts={showShifts} bind:performances={showPerformances} /></div>
-		<ScheduleCalendar {events} conflicts={calendarConflicts} onselect={selectEvent} />
-	{:else if visibleShifts.length === 0}
-		<p class="text-muted-foreground py-12 text-center text-sm">Inga pass matchar filtret.</p>
-	{:else}
-		<ul class="list">
-			{#each visibleShifts as shift (shift.id)}
-				<li class="list-row">
-					<Avatar src={shift.imageUrl} name={shift.userName} />
-					<div class="min-w-0 flex-1">
-						<p class="flex items-center gap-2 font-medium">
-							<span class="truncate">{shift.userName}</span>
-							{#if conflictIds.has(shift.id)}
-								<span
-									class="bg-danger text-danger-foreground shrink-0 rounded-full px-2 py-0.5 text-xs"
-									title={describeConflicts(conflicts.get(shift.id) ?? [], shift.roleName).join(' ')}
-								>
-									Krock
-								</span>
-							{/if}
-						</p>
-						<p class="text-muted-foreground text-sm">
-							{shift.roleName} · {formatShiftTime(shift.startOffset, shift.endOffset)}
-						</p>
-					</div>
+{#if calendar}
+	<div class="mb-4"><CalendarLayers bind:shifts={showShifts} bind:performances={showPerformances} /></div>
+	<ScheduleCalendar {events} conflicts={calendarConflicts} onselect={selectEvent} />
+{:else if data.shifts.length === 0}
+	<p class="text-muted-foreground py-12 text-center text-sm">Inga arbetspass schemalagda ännu.</p>
+{:else if visibleShifts.length === 0}
+	<p class="text-muted-foreground py-12 text-center text-sm">Inga pass matchar filtret.</p>
+{:else}
+	<ul class="list">
+		{#each visibleShifts as shift (shift.id)}
+			<li class="list-row">
+				<Avatar src={shift.imageUrl} name={shift.userName} />
+				<div class="min-w-0 flex-1">
+					<p class="flex items-center gap-2 font-medium">
+						<span class="truncate">{shift.userName}</span>
+						{#if conflictIds.has(shift.id)}
+							<span
+								class="bg-danger text-danger-foreground shrink-0 rounded-full px-2 py-0.5 text-xs"
+								title={describeConflicts(conflicts.get(shift.id) ?? [], shift.roleName).join(' ')}
+							>
+								Krock
+							</span>
+						{/if}
+					</p>
+					<p class="text-muted-foreground text-sm">
+						{shift.roleName} · {formatShiftTime(shift.startOffset, shift.endOffset)}
+					</p>
+				</div>
 
-					<RowActions label="{shift.userName}, {shift.roleName}">
-						<button type="button" class="action action-primary" onclick={() => edit(shift)}>
-							<Icon name="pencil" size={18} /> Ändra
-						</button>
-						<form method="POST" action="?/deleteShift" use:enhance={submitWithNotice}>
-							<input type="hidden" name="id" value={shift.id} />
-							<button class="action action-danger"><Icon name="trash" size={18} /> Ta bort</button>
-						</form>
-					</RowActions>
-				</li>
-			{/each}
-		</ul>
-	{/if}
+				<RowActions label="{shift.userName}, {shift.roleName}">
+					<button type="button" class="action action-primary" onclick={() => edit(shift)}>
+						<Icon name="pencil" size={18} /> Ändra
+					</button>
+					<form method="POST" action="?/deleteShift" use:enhance={submitWithNotice}>
+						<input type="hidden" name="id" value={shift.id} />
+						<button class="action action-danger"><Icon name="trash" size={18} /> Ta bort</button>
+					</form>
+				</RowActions>
+			</li>
+		{/each}
+	</ul>
 {/if}
 
 <button type="button" class="fab" onclick={() => (adding = true)}>
