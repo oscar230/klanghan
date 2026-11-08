@@ -43,6 +43,11 @@
 				error = String(result.data?.error ?? 'Något gick fel');
 				return;
 			}
+			if (result.type === 'error') {
+				// Network trouble or a server error: keep the dialog and what was typed
+				error = 'Något gick fel. Försök igen.';
+				return;
+			}
 			await update();
 			onclose();
 		};
