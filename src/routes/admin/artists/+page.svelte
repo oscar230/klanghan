@@ -122,6 +122,7 @@
 		stages={data.stages}
 		bind:stageId
 		bind:query
+		showConflicts
 		bind:onlyConflicts
 		shown={visible.length}
 		total={data.performances.length}
