@@ -2,7 +2,8 @@ import { DAYS, MINUTES_PER_DAY } from '../time';
 import type { Performance, Schedule, Shift } from './store/types';
 
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, 'sv');
-const byStart = (a: Shift, b: Shift) => a.startOffset - b.startOffset || a.endOffset - b.endOffset;
+const byStart = (a: { startOffset: number; endOffset: number }, b: { startOffset: number; endOffset: number }) =>
+	a.startOffset - b.startOffset || a.endOffset - b.endOffset;
 
 export function sortedUsers(s: Schedule) {
 	return [...s.users].sort(byName);
@@ -68,13 +69,11 @@ export function stagesWithPerformanceCount(s: Schedule) {
 	}));
 }
 
-const byPerformanceStart = (a: Performance, b: Performance) => a.startOffset - b.startOffset || a.endOffset - b.endOffset;
-
 /** Performances joined with their stage, in start order. */
 export function performanceDetails(s: Schedule) {
 	const stages = new Map(s.stages.map((st) => [st.id, st]));
 
-	return [...s.performances].sort(byPerformanceStart).flatMap((p) => {
+	return [...s.performances].sort(byStart).flatMap((p) => {
 		const stage = stages.get(p.stageId);
 		if (!stage) return [];
 		return [{ ...p, stageName: stage.name }];

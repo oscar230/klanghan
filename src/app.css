@@ -87,9 +87,6 @@
 	.btn-text {
 		@apply text-primary hover:bg-primary-soft disabled:hover:bg-transparent;
 	}
-	.btn-neutral {
-		@apply text-foreground hover:bg-muted disabled:hover:bg-transparent;
-	}
 	.btn-danger {
 		@apply text-danger hover:bg-danger-soft disabled:hover:bg-transparent;
 	}

@@ -37,5 +37,3 @@ export function createRepository(store: Store) {
 		store
 	};
 }
-
-export type Repository = ReturnType<typeof createRepository>;
