@@ -39,9 +39,9 @@ export function getDuration(startOffset: number, endOffset: number): string {
     const hours = Math.floor(diff / 60);
     const minutes = diff % 60;
     
-    if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
-    if (hours > 0) return `${hours}h`;
-    return `${minutes}m`;
+    if (hours > 0 && minutes > 0) return `${hours} h ${minutes} min`;
+    if (hours > 0) return `${hours} h`;
+    return `${minutes} min`;
 }
 
 export function formatShiftTime(start: number, end: number): string {

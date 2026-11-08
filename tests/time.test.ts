@@ -16,8 +16,8 @@ test('times are shown with a 24-hour clock and the right day, also at the festiv
 	assert.equal(formatOffset(0), 'Fredag 00:00');
 	assert.equal(formatOffset(2 * 1440 + 22 * 60), 'Söndag 22:00');
 	assert.equal(formatOffset(3 * 1440), 'Måndag 00:00');
-	assert.equal(formatShiftTime(600, 750), 'Fredag 10:00 - 12:30 (2h 30m)');
-	assert.equal(formatShiftTime(2 * 1440 + 22 * 60, 3 * 1440), 'Söndag 22:00 - Måndag 00:00 (2h)');
+	assert.equal(formatShiftTime(600, 750), 'Fredag 10:00 - 12:30 (2 h 30 min)');
+	assert.equal(formatShiftTime(2 * 1440 + 22 * 60, 3 * 1440), 'Söndag 22:00 - Måndag 00:00 (2 h)');
 });
 
 test('parseClockTime only accepts HH:MM', () => {

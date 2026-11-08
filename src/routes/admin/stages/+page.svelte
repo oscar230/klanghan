@@ -35,7 +35,7 @@
 			<li class="list-row">
 				<div class="min-w-0 flex-1">
 					<p class="truncate font-medium">{stage.name}</p>
-					<p class="text-muted-foreground text-sm">{stage.performanceCount} spelningar</p>
+					<p class="text-muted-foreground text-sm">{stage.performanceCount} {stage.performanceCount === 1 ? 'spelning' : 'spelningar'}</p>
 				</div>
 
 				<RowActions label={stage.name}>

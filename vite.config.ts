@@ -12,7 +12,7 @@ export default defineConfig({
 			manifest: {
 				name: 'Klanglandet Schema',
 				short_name: 'Klanglandet',
-				description: 'Personal schema for Klanglandet participants',
+				description: 'Personligt schema för Klanglandets volontärer',
 				theme_color: '#ffffff',
 				background_color: '#ffffff',
 				display: 'standalone',
