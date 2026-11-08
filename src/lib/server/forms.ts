@@ -6,7 +6,8 @@ import { DAYS, parseClockTime, parseOffset } from '../time';
  */
 export function parseWhen(data: FormData): { startOffset: number; endOffset: number } | { error: string } {
 	const text = (name: string) => data.get(name)?.toString() ?? '';
-	const day = (name: string) => parseInt(text(name) || '0', 10);
+	// Digits only: parseInt would accept "1abc" or "1.5", and a missing day must not silently become Friday
+	const day = (name: string) => (/^\d{1,2}$/.test(text(name)) ? Number(text(name)) : NaN);
 
 	const startDay = day('startDay');
 	const endDay = day('endDay');

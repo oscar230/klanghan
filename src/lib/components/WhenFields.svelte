@@ -1,6 +1,6 @@
 <script lang="ts">
 	import TimeSelect from './TimeSelect.svelte';
-	import { DAYS, formatClock } from '$lib/time';
+	import { AFTER_FESTIVAL, DAYS, formatClock } from '$lib/time';
 
 	/** A day and a 24-hour time, for a start or an end. Posts `<prefix>Day`, `<prefix>Hour` and `<prefix>Minute`. */
 	let {
@@ -10,7 +10,7 @@
 	}: { prefix: 'start' | 'end'; label: string; offset?: number | null } = $props();
 
 	// The festival's end (00:00 after the last day) is a valid end time, so the end day has one more option
-	const days = $derived(prefix === 'end' ? [...DAYS, 'Måndag'] : DAYS);
+	const days = $derived(prefix === 'end' ? [...DAYS, AFTER_FESTIVAL] : DAYS);
 </script>
 
 <fieldset>
