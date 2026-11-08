@@ -93,7 +93,9 @@ export function roleTimeline(s: Schedule, roleId: string) {
 		const dayStart = dayIndex * 24 * 60;
 		const dayEnd = dayStart + 24 * 60;
 		const items: TimelineItem[] = [];
-		let lastEnd = -1;
+		// A shift from an earlier day that runs into this day covers (and overlaps) the start of it
+		const spill = Math.max(-1, ...shifts.filter((x) => x.startOffset < dayStart).map((x) => x.endOffset));
+		let lastEnd = spill > dayStart ? spill : -1;
 
 		for (const shift of shifts.filter((x) => x.startOffset >= dayStart && x.startOffset < dayEnd)) {
 			// Only a gap when nothing at all covers the time between shifts

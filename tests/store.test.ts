@@ -317,3 +317,31 @@ test('roleTimeline marks gaps and overlaps', () => {
 		['shift', 'overlap', 'gap', 'shift']
 	);
 });
+
+test('roleTimeline counts a shift that runs past midnight on the next day too', () => {
+	const s = emptySchedule();
+	const a = ops.addUser(s, 'A', null);
+	const b = ops.addUser(s, 'B', null);
+	const role = ops.addRole(s, plainRole('Natt'));
+	const day = 24 * 60;
+	// A works Friday 20:00 - Saturday 02:00, B starts Saturday 01:00 (overlap) and C Saturday 12:00 (gap 08:00-12:00)
+	ops.addShift(s, { userId: a.id, roleId: role.id, startOffset: 20 * 60, endOffset: day + 2 * 60 });
+	ops.addShift(s, { userId: b.id, roleId: role.id, startOffset: day + 60, endOffset: day + 8 * 60 });
+	ops.addShift(s, { userId: a.id, roleId: role.id, startOffset: day + 12 * 60, endOffset: day + 16 * 60 });
+
+	const saturday = roleTimeline(s, role.id).find((d) => d.dayName === 'Lördag')!;
+	assert.deepEqual(
+		saturday.items.map((i) => (i.type === 'gap' ? 'gap' : i.isOverlap ? 'overlap' : 'shift')),
+		['overlap', 'gap', 'shift']
+	);
+
+	// A spill-over that ends before the first shift of the day leaves a gap at the start of the day
+	const t = emptySchedule();
+	const u = ops.addUser(t, 'U', null);
+	const r = ops.addRole(t, plainRole('Natt'));
+	ops.addShift(t, { userId: u.id, roleId: r.id, startOffset: 22 * 60, endOffset: day + 60 });
+	ops.addShift(t, { userId: u.id, roleId: r.id, startOffset: day + 5 * 60, endOffset: day + 9 * 60 });
+	const [, sat] = roleTimeline(t, r.id);
+	assert.deepEqual(sat.items.map((i) => i.type), ['gap', 'shift']);
+	assert.deepEqual([sat.items[0].startOffset, sat.items[0].endOffset], [day + 60, day + 5 * 60]);
+});
