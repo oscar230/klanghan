@@ -9,6 +9,8 @@ declare global {
 		interface PageData {
 			/** Set by pages that want the wide layout (the calendar view). */
 			wide?: boolean;
+			/** Set by the admin layout: whether the visitor is logged in as admin. */
+			authenticated?: boolean;
 		}
 		// interface PageState {}
 		// interface Platform {}
