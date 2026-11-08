@@ -297,6 +297,11 @@ test('names are normalised, invisible characters are rejected and length is limi
 	assert.deepEqual([p.artist, p.genre], ['Vera', 'Folk']);
 });
 
+test('fields this version does not know about survive a load', () => {
+	const s = normalizeSchedule({ users: [], roles: [], shifts: [], somethingNew: { a: 1 } }) as unknown as Record<string, unknown>;
+	assert.deepEqual(s.somethingNew, { a: 1 });
+});
+
 test('older documents load with empty stages and performances', () => {
 	const s = normalizeSchedule({ users: [], roles: [], shifts: [] });
 	assert.deepEqual([s.stages, s.performances], [[], []]);

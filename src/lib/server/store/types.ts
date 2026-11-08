@@ -104,6 +104,8 @@ export function normalizeSchedule(raw: unknown): Schedule {
 	});
 
 	return {
+		// Unknown top-level fields are kept, so an older version of the app does not drop data a newer one saved
+		...r,
 		version: 1,
 		users: Array.isArray(r.users) ? r.users : [],
 		roles,
