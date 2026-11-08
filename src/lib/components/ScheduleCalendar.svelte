@@ -1,23 +1,23 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Avatar from './Avatar.svelte';
-	import { layoutDays, type CalendarShift } from '$lib/calendar';
+	import { layoutDays, type CalendarEvent } from '$lib/calendar';
 	import { formatClock, formatShiftTime } from '$lib/time';
 
 	/**
-	 * Read-only overview of every work shift, one column per festival day (like a
+	 * Read-only overview of work shifts and artist performances, one column per festival day (like a
 	 * calendar's day view) and a shared 24 hour axis. The page itself scrolls.
 	 * Shifts that overlap in time sit side by side; in narrow lanes the text runs
 	 * vertically. On small screens one day is shown at a time.
 	 */
 	let {
-		shifts,
+		events,
 		onselect,
 		highlightUserId = '',
 		conflicts = new Set<string>()
 	}: {
-		shifts: CalendarShift[];
-		onselect: (shift: CalendarShift) => void;
+		events: CalendarEvent[];
+		onselect: (event: CalendarEvent) => void;
 		/** Shifts of this volunteer stand out and the rest are muted. */
 		highlightUserId?: string;
 		/** Shifts that are impossible as scheduled (see $lib/conflicts); drawn in red. */
@@ -28,12 +28,12 @@
 	let activeDay = $state(0);
 
 	const HOURS = Array.from({ length: 24 }, (_, h) => h);
-	let days = $derived(layoutDays(shifts));
+	let days = $derived(layoutDays(events));
 
 	// Start the view at the first shift of the festival rather than at midnight
 	let firstShiftMarker = $state<HTMLElement>();
 	let firstStart = $derived(
-		shifts.length ? Math.min(...shifts.map((s) => s.startOffset % (24 * 60))) : 8 * 60
+		events.length ? Math.min(...events.map((e) => e.startOffset % (24 * 60))) : 8 * 60
 	);
 	onMount(() => firstShiftMarker?.scrollIntoView({ block: 'start' }));
 
@@ -41,17 +41,19 @@
 	const dayBorder = (index: number) =>
 		`border-field-border border-l-2 ${index === days.length - 1 ? 'sm:border-r-2' : ''}`;
 
-	const classes = (shift: CalendarShift) => {
-		// Impossible shifts are red, whatever else is highlighted
-		if (conflicts.has(shift.id)) return 'bg-danger-soft text-foreground border-danger ring-danger ring-2 ring-inset';
+	const classes = (event: CalendarEvent) => {
+		// Impossible events are red, whatever else is highlighted
+		if (conflicts.has(event.id)) return 'bg-danger-soft text-foreground border-danger ring-danger ring-2 ring-inset';
+		// Performances are black and white so they stand apart from the blue work shifts
+		if (event.kind === 'performance') return 'bg-foreground text-background border-field-border';
 		if (!highlightUserId) return 'bg-primary-soft text-foreground border-primary';
-		return shift.userId === highlightUserId
+		return event.userId === highlightUserId
 			? 'bg-primary text-primary-foreground border-primary-foreground'
 			: 'bg-muted text-muted-foreground border-field-border';
 	};
 
-	const label = (shift: CalendarShift) =>
-		`${shift.userName}, ${shift.roleName}, ${formatShiftTime(shift.startOffset, shift.endOffset)}${conflicts.has(shift.id) ? ' (krock)' : ''}`;
+	const label = (event: CalendarEvent) =>
+		`${event.title}, ${event.subtitle}, ${formatShiftTime(event.startOffset, event.endOffset)}${conflicts.has(event.id) ? ' (krock)' : ''}`;
 </script>
 
 <div style:--hour="3.5rem" class="[--axis:3rem]">
@@ -98,8 +100,8 @@
 					<div class="border-border absolute inset-x-0 border-t" style:top="calc(var(--hour) * {hour})"></div>
 				{/each}
 
-				{#each day.segments as segment (segment.shift.id)}
-					{@const shift = segment.shift}
+				{#each day.segments as segment (segment.item.id)}
+					{@const event = segment.item}
 					{@const minutes = segment.end - segment.start}
 					<div
 						class="absolute p-px"
@@ -110,31 +112,31 @@
 					>
 						<button
 							type="button"
-							title={label(shift)}
-							aria-label={label(shift)}
-							onclick={() => onselect(shift)}
-							class="@container flex h-full w-full flex-col gap-1.5 @min-[5rem]:flex-row overflow-hidden rounded-md border-l-4 px-1 py-0.5 text-left text-xs hover:opacity-80 {classes(shift)} {segment.continuesFromPreviousDay ? 'rounded-t-none' : ''} {segment.continuesIntoNextDay ? 'rounded-b-none' : ''}"
+							title={label(event)}
+							aria-label={label(event)}
+							onclick={() => onselect(event)}
+							class="@container flex h-full w-full flex-col gap-1.5 @min-[5rem]:flex-row overflow-hidden rounded-md border-l-4 px-1 py-0.5 text-left text-xs hover:opacity-80 {classes(event)} {segment.continuesFromPreviousDay ? 'rounded-t-none' : ''} {segment.continuesIntoNextDay ? 'rounded-b-none' : ''}"
 						>
-							{#if minutes >= 45}
-								<span class="shrink-0 @max-[5rem]:mx-auto"><Avatar src={shift.imageUrl} name="" size={20} /></span>
+							{#if minutes >= 45 && event.kind === 'shift'}
+								<span class="shrink-0 @max-[5rem]:mx-auto"><Avatar src={event.imageUrl} name="" size={20} /></span>
 							{/if}
 							<!-- Wide lane: ordinary text -->
 							<span class="hidden min-w-0 flex-1 @min-[5rem]:block">
-								<span class="block truncate font-medium">{shift.userName}</span>
+								<span class="block truncate font-medium">{event.title}</span>
 								{#if minutes >= 45}
-									<span class="block truncate opacity-80">{shift.roleName}</span>
+									<span class="block truncate opacity-80">{event.subtitle}</span>
 								{/if}
 								{#if minutes >= 90}
 									<span class="block truncate opacity-80">
-										{formatClock(shift.startOffset)} – {formatClock(shift.endOffset)}
+										{formatClock(event.startOffset)} – {formatClock(event.endOffset)}
 									</span>
 								{/if}
 							</span>
 							<!-- Narrow lane: the text runs down the block instead -->
 							<span class="mx-auto min-h-0 flex-1 overflow-hidden [writing-mode:vertical-rl] @min-[5rem]:hidden">
-								<span class="block truncate font-medium">{shift.userName}</span>
+								<span class="block truncate font-medium">{event.title}</span>
 								{#if minutes >= 90}
-									<span class="block truncate opacity-80">{shift.roleName}</span>
+									<span class="block truncate opacity-80">{event.subtitle}</span>
 								{/if}
 							</span>
 						</button>

@@ -4,7 +4,7 @@ import { layoutDay } from '../src/lib/calendar';
 
 const shift = (id: string, startOffset: number, endOffset: number) => ({ id, startOffset, endOffset });
 const placement = (shifts: ReturnType<typeof shift>[], day = 0) =>
-	layoutDay(shifts, day).map((s) => `${s.shift.id}:${s.lane}/${s.lanes}`);
+	layoutDay(shifts, day).map((s) => `${s.item.id}:${s.lane}/${s.lanes}`);
 
 test('calendar: shifts that do not overlap use the full width', () => {
 	// Touching shifts (one ends when the next starts) do not overlap

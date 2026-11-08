@@ -5,7 +5,10 @@
 	import Dialog from '$lib/components/Dialog.svelte';
 	import ShiftSummary from '$lib/components/ShiftSummary.svelte';
 	import ScheduleCalendar from '$lib/components/ScheduleCalendar.svelte';
+	import CalendarLayers from '$lib/components/CalendarLayers.svelte';
+	import PerformanceSummary from '$lib/components/PerformanceSummary.svelte';
 	import ViewSwitch from '$lib/components/ViewSwitch.svelte';
+	import { performanceEvent, shiftEvent } from '$lib/calendar';
 	import { formatClock, formatShiftTime } from '$lib/time';
 	import type { PageData } from './$types';
 
@@ -36,6 +39,19 @@
 
 	let calendar = $derived(page.url.searchParams.get('view') === 'calendar');
 	let selected = $state<(typeof data.shifts)[number] | null>(null);
+	let selectedPerformance = $state<(typeof data.performances)[number] | null>(null);
+
+	// What the calendar shows
+	let showShifts = $state(true);
+	let showPerformances = $state(true);
+	let events = $derived([
+		...(showShifts ? data.shifts.map(shiftEvent) : []),
+		...(showPerformances ? data.performances.map(performanceEvent) : [])
+	]);
+	const selectEvent = (event: { id: string; kind: 'shift' | 'performance' }) => {
+		if (event.kind === 'shift') selected = data.shifts.find((s) => s.id === event.id) ?? null;
+		else selectedPerformance = data.performances.find((p) => p.id === event.id) ?? null;
+	};
 
 	let myShifts = $derived(data.shifts.filter((s) => s.userId === selectedUserId));
 
@@ -57,7 +73,7 @@
 
 <h1 class="text-2xl">Klanglandet 2026</h1>
 <p class="text-muted-foreground mt-1 mb-4 text-sm">Schema för dig och dina medvolontärer.</p>
-<div class="mb-6"><ViewSwitch listLabel="Mitt schema" /></div>
+<div class="mb-6"><ViewSwitch /></div>
 
 <label class="field-label" for="volunteer-select">{calendar ? 'Markera pass för' : 'Visa schema för'}</label>
 <select id="volunteer-select" bind:value={selectedUserId} onchange={rememberSelection} class="field bg-muted">
@@ -68,13 +84,8 @@
 </select>
 
 {#if calendar}
-	<div class="mt-6">
-		<ScheduleCalendar
-			shifts={data.shifts}
-			highlightUserId={selectedUserId}
-			onselect={(shift) => (selected = data.shifts.find((s) => s.id === shift.id) ?? null)}
-		/>
-	</div>
+	<div class="mt-6 mb-4"><CalendarLayers bind:shifts={showShifts} bind:performances={showPerformances} /></div>
+	<ScheduleCalendar {events} highlightUserId={selectedUserId} onselect={selectEvent} />
 {:else if selectedUserId}
 	<h2 class="mt-8 mb-3 text-lg font-medium">Dina arbetspass</h2>
 
@@ -150,6 +161,17 @@
 		</div>
 		<div class="flex justify-end px-6 pt-4 pb-6">
 			<button type="button" class="btn btn-text" onclick={() => (selected = null)}>Stäng</button>
+		</div>
+	{/if}
+</Dialog>
+
+<Dialog open={selectedPerformance !== null} title="Artist" onclose={() => (selectedPerformance = null)}>
+	{#if selectedPerformance}
+		<div class="space-y-4 px-6 py-1">
+			<PerformanceSummary performance={selectedPerformance} />
+		</div>
+		<div class="flex justify-end px-6 pt-4 pb-6">
+			<button type="button" class="btn btn-text" onclick={() => (selectedPerformance = null)}>Stäng</button>
 		</div>
 	{/if}
 </Dialog>

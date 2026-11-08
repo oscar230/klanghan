@@ -2,8 +2,23 @@ import { DAYS } from './time';
 
 const MINUTES_PER_DAY = 24 * 60;
 
-/** What the calendar shows about a shift (a subset of the shift read model). */
-export interface CalendarShift {
+/** What the calendar draws: a work shift or an artist's performance. */
+export interface CalendarEvent {
+	id: string;
+	kind: 'shift' | 'performance';
+	/** The volunteer's or the artist's name. */
+	title: string;
+	/** The role, or the stage and genre. */
+	subtitle: string;
+	/** Volunteer photo; performances have none. */
+	imageUrl: string | null;
+	/** The volunteer a shift belongs to, so their shifts can be highlighted. */
+	userId: string | null;
+	startOffset: number;
+	endOffset: number;
+}
+
+export const shiftEvent = (s: {
 	id: string;
 	userId: string;
 	userName: string;
@@ -11,16 +26,43 @@ export interface CalendarShift {
 	imageUrl: string | null;
 	startOffset: number;
 	endOffset: number;
-}
+}): CalendarEvent => ({
+	id: s.id,
+	kind: 'shift',
+	title: s.userName,
+	subtitle: s.roleName,
+	imageUrl: s.imageUrl,
+	userId: s.userId,
+	startOffset: s.startOffset,
+	endOffset: s.endOffset
+});
+
+export const performanceEvent = (p: {
+	id: string;
+	artist: string;
+	genre: string;
+	stageName: string;
+	startOffset: number;
+	endOffset: number;
+}): CalendarEvent => ({
+	id: p.id,
+	kind: 'performance',
+	title: p.artist,
+	subtitle: `${p.stageName} · ${p.genre}`,
+	imageUrl: null,
+	userId: null,
+	startOffset: p.startOffset,
+	endOffset: p.endOffset
+});
 
 interface Timed {
 	startOffset: number;
 	endOffset: number;
 }
 
-/** One shift as drawn in one day column. A shift that crosses midnight has one segment per day. */
+/** One event as drawn in one day column. An event that crosses midnight has one segment per day. */
 export interface Segment<T extends Timed> {
-	shift: T;
+	item: T;
 	/** Minutes from midnight of that day. */
 	start: number;
 	end: number;
@@ -41,12 +83,12 @@ export function layoutDay<T extends Timed>(shifts: T[], dayIndex: number): Segme
 
 	const segments: Segment<T>[] = shifts
 		.filter((s) => s.startOffset < dayEnd && s.endOffset > dayStart)
-		.map((shift) => ({
-			shift,
-			start: Math.max(shift.startOffset, dayStart) - dayStart,
-			end: Math.min(shift.endOffset, dayEnd) - dayStart,
-			continuesFromPreviousDay: shift.startOffset < dayStart,
-			continuesIntoNextDay: shift.endOffset > dayEnd,
+		.map((item) => ({
+			item,
+			start: Math.max(item.startOffset, dayStart) - dayStart,
+			end: Math.min(item.endOffset, dayEnd) - dayStart,
+			continuesFromPreviousDay: item.startOffset < dayStart,
+			continuesIntoNextDay: item.endOffset > dayEnd,
 			lane: 0,
 			lanes: 1
 		}))
