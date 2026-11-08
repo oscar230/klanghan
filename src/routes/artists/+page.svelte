@@ -4,12 +4,13 @@
 	import ArtistFilters from '$lib/components/ArtistFilters.svelte';
 	import CalendarLayers from '$lib/components/CalendarLayers.svelte';
 	import DetailsDialog from '$lib/components/DetailsDialog.svelte';
+	import PerformanceRow from '$lib/components/PerformanceRow.svelte';
 	import PerformanceSummary from '$lib/components/PerformanceSummary.svelte';
 	import ScheduleCalendar from '$lib/components/ScheduleCalendar.svelte';
 	import ShiftSummary from '$lib/components/ShiftSummary.svelte';
 	import ViewSwitch from '$lib/components/ViewSwitch.svelte';
 	import { isCalendarView, performanceEvent, shiftEvent } from '$lib/calendar';
-	import { formatClock, groupByStartDay } from '$lib/time';
+	import { groupByStartDay } from '$lib/time';
 
 	let { data } = $props();
 
@@ -62,7 +63,7 @@
 <div class="mb-6"><ViewSwitch /></div>
 
 {#if data.performances.length === 0}
-	<p class="text-muted-foreground py-12 text-center text-sm">Artistschemat är inte klart ännu.</p>
+	<p class="empty">Artistschemat är inte klart ännu.</p>
 {:else}
 	<ArtistFilters stages={data.stages} bind:stageId bind:query shown={visible.length} total={data.performances.length} />
 
@@ -70,23 +71,14 @@
 		<div class="mb-4"><CalendarLayers bind:shifts={showShifts} bind:performances={showPerformances} /></div>
 		<ScheduleCalendar {events} {highlightUserId} onselect={selectEvent} />
 	{:else if visible.length === 0}
-		<p class="text-muted-foreground py-12 text-center text-sm">Inga artister matchar filtret.</p>
+		<p class="empty">Inga artister matchar filtret.</p>
 	{:else}
 		{#each days as day}
 			<section class="mb-8">
 				<h2 class="text-muted-foreground mb-1 text-sm font-medium">{day.name}</h2>
 				<ul class="list">
 					{#each day.items as performance (performance.id)}
-						<li class="list-row">
-							<div class="w-14 shrink-0 text-sm tabular-nums">
-								<p class="font-medium">{formatClock(performance.startOffset)}</p>
-								<p class="text-muted-foreground">{formatClock(performance.endOffset)}</p>
-							</div>
-							<div class="min-w-0 flex-1">
-								<p class="truncate font-medium">{performance.artist}</p>
-								<p class="text-muted-foreground text-sm">{performance.genre} · {performance.stageName}</p>
-							</div>
-						</li>
+						<PerformanceRow {performance} />
 					{/each}
 				</ul>
 			</section>

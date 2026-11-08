@@ -21,7 +21,7 @@
 </div>
 
 {#if data.days.length === 0}
-	<p class="text-muted-foreground py-12 text-center text-sm">Inga arbetspass inbokade för denna roll än.</p>
+	<p class="empty">Inga arbetspass inbokade för denna roll än.</p>
 {:else}
 	{#each data.days as day}
 		<section class="mb-8">

@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import Avatar from '$lib/components/Avatar.svelte';
+	import ConflictBadge from '$lib/components/ConflictBadge.svelte';
 	import DetailsDialog from '$lib/components/DetailsDialog.svelte';
 	import ShiftSummary from '$lib/components/ShiftSummary.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -124,9 +125,9 @@
 	<div class="mb-4"><CalendarLayers bind:shifts={showShifts} bind:performances={showPerformances} /></div>
 	<ScheduleCalendar {events} conflicts={calendarConflicts} onselect={selectEvent} />
 {:else if data.shifts.length === 0}
-	<p class="text-muted-foreground py-12 text-center text-sm">Inga arbetspass schemalagda ännu.</p>
+	<p class="empty">Inga arbetspass schemalagda ännu.</p>
 {:else if visibleShifts.length === 0}
-	<p class="text-muted-foreground py-12 text-center text-sm">Inga pass matchar filtret.</p>
+	<p class="empty">Inga pass matchar filtret.</p>
 {:else}
 	<ul class="list">
 		{#each visibleShifts as shift (shift.id)}
@@ -136,12 +137,7 @@
 					<p class="flex items-center gap-2 font-medium">
 						<span class="truncate">{shift.userName}</span>
 						{#if conflictIds.has(shift.id)}
-							<span
-								class="bg-danger text-danger-foreground shrink-0 rounded-full px-2 py-0.5 text-xs"
-								title={describeConflicts(conflicts.get(shift.id) ?? [], shift.roleName).join(' ')}
-							>
-								Krock
-							</span>
+							<ConflictBadge title={describeConflicts(conflicts.get(shift.id) ?? [], shift.roleName).join(' ')} />
 						{/if}
 					</p>
 					<p class="text-muted-foreground text-sm">
@@ -172,7 +168,7 @@
 		<ShiftSummary shift={selected} />
 		{#each describeConflicts(conflicts.get(selected.id) ?? [], selected.roleName) as message}
 			<p class="text-danger text-sm">
-				<span class="bg-danger text-danger-foreground rounded-full px-2 py-0.5 text-xs">Krock</span>
+				<ConflictBadge />
 				{message}
 			</p>
 		{/each}

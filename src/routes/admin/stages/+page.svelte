@@ -28,7 +28,7 @@
 <p class="text-muted-foreground mt-1 mb-6 text-sm">Scenerna där artisterna spelar. Flera scener kan spela samtidigt.</p>
 
 {#if data.stages.length === 0}
-	<p class="text-muted-foreground py-12 text-center text-sm">Inga scener ännu. Lägg till en för att kunna boka artister.</p>
+	<p class="empty">Inga scener ännu. Lägg till en för att kunna boka artister.</p>
 {:else}
 	<ul class="list">
 		{#each data.stages as stage (stage.id)}

@@ -23,7 +23,7 @@
 <p class="text-muted-foreground mt-1 mb-6 text-sm">Hantera festivalens volontärer.</p>
 
 {#if data.users.length === 0}
-	<p class="text-muted-foreground py-12 text-center text-sm">Inga volontärer ännu.</p>
+	<p class="empty">Inga volontärer ännu.</p>
 {:else}
 	<ul class="list">
 		{#each data.users as user (user.id)}

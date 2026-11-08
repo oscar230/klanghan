@@ -22,7 +22,7 @@
 <p class="text-muted-foreground mt-1 mb-6 text-sm">Hantera festivalens arbetsroller.</p>
 
 {#if data.roles.length === 0}
-	<p class="text-muted-foreground py-12 text-center text-sm">Inga roller ännu.</p>
+	<p class="empty">Inga roller ännu.</p>
 {:else}
 	<ul class="list">
 		{#each data.roles as role (role.id)}
