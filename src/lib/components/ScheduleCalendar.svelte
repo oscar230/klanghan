@@ -64,14 +64,13 @@
 
 <div style:--hour="3.5rem" class="[--axis:3rem]">
 	<div bind:this={stickyHeader} class="bg-background border-border sticky top-[var(--header-h,0px)] z-10 border-b">
-		<div class="flex sm:hidden" role="tablist" aria-label="Dag">
+		<div class="flex sm:hidden" role="group" aria-label="Dag">
 			{#each days as day, i}
 				<button
 					type="button"
-					role="tab"
-					aria-selected={activeDay === i}
+					aria-pressed={activeDay === i}
 					onclick={() => (activeDay = i)}
-					class="text-muted-foreground hover:bg-muted aria-selected:border-primary aria-selected:text-primary flex-1 border-b-2 border-transparent py-2.5 text-sm font-medium"
+					class="text-muted-foreground hover:bg-muted aria-pressed:border-primary aria-pressed:text-primary flex-1 border-b-2 border-transparent py-2.5 text-sm font-medium"
 				>
 					{day.name}
 				</button>
