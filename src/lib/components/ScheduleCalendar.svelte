@@ -35,7 +35,13 @@
 	let firstStart = $derived(
 		events.length ? Math.min(...events.map((e) => e.startOffset % (24 * 60))) : 8 * 60
 	);
-	onMount(() => firstShiftMarker?.scrollIntoView({ block: 'start' }));
+	let stickyHeader = $state<HTMLElement>();
+	onMount(() => {
+		// Measured from the real elements: the layout may not have published the app bar's height yet
+		const covered = (document.querySelector('header')?.getBoundingClientRect().height ?? 0) + (stickyHeader?.offsetHeight ?? 0);
+		const top = (firstShiftMarker?.getBoundingClientRect().top ?? 0) + window.scrollY - covered - 8;
+		window.scrollTo({ top: Math.max(0, top) });
+	});
 
 	// A clear line between the days (and around them), stronger than the hairlines of the hours
 	const dayBorder = (index: number) =>
@@ -57,7 +63,7 @@
 </script>
 
 <div style:--hour="3.5rem" class="[--axis:3rem]">
-	<div class="bg-background border-border sticky top-[var(--header-h,0px)] z-10 border-b">
+	<div bind:this={stickyHeader} class="bg-background border-border sticky top-[var(--header-h,0px)] z-10 border-b">
 		<div class="flex sm:hidden" role="tablist" aria-label="Dag">
 			{#each days as day, i}
 				<button
@@ -147,7 +153,7 @@
 
 		<div
 			bind:this={firstShiftMarker}
-			class="pointer-events-none absolute scroll-mt-[calc(var(--header-h,0px)+4rem)]"
+			class="pointer-events-none absolute"
 			style:top="calc(var(--hour) * {Math.max(0, Math.floor(firstStart / 60) - 1)})"
 		></div>
 	</div>
