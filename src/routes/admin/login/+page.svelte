@@ -13,7 +13,7 @@
 	<form method="POST" use:enhance class="space-y-4">
 		<div>
 			<label class="field-label" for="password">Huvudlösenord</label>
-			<input type="password" id="password" name="password" required class="field" />
+			<input type="password" id="password" name="password" required autocomplete="current-password" class="field" />
 		</div>
 
 		{#if form?.error}
