@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { isCalendarView } from '$lib/calendar';
 
 	/**
 	 * Switches how the current data is shown: as a list or as a calendar (`?view=calendar`).
 	 * It never changes what data is shown, which is why it is named "...vy".
 	 */
-	let calendar = $derived(page.url.searchParams.get('view') === 'calendar');
+	let calendar = $derived(isCalendarView(page.url));
 
 	// Keeps other query parameters (such as ?stage=) when changing view
 	const link = (calendarView: boolean) => {

@@ -8,12 +8,12 @@
 	import ScheduleCalendar from '$lib/components/ScheduleCalendar.svelte';
 	import ShiftSummary from '$lib/components/ShiftSummary.svelte';
 	import ViewSwitch from '$lib/components/ViewSwitch.svelte';
-	import { performanceEvent, shiftEvent } from '$lib/calendar';
+	import { isCalendarView, performanceEvent, shiftEvent } from '$lib/calendar';
 	import { formatClock, groupByStartDay } from '$lib/time';
 
 	let { data } = $props();
 
-	let calendar = $derived(page.url.searchParams.get('view') === 'calendar');
+	let calendar = $derived(isCalendarView(page.url));
 
 	let stageId = $state('');
 	let query = $state('');

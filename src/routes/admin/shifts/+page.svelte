@@ -15,7 +15,7 @@
 	import ViewSwitch from '$lib/components/ViewSwitch.svelte';
 	import { describeConflicts, findConflicts, findStageConflicts } from '$lib/conflicts';
 	import { showNotice, submitWithNotice } from '$lib/notice.svelte';
-	import { performanceEvent, shiftEvent } from '$lib/calendar';
+	import { isCalendarView, performanceEvent, shiftEvent } from '$lib/calendar';
 	import { formatShiftTime } from '$lib/time';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
@@ -23,7 +23,7 @@
 
 	type Shift = (typeof data.shifts)[number];
 
-	let calendar = $derived(page.url.searchParams.get('view') === 'calendar');
+	let calendar = $derived(isCalendarView(page.url));
 	let adding = $state(false);
 	let editing = $state<Shift | null>(null);
 	let selected = $state<Shift | null>(null);

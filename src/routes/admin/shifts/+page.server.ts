@@ -6,16 +6,14 @@ import { performanceDetails, shiftDetails, sortedRoles, sortedUsers } from '$lib
 import { parseWhen } from '$lib/server/forms';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async () => {
 	const schedule = await getRepo().get();
 
 	return {
 		users: sortedUsers(schedule),
 		roles: sortedRoles(schedule),
 		shifts: shiftDetails(schedule),
-		performances: performanceDetails(schedule),
-		// The calendar needs more room than the list
-		wide: url.searchParams.get('view') === 'calendar'
+		performances: performanceDetails(schedule)
 	};
 };
 

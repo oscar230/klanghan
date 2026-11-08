@@ -6,14 +6,12 @@ import { parseWhen } from '$lib/server/forms';
 import { performanceDetails, sortedStages } from '$lib/server/views';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async () => {
 	const schedule = await getRepo().get();
 
 	return {
 		stages: sortedStages(schedule),
-		performances: performanceDetails(schedule),
-		// The calendar needs more room than the list
-		wide: url.searchParams.get('view') === 'calendar'
+		performances: performanceDetails(schedule)
 	};
 };
 

@@ -10,7 +10,7 @@
 	import ScheduleCalendar from '$lib/components/ScheduleCalendar.svelte';
 	import ViewSwitch from '$lib/components/ViewSwitch.svelte';
 	import WhenFields from '$lib/components/WhenFields.svelte';
-	import { performanceEvent } from '$lib/calendar';
+	import { isCalendarView, performanceEvent } from '$lib/calendar';
 	import { STAGE_CONFLICT_MESSAGE, findStageConflicts } from '$lib/conflicts';
 	import { showNotice, submitWithNotice } from '$lib/notice.svelte';
 	import { formatClock, groupByStartDay } from '$lib/time';
@@ -20,7 +20,7 @@
 
 	type Performance = (typeof data.performances)[number];
 
-	let calendar = $derived(page.url.searchParams.get('view') === 'calendar');
+	let calendar = $derived(isCalendarView(page.url));
 	let adding = $state(false);
 	let editing = $state<Performance | null>(null);
 	let selected = $state<Performance | null>(null);

@@ -9,7 +9,7 @@
 	import PersonRow from '$lib/components/PersonRow.svelte';
 	import PerformanceSummary from '$lib/components/PerformanceSummary.svelte';
 	import ViewSwitch from '$lib/components/ViewSwitch.svelte';
-	import { performanceEvent, shiftEvent } from '$lib/calendar';
+	import { isCalendarView, performanceEvent, shiftEvent } from '$lib/calendar';
 	import { groupByPerson } from '$lib/people';
 	import { formatShiftTime } from '$lib/time';
 	import type { PageData } from './$types';
@@ -39,7 +39,7 @@
 		}
 	};
 
-	let calendar = $derived(page.url.searchParams.get('view') === 'calendar');
+	let calendar = $derived(isCalendarView(page.url));
 	let selected = $state<(typeof data.shifts)[number] | null>(null);
 	let selectedPerformance = $state<(typeof data.performances)[number] | null>(null);
 

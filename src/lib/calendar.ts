@@ -1,5 +1,8 @@
 import { DAYS, MINUTES_PER_DAY } from './time';
 
+/** Whether a page URL asks for the calendar view (`?view=calendar`) instead of the list. */
+export const isCalendarView = (url: URL) => url.searchParams.get('view') === 'calendar';
+
 /** What the calendar draws: a work shift or an artist's performance. */
 export interface CalendarEvent {
 	id: string;

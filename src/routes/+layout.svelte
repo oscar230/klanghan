@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { page } from '$app/state';
+	import { isCalendarView } from '$lib/calendar';
 	import Dialog from '$lib/components/Dialog.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
@@ -8,7 +9,7 @@
 
 	let { children } = $props();
 
-	let width = $derived(page.data.wide ? 'max-w-screen-2xl' : 'max-w-3xl');
+	let width = $derived(isCalendarView(page.url) ? 'max-w-screen-2xl' : 'max-w-3xl');
 	// The calendar's day header sticks below the app bar, so it needs to know how tall that is
 	let headerHeight = $state(0);
 
