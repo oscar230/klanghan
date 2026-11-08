@@ -1,0 +1,61 @@
+<script lang="ts">
+	/** Narrows the schedule editor (list and calendar) by volunteer, role or conflicts. */
+	let {
+		users,
+		roles,
+		userId = $bindable(''),
+		roleId = $bindable(''),
+		onlyConflicts = $bindable(false),
+		shown,
+		total
+	}: {
+		users: Array<{ id: string; name: string }>;
+		roles: Array<{ id: string; name: string }>;
+		userId?: string;
+		roleId?: string;
+		onlyConflicts?: boolean;
+		shown: number;
+		total: number;
+	} = $props();
+
+	let active = $derived(Boolean(userId || roleId || onlyConflicts));
+
+	const clear = () => {
+		userId = '';
+		roleId = '';
+		onlyConflicts = false;
+	};
+</script>
+
+<div class="mb-4 space-y-3" role="search" aria-label="Filtrera pass">
+	<div class="grid gap-3 sm:grid-cols-2">
+		<div>
+			<label class="field-label" for="filter-user">Volontär</label>
+			<select id="filter-user" bind:value={userId} class="field">
+				<option value="">Alla volontärer</option>
+				{#each users as user}
+					<option value={user.id}>{user.name}</option>
+				{/each}
+			</select>
+		</div>
+		<div>
+			<label class="field-label" for="filter-role">Roll</label>
+			<select id="filter-role" bind:value={roleId} class="field">
+				<option value="">Alla roller</option>
+				{#each roles as role}
+					<option value={role.id}>{role.name}</option>
+				{/each}
+			</select>
+		</div>
+	</div>
+	<div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+		<label class="flex items-center gap-2 text-sm">
+			<input type="checkbox" bind:checked={onlyConflicts} class="accent-primary size-4" />
+			Endast krockar
+		</label>
+		<div class="flex items-center gap-1 text-sm">
+			<span class="text-muted-foreground" aria-live="polite">Visar {shown} av {total} pass</span>
+			<button type="button" class="btn btn-text h-8 px-3" disabled={!active} onclick={clear}>Rensa filter</button>
+		</div>
+	</div>
+</div>

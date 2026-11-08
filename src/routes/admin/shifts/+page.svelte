@@ -11,6 +11,7 @@
 	import WhenFields from '$lib/components/WhenFields.svelte';
 	import CalendarLayers from '$lib/components/CalendarLayers.svelte';
 	import PerformanceSummary from '$lib/components/PerformanceSummary.svelte';
+	import ShiftFilters from '$lib/components/ShiftFilters.svelte';
 	import ViewSwitch from '$lib/components/ViewSwitch.svelte';
 	import { describeConflicts, findConflicts, findStageConflicts } from '$lib/conflicts';
 	import { showNotice, submitWithNotice } from '$lib/notice.svelte';
@@ -33,11 +34,24 @@
 	let conflicts = $derived(findConflicts(data.shifts));
 	let conflictIds = $derived(new Set(conflicts.keys()));
 
+	// Filters apply to the list and the calendar alike (and stay when switching between them)
+	let filterUser = $state('');
+	let filterRole = $state('');
+	let onlyConflicts = $state(false);
+	let visibleShifts = $derived(
+		data.shifts.filter(
+			(shift) =>
+				(!filterUser || shift.userId === filterUser) &&
+				(!filterRole || shift.roleId === filterRole) &&
+				(!onlyConflicts || conflictIds.has(shift.id))
+		)
+	);
+
 	// What the calendar shows; artists are read-only here and are edited under "Artister"
 	let showShifts = $state(true);
 	let showPerformances = $state(true);
 	let events = $derived([
-		...(showShifts ? data.shifts.map(shiftEvent) : []),
+		...(showShifts ? visibleShifts.map(shiftEvent) : []),
 		...(showPerformances ? data.performances.map(performanceEvent) : [])
 	]);
 	let calendarConflicts = $derived(
@@ -97,12 +111,24 @@
 {#if data.shifts.length === 0}
 	<p class="text-muted-foreground py-12 text-center text-sm">Inga arbetspass schemalagda ännu.</p>
 {:else}
+	<ShiftFilters
+		users={data.users}
+		roles={data.roles}
+		bind:userId={filterUser}
+		bind:roleId={filterRole}
+		bind:onlyConflicts
+		shown={visibleShifts.length}
+		total={data.shifts.length}
+	/>
+
 	{#if calendar}
 		<div class="mb-4"><CalendarLayers bind:shifts={showShifts} bind:performances={showPerformances} /></div>
 		<ScheduleCalendar {events} conflicts={calendarConflicts} onselect={selectEvent} />
+	{:else if visibleShifts.length === 0}
+		<p class="text-muted-foreground py-12 text-center text-sm">Inga pass matchar filtret.</p>
 	{:else}
 		<ul class="list">
-			{#each data.shifts as shift (shift.id)}
+			{#each visibleShifts as shift (shift.id)}
 				<li class="list-row">
 					<Avatar src={shift.imageUrl} name={shift.userName} />
 					<div class="min-w-0 flex-1">
