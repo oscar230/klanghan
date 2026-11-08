@@ -57,3 +57,11 @@ export function formatShiftTime(start: number, end: number): string {
     
     return `${startStr} - ${endStr} (${duration})`;
 }
+
+/** Groups items by the festival day they start on. Days without items are left out. */
+export function groupByStartDay<T extends { startOffset: number }>(items: T[]) {
+    return DAYS.map((name, dayIndex) => ({
+        name,
+        items: items.filter((item) => Math.floor(item.startOffset / MINUTES_PER_DAY) === dayIndex)
+    })).filter((day) => day.items.length > 0);
+}

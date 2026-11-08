@@ -15,6 +15,25 @@
 	let confirmingLogout = $state(false);
 
 	let inAdmin = $derived(page.url.pathname === '/admin' || page.url.pathname.startsWith('/admin/'));
+
+	// Tabs choose which data to look at (the view switch on the pages only changes how it is shown)
+	const ADMIN_TABS = [
+		['/admin/volunteers', 'Volontärer'],
+		['/admin/roles', 'Roller'],
+		['/admin/shifts', 'Arbetspass'],
+		['/admin/artists', 'Artister'],
+		['/admin/stages', 'Scener'],
+		['/admin/guide', 'Handbok']
+	];
+	const PUBLIC_TABS = [
+		['/', 'Arbetspass'],
+		['/artists', 'Artister']
+	];
+	let tabs = $derived(
+		inAdmin ? (page.url.pathname === '/admin/login' ? [] : ADMIN_TABS) : PUBLIC_TABS.some(([href]) => href === page.url.pathname) ? PUBLIC_TABS : []
+	);
+	const isCurrent = (href: string) =>
+		page.url.pathname === href || (href !== '/' && page.url.pathname.startsWith(href + '/'));
 </script>
 
 <header bind:clientHeight={headerHeight} class="bg-background border-border sticky top-0 z-30 border-b">
@@ -37,12 +56,12 @@
 		{/if}
 		<ThemeToggle />
 	</div>
-	{#if inAdmin && page.url.pathname !== '/admin/login'}
-		<nav aria-label="Administratör" class="mx-auto flex overflow-x-auto px-2 {width}">
-			{#each [['/admin/volunteers', 'Volontärer'], ['/admin/roles', 'Roller'], ['/admin/shifts', 'Schema'], ['/admin/guide', 'Handbok']] as [href, text]}
+	{#if tabs.length}
+		<nav aria-label={inAdmin ? 'Administratör' : 'Schema'} class="mx-auto flex overflow-x-auto px-2 {width}">
+			{#each tabs as [href, text]}
 				<a
 					{href}
-					aria-current={page.url.pathname === href || page.url.pathname.startsWith(href + '/') ? 'page' : undefined}
+					aria-current={isCurrent(href) ? 'page' : undefined}
 					class="text-muted-foreground hover:bg-muted aria-[current=page]:border-primary aria-[current=page]:text-primary border-b-2 border-transparent px-4 py-3 text-sm font-medium whitespace-nowrap"
 				>
 					{text}
