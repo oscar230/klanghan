@@ -28,7 +28,13 @@
 	// Two artists on the same stage at once is impossible (different stages may play at the same time)
 	let conflicts = $derived(findStageConflicts(data.performances));
 
-	let stageId = $state(page.url.searchParams.get('stage') ?? '');
+	// ?stage= preselects a stage (from the Scener page). Followed when it changes, e.g. with the back button,
+	// but not reset when only the view changes, so filters survive switching between list and calendar.
+	const stageParam = $derived(page.url.searchParams.get('stage') ?? '');
+	let stageId = $state('');
+	$effect(() => {
+		stageId = stageParam;
+	});
 	let query = $state('');
 	let onlyConflicts = $state(false);
 	let visible = $derived(
