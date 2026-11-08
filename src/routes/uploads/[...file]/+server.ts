@@ -3,9 +3,9 @@ import { getRepo } from '$lib/server/data';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ params }) => {
-	// Files are stored flat; anything with a path separator is not one of ours.
+	// Files are stored flat with generated names (letters, digits, dots, dashes); anything else is not one of ours.
 	const fileName = params.file;
-	if (!fileName || fileName.includes('/') || fileName.includes('\\')) {
+	if (!fileName || !/^[\w.-]+$/.test(fileName)) {
 		throw error(404, 'Filen hittades inte');
 	}
 
