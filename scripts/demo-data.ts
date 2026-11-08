@@ -140,16 +140,27 @@ export function buildDemo() {
 
 	const shifts: Shift[] = [];
 	const cursor = new Map<number, number>(); // round-robin per role
-	for (const [roleIdx, day, from, to, people] of PLAN) {
+	const busy = new Map<string, Array<[number, number]>>(); // when each volunteer already works
+	const isBusy = (userId: string, from: number, to: number) =>
+		(busy.get(userId) ?? []).some(([a, b]) => a < to && b > from);
+
+	for (const [roleIdx, day, fromHour, toHour, people] of PLAN) {
+		const startOffset = day * 1440 + fromHour * 60;
+		const endOffset = day * 1440 + toHour * 60;
 		for (let p = 0; p < people; p++) {
-			const n = cursor.get(roleIdx) ?? roleIdx * 2;
+			// The next volunteer in this role's rotation who is free, so the demo has few accidental double-bookings
+			let n = cursor.get(roleIdx) ?? roleIdx * 2;
+			for (let tries = 0; tries < users.length && isBusy(users[n % users.length].id, startOffset, endOffset); tries++) n++;
 			cursor.set(roleIdx, n + 1);
+
+			const userId = users[n % users.length].id;
+			busy.set(userId, [...(busy.get(userId) ?? []), [startOffset, endOffset]]);
 			shifts.push({
 				id: `${DEMO_PREFIX}shift-${shifts.length + 1}`,
-				userId: users[n % users.length].id,
+				userId,
 				roleId: roles[roleIdx].id,
-				startOffset: day * 1440 + from * 60,
-				endOffset: day * 1440 + to * 60
+				startOffset,
+				endOffset
 			});
 		}
 	}
