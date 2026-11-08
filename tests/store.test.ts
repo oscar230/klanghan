@@ -15,6 +15,8 @@ import * as ops from '../src/lib/server/operations';
 import { DomainError } from '../src/lib/server/operations';
 import { roleTimeline } from '../src/lib/server/views';
 
+const plainRole = (name: string) => ({ name, description: null, isSupervisor: false, supervisorRoleId: null });
+
 /** A tiny in-memory S3 that implements just enough for S3Store, including conditional writes. */
 function fakeS3() {
 	const objects = new Map<string, { body: Buffer; etag: string; type: string }>();
@@ -92,7 +94,7 @@ function contract(name: string, withStore: (run: (s: Store) => Promise<void>) =>
 	test(`${name}: round-trips and rejects stale writes`, () =>
 		withStore(async (store) => {
 			const first = await store.readSchedule();
-			first.schedule.roles.push({ id: 'r1', name: 'Entré', description: null, supervisorRoleId: null });
+			first.schedule.roles.push({ id: 'r1', name: 'Entré', description: null, isSupervisor: false, supervisorRoleId: null });
 			const etag1 = await store.writeSchedule(first.schedule, first.etag);
 
 			const reread = await store.readSchedule();
@@ -101,7 +103,7 @@ function contract(name: string, withStore: (run: (s: Store) => Promise<void>) =>
 
 			// A second writer that still holds the original (null) etag must lose
 			await assert.rejects(store.writeSchedule(emptySchedule(), null), ConflictError);
-			reread.schedule.roles.push({ id: 'r2', name: 'Teknik', description: null, supervisorRoleId: null });
+			reread.schedule.roles.push({ id: 'r2', name: 'Teknik', description: null, isSupervisor: false, supervisorRoleId: null });
 			await store.writeSchedule(reread.schedule, etag1);
 			await assert.rejects(store.writeSchedule(reread.schedule, etag1), ConflictError);
 		}));
@@ -122,7 +124,7 @@ function contract(name: string, withStore: (run: (s: Store) => Promise<void>) =>
 		withStore(async (store) => {
 			const repo = createRepository(store);
 			await Promise.all(
-				Array.from({ length: 8 }, (_, i) => repo.update((s) => ops.addRole(s, `Roll ${i}`, null)))
+				Array.from({ length: 8 }, (_, i) => repo.update((s) => ops.addRole(s, plainRole(`Roll ${i}`))))
 			);
 			assert.equal((await repo.get()).roles.length, 8);
 		}));
@@ -152,10 +154,10 @@ test('createStore picks a backend from the environment', () => {
 test('operations enforce the scheduling rules', () => {
 	const s = emptySchedule();
 	const user = ops.addUser(s, 'Oscar', null);
-	const role = ops.addRole(s, 'Entré', null);
+	const role = ops.addRole(s, plainRole('Entré'));
 
 	assert.throws(() => ops.addUser(s, ' oscar ', null), DomainError); // names are unique, case-insensitively
-	assert.throws(() => ops.addRole(s, 'ENTRÉ', null), DomainError);
+	assert.throws(() => ops.addRole(s, plainRole('ENTRÉ')), DomainError);
 
 	const base = { userId: user.id, roleId: role.id };
 	assert.throws(() => ops.addShift(s, { ...base, startOffset: 60, endOffset: 60 }), /Sluttid/);
@@ -165,7 +167,7 @@ test('operations enforce the scheduling rules', () => {
 	const shift = ops.addShift(s, { ...base, startOffset: 0, endOffset: 60 });
 
 	const other = ops.addUser(s, 'Lisa', null);
-	const bar = ops.addRole(s, 'Bar', null);
+	const bar = ops.addRole(s, plainRole('Bar'));
 	ops.updateShift(s, shift.id, { userId: other.id, roleId: bar.id, startOffset: 30, endOffset: 90 });
 	assert.deepEqual(s.shifts, [{ id: shift.id, userId: other.id, roleId: bar.id, startOffset: 30, endOffset: 90 }]);
 	assert.throws(() => ops.updateShift(s, shift.id, { userId: other.id, roleId: bar.id, startOffset: 90, endOffset: 30 }), /Sluttid/);
@@ -183,38 +185,67 @@ test('operations enforce the scheduling rules', () => {
 	assert.equal(s.users.length + s.roles.length + s.shifts.length, 0);
 });
 
-test('a role can be led by another role, without loops, and the leader stays until the link is broken', () => {
+test('supervisor roles: only they can lead, one leader per role, and a leader cannot be led', () => {
 	const s = emptySchedule();
-	const chief = ops.addRole(s, 'Säkerhetsansvarig', null);
-	const guard = ops.addRole(s, 'Trygghetsvärd', null, chief.id);
+	const input = (name: string, extra: Partial<ops.RoleInput> = {}) => ({
+		name,
+		description: null,
+		isSupervisor: false,
+		supervisorRoleId: null,
+		...extra
+	});
+	const chief = ops.addRole(s, input('Säkerhetsansvarig', { isSupervisor: true }));
+	const other = ops.addRole(s, input('Barchef', { isSupervisor: true }));
+	const guard = ops.addRole(s, input('Trygghetsvärd', { supervisorRoleId: chief.id }));
+	const host = ops.addRole(s, input('Värd', { supervisorRoleId: chief.id })); // one supervisor can lead many roles
 	assert.equal(guard.supervisorRoleId, chief.id);
-	assert.equal(chief.supervisorRoleId, null);
+	assert.equal(host.supervisorRoleId, chief.id);
 
-	assert.throws(() => ops.addRole(s, 'Spöke', null, 'ghost'), /finns inte/);
-	assert.throws(() => ops.updateRole(s, chief.id, chief.name, null, chief.id), /egen/);
-	assert.throws(() => ops.updateRole(s, chief.id, chief.name, null, guard.id), /cirkel/); // loop of two
-	const third = ops.addRole(s, 'Gäst', null, guard.id);
-	assert.throws(() => ops.updateRole(s, chief.id, chief.name, null, third.id), /cirkel/); // loop of three
-	assert.equal(chief.supervisorRoleId, null); // rejected changes leave the role as it was
+	// The leader must exist and be a supervisor role
+	assert.throws(() => ops.addRole(s, input('Spöke', { supervisorRoleId: 'ghost' })), /finns inte/);
+	assert.throws(() => ops.addRole(s, input('Gäst', { supervisorRoleId: guard.id })), /ledande roll/);
+	assert.throws(() => ops.updateRole(s, host.id, input('Värd', { supervisorRoleId: host.id })), /egen/);
+	// A supervisor role cannot be led, neither when created nor when changed
+	assert.throws(() => ops.addRole(s, input('Chef2', { isSupervisor: true, supervisorRoleId: chief.id })), /kan inte ledas/);
+	assert.throws(() => ops.updateRole(s, other.id, input('Barchef', { isSupervisor: true, supervisorRoleId: chief.id })), /kan inte ledas/);
+	assert.throws(() => ops.updateRole(s, guard.id, input('Trygghetsvärd', { isSupervisor: true, supervisorRoleId: chief.id })), /kan inte ledas/);
+	// ...and a role that leads others stays a supervisor role until the links are gone
+	assert.throws(() => ops.updateRole(s, chief.id, input('Säkerhetsansvarig', { isSupervisor: false })), /Ta bort kopplingarna/);
+	assert.equal(chief.isSupervisor, true); // rejected changes leave the role as it was
 
+	// A role has one leader; moving it to another supervisor replaces the old one
+	ops.updateRole(s, host.id, input('Värd', { supervisorRoleId: other.id }));
+	assert.equal(host.supervisorRoleId, other.id);
+
+	// The leader cannot be deleted until the link is broken
 	assert.throws(() => ops.deleteRole(s, chief.id), /leder andra/);
-	ops.deleteRole(s, third.id); // a role without subordinates can go, taking its link with it
-	assert.throws(() => ops.deleteRole(s, chief.id), /leder andra/);
-	ops.updateRole(s, guard.id, guard.name, null, null); // break the link
+	ops.updateRole(s, guard.id, input('Trygghetsvärd'));
 	ops.deleteRole(s, chief.id);
-	assert.deepEqual(s.roles.map((r) => r.name), ['Trygghetsvärd']);
+	assert.deepEqual(s.roles.map((r) => r.name).sort(), ['Barchef', 'Trygghetsvärd', 'Värd']);
 });
 
-test('roles saved before supervisors existed load without one', () => {
-	const s = normalizeSchedule({ roles: [{ id: 'r', name: 'Bar', description: null, supervisorRoleId: null }] });
-	assert.equal(s.roles[0].supervisorRoleId, null);
+test('roles saved by older versions are normalised to satisfy the supervisor rules', () => {
+	// Before the flag existed: "a" was led by "b", which is therefore a supervisor role. "b" was led by "c" (not allowed now)
+	const s = normalizeSchedule({
+		roles: [
+			{ id: 'a', name: 'A', description: null, supervisorRoleId: 'b' },
+			{ id: 'b', name: 'B', description: null, supervisorRoleId: 'c' },
+			{ id: 'c', name: 'C', description: null },
+			{ id: 'd', name: 'D', description: null, supervisorRoleId: 'gone' }
+		]
+	});
+	const byId = Object.fromEntries(s.roles.map((r) => [r.id, r]));
+	assert.deepEqual([byId.a.isSupervisor, byId.a.supervisorRoleId], [false, 'b']);
+	assert.deepEqual([byId.b.isSupervisor, byId.b.supervisorRoleId], [true, null]);
+	assert.deepEqual([byId.c.isSupervisor, byId.c.supervisorRoleId], [true, null]);
+	assert.deepEqual([byId.d.isSupervisor, byId.d.supervisorRoleId], [false, null]);
 });
 
 test('roleTimeline marks gaps and overlaps', () => {
 	const s = emptySchedule();
 	const a = ops.addUser(s, 'A', null);
 	const b = ops.addUser(s, 'B', null);
-	const role = ops.addRole(s, 'Teknik', null);
+	const role = ops.addRole(s, plainRole('Teknik'));
 	ops.addShift(s, { userId: a.id, roleId: role.id, startOffset: 600, endOffset: 720 });
 	ops.addShift(s, { userId: b.id, roleId: role.id, startOffset: 700, endOffset: 780 });
 	ops.addShift(s, { userId: a.id, roleId: role.id, startOffset: 840, endOffset: 900 });

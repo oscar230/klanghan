@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Icon from '$lib/components/Icon.svelte';
+	import RoleFields from '$lib/components/RoleFields.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import RowActions from '$lib/components/RowActions.svelte';
 	import { submitWithNotice } from '$lib/notice.svelte';
@@ -17,29 +18,6 @@
 	<title>Roller - Administratör</title>
 </svelte:head>
 
-{#snippet roleFields(role: Role | null)}
-	<div>
-		<label class="field-label" for="role-name">Namn</label>
-		<input id="role-name" type="text" name="name" value={role?.name ?? ''} required class="field" />
-	</div>
-	<div>
-		<label class="field-label" for="role-description">Beskrivning (frivilligt)</label>
-		<textarea id="role-description" name="description" rows="4" class="field">{role?.description ?? ''}</textarea>
-	</div>
-	<div>
-		<label class="field-label" for="role-supervisor">Leds av (frivilligt)</label>
-		<select id="role-supervisor" name="supervisorRoleId" class="field">
-			<option value="">Ingen</option>
-			{#each data.roles.filter((other) => other.id !== role?.id) as other}
-				<option value={other.id} selected={other.id === role?.supervisorRoleId}>{other.name}</option>
-			{/each}
-		</select>
-		<p class="text-muted-foreground mt-1 text-xs">
-			Volontärer med den här rollen får se vem som leder dem om de behöver hjälp.
-		</p>
-	</div>
-{/snippet}
-
 <h1 class="text-2xl">Roller</h1>
 <p class="text-muted-foreground mt-1 mb-6 text-sm">Hantera festivalens arbetsroller.</p>
 
@@ -52,7 +30,9 @@
 				<div class="min-w-0 flex-1">
 					<p class="truncate font-medium">{role.name}</p>
 					<p class="text-muted-foreground text-sm">
-						{role.shiftCount} pass{role.supervisorName ? ` · Leds av ${role.supervisorName}` : ''}
+						{[`${role.shiftCount} pass`, role.isSupervisor ? 'Ledande roll' : null, role.supervisorName ? `Leds av ${role.supervisorName}` : null]
+							.filter(Boolean)
+							.join(' · ')}
 					</p>
 					{#if role.subordinateNames.length}
 						<p class="text-muted-foreground text-sm">Leder {role.subordinateNames.join(', ')}</p>
@@ -94,12 +74,12 @@
 </button>
 
 <Modal open={adding} title="Ny roll" action="?/addRole" submitLabel="Lägg till" onclose={() => (adding = false)}>
-	{@render roleFields(null)}
+	<RoleFields role={null} roles={data.roles} />
 </Modal>
 
 <Modal open={editing !== null} title="Ändra roll" action="?/updateRole" submitLabel="Spara" onclose={() => (editing = null)}>
 	{#if editing}
 		<input type="hidden" name="id" value={editing.id} />
-		{@render roleFields(editing)}
+		<RoleFields role={editing} roles={data.roles} />
 	{/if}
 </Modal>

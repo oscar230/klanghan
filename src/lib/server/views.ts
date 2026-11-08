@@ -30,6 +30,7 @@ export function shiftDetails(s: Schedule) {
 				imageUrl: user.imageUrl,
 				roleName: role.name,
 				roleDescription: role.description,
+				roleIsSupervisor: role.isSupervisor,
 				supervisorRoleId: role.supervisorRoleId,
 				supervisorRoleName: roles.get(role.supervisorRoleId ?? '')?.name ?? null,
 				startOffset: shift.startOffset,

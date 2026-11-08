@@ -37,10 +37,16 @@
 			dag för dag.
 		</p>
 		<p class="mt-2">
-			En roll kan <em>ledas av</em> en annan roll, till exempel att <em>Trygghetsvärd</em> leds av
-			<em>Säkerhetsansvarig</em>. Volontärer med rollen ser då, på sitt schema, vem med den ledande rollen som
-			arbetar under passet och som de kan fråga om hjälp. En roll som leder andra roller kan inte tas bort förrän
-			kopplingen tagits bort: ändra den underordnade rollen och välj <em>Ingen</em> under <em>Leds av</em>.
+			De flesta roller kan ha hur många personer som helst. En roll som markeras som <em>Ledande roll</em>, till
+			exempel <em>Säkerhetsansvarig</em>, kan däremot bara innehas av en person åt gången. Bara ledande roller kan leda
+			andra roller: välj den under <em>Leds av</em> på den roll som ska ledas, till exempel
+			<em>Trygghetsvärd</em>. En ledande roll kan leda flera roller, men en roll kan bara ha en ledare och en ledande roll
+			kan inte själv ledas av en annan.
+		</p>
+		<p class="mt-2">
+			Volontärer ser på sitt schema vem med den ledande rollen som arbetar under passet och som de kan fråga om
+			hjälp. En ledande roll som leder andra roller kan inte tas bort, och inte heller göras om till en vanlig roll,
+			förrän kopplingarna tagits bort: ändra de roller som leds och välj <em>Ingen</em> under <em>Leds av</em>.
 		</p>
 	</section>
 
@@ -51,8 +57,9 @@
 			volontär, roll eller tider för ett pass och med <em>Ta bort</em> tar du bort det. Tider anges alltid med 24-timmarsklocka.
 		</p>
 		<p class="mt-2">
-			Är en volontär bokad på flera pass samtidigt markeras passen med <em>Krock</em>. Det går att spara ändå, men
-			volontärer bör normalt inte ha flera pass på en gång. Behövs det, skapa hellre en egen roll som täcker uppdraget.
+			Pass som inte går att genomföra markeras med <em>Krock</em> och i rött i kalendern: en volontär som är bokad på
+			flera pass samtidigt, eller en ledande roll som två personer har samtidigt. Det går att spara ändå, men
+			ändra passen så att de inte krockar. Behövs det verkligen, skapa hellre en egen roll som täcker uppdraget.
 		</p>
 	</section>
 
@@ -62,7 +69,7 @@
 			Välj <em>Kalender</em> högst upp på sidan <em>Schema</em> för en överblick med en kolumn per dag och
 			klockslagen längs sidan. Pass som sker samtidigt ligger bredvid varandra; i smala kolumner står texten på
 			högkant. På smala skärmar visas en dag i taget. Tryck på ett pass för att se detaljer, ändra eller ta bort det.
-			Pass där volontären är dubbelbokad får en mörk ram. Volontärerna har samma kalender på startsidan, men utan
+			Pass som krockar är röda. Volontärerna har samma kalender på startsidan, men utan
 			möjlighet att ändra.
 		</p>
 	</section>

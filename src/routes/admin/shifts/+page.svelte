@@ -10,6 +10,7 @@
 	import ScheduleCalendar from '$lib/components/ScheduleCalendar.svelte';
 	import TimeSelect from '$lib/components/TimeSelect.svelte';
 	import ViewSwitch from '$lib/components/ViewSwitch.svelte';
+	import { describeConflicts, findConflicts } from '$lib/conflicts';
 	import { showNotice, submitWithNotice } from '$lib/notice.svelte';
 	import { DAYS, formatClock, formatShiftTime } from '$lib/time';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -23,22 +24,9 @@
 	let editing = $state<Shift | null>(null);
 	let selected = $state<Shift | null>(null);
 
-	// Shifts where the same volunteer is booked on something else at the same time
-	let conflicts = $derived(
-		new Set(
-			data.shifts
-				.filter((shift) =>
-					data.shifts.some(
-						(other) =>
-							other.id !== shift.id &&
-							other.userId === shift.userId &&
-							other.startOffset < shift.endOffset &&
-							other.endOffset > shift.startOffset
-					)
-				)
-				.map((shift) => shift.id)
-		)
-	);
+	// Shifts that cannot work as scheduled: double-booked volunteers, or a supervisor role held by two people at once
+	let conflicts = $derived(findConflicts(data.shifts));
+	let conflictIds = $derived(new Set(conflicts.keys()));
 
 	// The festival's end (00:00 after the last day) is a valid end time, so the end day has one more option
 	const END_DAYS = [...DAYS, 'Måndag'];
@@ -107,7 +95,7 @@
 {#if data.shifts.length === 0}
 	<p class="text-muted-foreground py-12 text-center text-sm">Inga arbetspass schemalagda ännu.</p>
 {:else if calendar}
-	<ScheduleCalendar shifts={data.shifts} {conflicts} onselect={(shift) => (selected = data.shifts.find((s) => s.id === shift.id) ?? null)} />
+	<ScheduleCalendar shifts={data.shifts} conflicts={conflictIds} onselect={(shift) => (selected = data.shifts.find((s) => s.id === shift.id) ?? null)} />
 {:else}
 	<ul class="list">
 		{#each data.shifts as shift (shift.id)}
@@ -116,10 +104,10 @@
 				<div class="min-w-0 flex-1">
 					<p class="flex items-center gap-2 font-medium">
 						<span class="truncate">{shift.userName}</span>
-						{#if conflicts.has(shift.id)}
+						{#if conflictIds.has(shift.id)}
 							<span
-								class="bg-foreground text-background shrink-0 rounded-full px-2 py-0.5 text-xs"
-								title="Volontären är bokad på ett annat pass samtidigt"
+								class="bg-danger text-danger-foreground shrink-0 rounded-full px-2 py-0.5 text-xs"
+								title={describeConflicts(conflicts.get(shift.id) ?? [], shift.roleName).join(' ')}
 							>
 								Krock
 							</span>
@@ -152,12 +140,12 @@
 	{#if selected}
 		<div class="space-y-4 px-6 py-1">
 			<ShiftSummary shift={selected} />
-			{#if conflicts.has(selected.id)}
-				<p class="text-sm">
-					<span class="bg-foreground text-background rounded-full px-2 py-0.5 text-xs">Krock</span>
-					Volontären är bokad på ett annat pass samtidigt.
+			{#each describeConflicts(conflicts.get(selected.id) ?? [], selected.roleName) as message}
+				<p class="text-danger text-sm">
+					<span class="bg-danger text-danger-foreground rounded-full px-2 py-0.5 text-xs">Krock</span>
+					{message}
 				</p>
-			{/if}
+			{/each}
 		</div>
 		<div class="flex items-center gap-2 px-6 pt-4 pb-6">
 			<form method="POST" action="?/deleteShift" use:enhance={deleteSelected} class="mr-auto">

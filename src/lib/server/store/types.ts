@@ -8,7 +8,15 @@ export interface Role {
 	id: string;
 	name: string;
 	description: string | null;
-	/** The role that leads this one, e.g. "Säkerhetsansvarig" for "Trygghetsvärd". */
+	/**
+	 * A supervisor role leads other roles and can only be held by one person at a time.
+	 * Ordinary roles can have any number of people.
+	 */
+	isSupervisor: boolean;
+	/**
+	 * The supervisor role that leads this one, e.g. "Säkerhetsansvarig" for "Trygghetsvärd".
+	 * Must be a supervisor role, and a supervisor role cannot itself have one.
+	 */
 	supervisorRoleId: string | null;
 }
 
@@ -58,10 +66,22 @@ export interface Store {
 /** Fills in anything missing so older or hand-edited documents still load. */
 export function normalizeSchedule(raw: unknown): Schedule {
 	const r = (raw ?? {}) as Partial<Schedule>;
+	const stored: Array<Partial<Role> & Pick<Role, 'id'>> = Array.isArray(r.roles) ? r.roles : [];
+	const ids = new Set(stored.map((role) => role.id));
+	const led = new Set(stored.map((role) => role.supervisorRoleId).filter((id) => id && ids.has(id)));
+
+	const roles: Role[] = stored.map((role) => {
+		// Links saved before roles had the flag: whatever is led by a role makes it a supervisor role
+		const isSupervisor = role.isSupervisor ?? led.has(role.id);
+		// Keep the rules true for hand-edited data too: the leading role must exist, and a supervisor role is not led
+		const supervisorRoleId = !isSupervisor && role.supervisorRoleId && ids.has(role.supervisorRoleId) ? role.supervisorRoleId : null;
+		return { name: '', description: null, ...role, isSupervisor, supervisorRoleId };
+	});
+
 	return {
 		version: 1,
 		users: Array.isArray(r.users) ? r.users : [],
-		roles: Array.isArray(r.roles) ? r.roles.map((role) => ({ ...role, supervisorRoleId: role.supervisorRoleId ?? null })) : [],
+		roles,
 		shifts: Array.isArray(r.shifts) ? r.shifts : []
 	};
 }

@@ -48,53 +48,48 @@ export function deleteUser(s: Schedule, id: string): string | null {
 	return user.imageUrl;
 }
 
-/** A role may be led by one other role. Rejects unknown roles and links that would make roles lead each other. */
-function checkSupervisor(s: Schedule, roleId: string, supervisorRoleId: string | null) {
-	if (!supervisorRoleId) return;
-	if (supervisorRoleId === roleId) throw new DomainError('En roll kan inte vara sin egen överordnade');
+export interface RoleInput {
+	name: string;
+	description: string | null;
+	isSupervisor: boolean;
+	supervisorRoleId: string | null;
+}
 
-	const byId = new Map(s.roles.map((r) => [r.id, r]));
-	if (!byId.has(supervisorRoleId)) throw new DomainError('Den överordnade rollen finns inte');
-
-	// Walking up from the supervisor must never reach the role itself
-	const seen = new Set<string>();
-	for (let id: string | null = supervisorRoleId; id && !seen.has(id); id = byId.get(id)?.supervisorRoleId ?? null) {
-		if (id === roleId) throw new DomainError('Rollerna skulle leda varandra i en cirkel');
-		seen.add(id);
+/**
+ * Supervisor rules: only a supervisor role can lead other roles (any number of them), a role has at
+ * most one supervisor, and a supervisor role cannot itself be led. So there are never chains or loops.
+ */
+function checkSupervisor(s: Schedule, id: string, { isSupervisor, supervisorRoleId }: RoleInput) {
+	if (supervisorRoleId) {
+		if (supervisorRoleId === id) throw new DomainError('En roll kan inte vara sin egen ledare');
+		if (isSupervisor) throw new DomainError('En ledande roll kan inte ledas av en annan roll');
+		const leader = s.roles.find((r) => r.id === supervisorRoleId);
+		if (!leader) throw new DomainError('Den ledande rollen finns inte');
+		if (!leader.isSupervisor) throw new DomainError('Rollen som leder måste vara markerad som ledande roll');
+	}
+	if (!isSupervisor && s.roles.some((r) => r.supervisorRoleId === id)) {
+		throw new DomainError('Rollen leder andra roller och måste vara en ledande roll. Ta bort kopplingarna först.');
 	}
 }
 
-export function addRole(
-	s: Schedule,
-	name: string,
-	description: string | null,
-	supervisorRoleId: string | null = null
-): Role {
-	if (s.roles.some((r) => sameName(r.name, name))) {
+export function addRole(s: Schedule, input: RoleInput): Role {
+	if (s.roles.some((r) => sameName(r.name, input.name))) {
 		throw new DomainError('En roll med det namnet finns redan');
 	}
-	const role: Role = { id: randomUUID(), name, description, supervisorRoleId };
-	checkSupervisor(s, role.id, supervisorRoleId);
+	const role: Role = { id: randomUUID(), ...input };
+	checkSupervisor(s, role.id, input);
 	s.roles.push(role);
 	return role;
 }
 
-export function updateRole(
-	s: Schedule,
-	id: string,
-	name: string,
-	description: string | null,
-	supervisorRoleId: string | null
-) {
+export function updateRole(s: Schedule, id: string, input: RoleInput) {
 	const role = s.roles.find((r) => r.id === id);
 	if (!role) throw new DomainError('Rollen hittades inte', 404);
-	if (s.roles.some((r) => r.id !== id && sameName(r.name, name))) {
+	if (s.roles.some((r) => r.id !== id && sameName(r.name, input.name))) {
 		throw new DomainError('En roll med det namnet finns redan');
 	}
-	checkSupervisor(s, id, supervisorRoleId);
-	role.name = name;
-	role.description = description;
-	role.supervisorRoleId = supervisorRoleId;
+	checkSupervisor(s, id, input);
+	Object.assign(role, input);
 }
 
 export function deleteRole(s: Schedule, id: string) {

@@ -11,16 +11,21 @@ export const load: PageServerLoad = async () => {
 
 const field = (data: FormData, name: string) => data.get(name)?.toString().trim();
 
+/** The supervisor part of the role form: a checkbox, and the leading role (not sent while the checkbox is ticked). */
+const roleLinks = (data: FormData) => ({
+	isSupervisor: data.get('isSupervisor') === 'on',
+	supervisorRoleId: field(data, 'supervisorRoleId') || null
+});
+
 export const actions: Actions = {
 	addRole: async ({ request }) => {
 		const data = await request.formData();
 		const name = field(data, 'name');
 		const description = field(data, 'description') || null;
-		const supervisorRoleId = field(data, 'supervisorRoleId') || null;
 		if (!name) return fail(400, { error: 'Rollnamn krävs' });
 
 		try {
-			await getRepo().update((s) => addRole(s, name, description, supervisorRoleId));
+			await getRepo().update((s) => addRole(s, { name, ...roleLinks(data), description }));
 		} catch (e) {
 			return failFrom(e);
 		}
@@ -42,11 +47,10 @@ export const actions: Actions = {
 		const id = field(data, 'id');
 		const name = field(data, 'name');
 		const description = field(data, 'description') || null;
-		const supervisorRoleId = field(data, 'supervisorRoleId') || null;
 		if (!id || !name) return fail(400, { error: 'ID och namn krävs' });
 
 		try {
-			await getRepo().update((s) => updateRole(s, id, name, description, supervisorRoleId));
+			await getRepo().update((s) => updateRole(s, id, { name, ...roleLinks(data), description }));
 		} catch (e) {
 			return failFrom(e);
 		}

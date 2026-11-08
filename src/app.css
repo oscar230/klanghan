@@ -37,6 +37,7 @@
 
 	/* Red is only for destructive actions and errors */
 	--color-danger: light-dark(#d93025, #f28b82);
+	--color-danger-foreground: light-dark(#ffffff, #202124);
 	--color-danger-soft: light-dark(#fce8e6, #4a2b29);
 
 	--shadow-raised: 0 1px 3px rgb(0 0 0 / 0.3), 0 4px 8px 3px rgb(0 0 0 / 0.15);

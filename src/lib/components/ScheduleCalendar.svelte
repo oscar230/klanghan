@@ -20,7 +20,7 @@
 		onselect: (shift: CalendarShift) => void;
 		/** Shifts of this volunteer stand out and the rest are muted. */
 		highlightUserId?: string;
-		/** Shifts to mark because the volunteer is booked twice at the same time. */
+		/** Shifts that are impossible as scheduled (see $lib/conflicts); drawn in red. */
 		conflicts?: Set<string>;
 	} = $props();
 
@@ -37,7 +37,13 @@
 	);
 	onMount(() => firstShiftMarker?.scrollIntoView({ block: 'start' }));
 
+	// A clear line between the days (and around them), stronger than the hairlines of the hours
+	const dayBorder = (index: number) =>
+		`border-field-border border-l-2 ${index === days.length - 1 ? 'sm:border-r-2' : ''}`;
+
 	const classes = (shift: CalendarShift) => {
+		// Impossible shifts are red, whatever else is highlighted
+		if (conflicts.has(shift.id)) return 'bg-danger-soft text-foreground border-danger ring-danger ring-2 ring-inset';
 		if (!highlightUserId) return 'bg-primary-soft text-foreground border-primary';
 		return shift.userId === highlightUserId
 			? 'bg-primary text-primary-foreground border-primary-foreground'
@@ -45,7 +51,7 @@
 	};
 
 	const label = (shift: CalendarShift) =>
-		`${shift.userName}, ${shift.roleName}, ${formatShiftTime(shift.startOffset, shift.endOffset)}`;
+		`${shift.userName}, ${shift.roleName}, ${formatShiftTime(shift.startOffset, shift.endOffset)}${conflicts.has(shift.id) ? ' (krock)' : ''}`;
 </script>
 
 <div style:--hour="3.5rem" class="[--axis:3rem]">
@@ -65,8 +71,8 @@
 		</div>
 		<div class="hidden grid-cols-[var(--axis)_repeat(3,minmax(0,1fr))] sm:grid">
 			<div></div>
-			{#each days as day}
-				<h3 class="border-border border-l py-2 text-center text-sm font-medium">{day.name}</h3>
+			{#each days as day, i}
+				<h3 class="{dayBorder(i)} py-2 text-center text-sm font-semibold">{day.name}</h3>
 			{/each}
 		</div>
 	</div>
@@ -87,7 +93,7 @@
 		</div>
 
 		{#each days as day, dayIndex}
-			<div class="border-border relative border-l {activeDay === dayIndex ? '' : 'hidden sm:block'}">
+			<div class="{dayBorder(dayIndex)} relative {activeDay === dayIndex ? '' : 'hidden sm:block'}">
 				{#each HOURS as hour}
 					<div class="border-border absolute inset-x-0 border-t" style:top="calc(var(--hour) * {hour})"></div>
 				{/each}
@@ -107,7 +113,7 @@
 							title={label(shift)}
 							aria-label={label(shift)}
 							onclick={() => onselect(shift)}
-							class="@container flex h-full w-full flex-col gap-1.5 @min-[5rem]:flex-row overflow-hidden rounded-md border-l-4 px-1 py-0.5 text-left text-xs hover:opacity-80 {classes(shift)} {conflicts.has(shift.id) ? 'ring-foreground ring-2 ring-inset' : ''} {segment.continuesFromPreviousDay ? 'rounded-t-none' : ''} {segment.continuesIntoNextDay ? 'rounded-b-none' : ''}"
+							class="@container flex h-full w-full flex-col gap-1.5 @min-[5rem]:flex-row overflow-hidden rounded-md border-l-4 px-1 py-0.5 text-left text-xs hover:opacity-80 {classes(shift)} {segment.continuesFromPreviousDay ? 'rounded-t-none' : ''} {segment.continuesIntoNextDay ? 'rounded-b-none' : ''}"
 						>
 							{#if minutes >= 45}
 								<span class="shrink-0 @max-[5rem]:mx-auto"><Avatar src={shift.imageUrl} name="" size={20} /></span>

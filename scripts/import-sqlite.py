@@ -29,7 +29,7 @@ schedule = {
         for r in db.execute("select * from users")
     ],
     "roles": [
-        {"id": r["id"], "name": r["name"], "description": r["description"], "supervisorRoleId": None}
+        {"id": r["id"], "name": r["name"], "description": r["description"], "isSupervisor": False, "supervisorRoleId": None}
         for r in db.execute("select * from roles")
     ],
     "shifts": [

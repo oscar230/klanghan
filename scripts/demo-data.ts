@@ -11,15 +11,15 @@ const NAMES = [
 	'Maja Öberg', 'Nils Forsberg'
 ];
 
-// [name, description, index of the leading role]
-const ROLES: Array<[string, string | null, number | null]> = [
+// [name, description, index of the leading role, is itself a supervisor role]
+const ROLES: Array<[string, string | null, number | null, boolean?]> = [
 	['Entré', 'Välkomnar gäster, scannar biljetter och delar ut armband.', null],
 	['Bar', 'Serverar och håller baren ren. Legitimera alltid vid osäkerhet.', null],
 	['Kök', 'Förbereder och serverar mat till funktionärer och artister.', null],
 	['Teknik', 'Hjälper till med ljud, ljus och scenbyten.', null],
 	['Städ', null, null],
 	['Info', 'Svarar på frågor och hänvisar rätt.', null],
-	['Säkerhetsansvarig', 'Leder säkerhetsarbetet och är den man vänder sig till när något inträffar.', null],
+	['Säkerhetsansvarig', 'Leder säkerhetsarbetet och är den man vänder sig till när något inträffar.', null, true],
 	['Trygghetsvärd', 'Finns till för gästernas trygghet och hänvisar vidare till säkerhetsansvarig vid behov.', 6]
 ];
 
@@ -103,10 +103,11 @@ export function buildDemo() {
 		// Leave a few without a photo so the default avatar is shown too
 		imageUrl: i % 4 === 3 ? null : `/uploads/${DEMO_PREFIX}${i + 1}.png`
 	}));
-	const roles: Role[] = ROLES.map(([name, description, supervisor], i) => ({
+	const roles: Role[] = ROLES.map(([name, description, supervisor, isSupervisor], i) => ({
 		id: `${DEMO_PREFIX}role-${i + 1}`,
 		name,
 		description,
+		isSupervisor: isSupervisor ?? false,
 		supervisorRoleId: supervisor === null ? null : `${DEMO_PREFIX}role-${supervisor + 1}`
 	}));
 
