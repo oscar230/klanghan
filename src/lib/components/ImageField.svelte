@@ -17,9 +17,13 @@
 		if (preview) URL.revokeObjectURL(preview);
 	});
 
+	const MAX_BYTES = 4 * 1024 * 1024; // the server's limit (see uploads.ts)
+
 	async function onchange(e: Event) {
 		const input = e.currentTarget as HTMLInputElement;
 		const original = input.files?.[0];
+		// The form cannot be submitted while the photo is being resized (the original could be too big)
+		input.setCustomValidity(original ? 'Bilden bearbetas, vänta ett ögonblick.' : '');
 		if (original) {
 			// Keeps the upload under Lambda's payload limit; never throws.
 			const resized = await downscaleImage(original);
@@ -30,6 +34,7 @@
 			}
 		}
 		const file = input.files?.[0];
+		input.setCustomValidity(file && file.size > MAX_BYTES ? 'Bilden är för stor (max 4 MB).' : '');
 		if (preview) URL.revokeObjectURL(preview);
 		preview = file ? URL.createObjectURL(file) : null;
 		fileName = file?.name ?? '';
