@@ -9,9 +9,10 @@
 	<section>
 		<h2 class="mb-2 text-lg font-medium">Så fungerar det</h2>
 		<p>
-			Volontärerna öppnar startsidan, väljer sitt namn och ser sina arbetspass och vilka de arbetar med. Här i
-			administrationen lägger du in volontärer, roller och arbetspass. Festivalen pågår fredag till söndag och alla
-			tider anges som dag och klockslag.
+			Volontärerna öppnar startsidan, väljer sitt namn och ser sina arbetspass och vilka de arbetar med. Bredvid
+			<em>Arbetspass</em> finns fliken <em>Artister</em> med vem som spelar var och när. Här i administrationen lägger
+			du in volontärer, roller, arbetspass, scener och artister. Festivalen pågår fredag till söndag och alla tider
+			anges som dag och 24-timmarsklocka.
 		</p>
 	</section>
 
@@ -51,9 +52,9 @@
 	</section>
 
 	<section>
-		<h2 class="mb-2 text-lg font-medium">Schema</h2>
+		<h2 class="mb-2 text-lg font-medium">Arbetspass</h2>
 		<p>
-			Under <em>Schema</em> bokar du in en volontär på en roll med start och slut. Med <em>Ändra</em> byter du
+			Under <em>Arbetspass</em> bokar du in en volontär på en roll med start och slut. Med <em>Ändra</em> byter du
 			volontär, roll eller tider för ett pass och med <em>Ta bort</em> tar du bort det. Tider anges alltid med 24-timmarsklocka.
 		</p>
 		<p class="mt-2">
@@ -64,13 +65,31 @@
 	</section>
 
 	<section>
-		<h2 class="mb-2 text-lg font-medium">Kalendern</h2>
+		<h2 class="mb-2 text-lg font-medium">Listvy och kalendervy</h2>
 		<p>
-			Välj <em>Kalender</em> högst upp på sidan <em>Schema</em> för en överblick med en kolumn per dag och
-			klockslagen längs sidan. Pass som sker samtidigt ligger bredvid varandra; i smala kolumner står texten på
-			högkant. På smala skärmar visas en dag i taget. Tryck på ett pass för att se detaljer, ändra eller ta bort det.
-			Pass som krockar är röda. Volontärerna har samma kalender på startsidan, men utan
-			möjlighet att ändra.
+			Arbetspass och artister kan visas som <em>Listvy</em> eller <em>Kalendervy</em>. Valet ändrar bara hur
+			samma uppgifter visas, inte vilka uppgifter det är; det är flikarna som byter mellan arbetspass och artister.
+			Kalendervyn har en kolumn per dag och klockslagen längs sidan. Pass som sker samtidigt ligger bredvid
+			varandra; i smala kolumner står texten på högkant. På smala skärmar visas en dag i taget. Tryck på ett pass
+			för att se detaljer, ändra eller ta bort det. Arbetspass är blå och artister svartvita, och med knapparna
+			ovanför kalendern väljer du om du vill se arbetspass, artister eller båda. Pass som krockar är röda.
+			Volontärerna har samma kalender på startsidan, men utan möjlighet att ändra.
+		</p>
+		<p class="mt-2">
+			Med filtren ovanför listan och kalendern, på sidorna <em>Arbetspass</em> och <em>Artister</em>, begränsar du
+			vyn till en volontär, en roll eller scen, eller bara det som krockar. Filtren gäller både listvyn och
+			kalendervyn, och krockar räknas alltid på hela schemat även om en del är bortfiltrerad.
+		</p>
+	</section>
+
+	<section>
+		<h2 class="mb-2 text-lg font-medium">Artister och scener</h2>
+		<p>
+			Artistschemat är skilt från arbetspassen och alla kan se det. Under <em>Scener</em> lägger du in scenerna.
+			Under <em>Artister</em> bokar du in en spelning med artistens namn, genre, scen, start och slut. En spelning är
+			alltså en händelse i schemat och inte ett eget register över artister. Flera artister kan spela samtidigt på
+			olika scener, men två på samma scen samtidigt krockar och markeras med rött. En scen med spelningar kan inte
+			tas bort förrän spelningarna är borttagna eller flyttade.
 		</p>
 	</section>
 
