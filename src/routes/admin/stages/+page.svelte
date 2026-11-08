@@ -20,7 +20,7 @@
 {#snippet fields(stage: Stage | null)}
 	<div>
 		<label class="field-label" for="stage-name">Namn</label>
-		<input id="stage-name" type="text" name="name" value={stage?.name ?? ''} required class="field" />
+		<input id="stage-name" type="text" name="name" value={stage?.name ?? ''} required maxlength="100" class="field" />
 	</div>
 {/snippet}
 

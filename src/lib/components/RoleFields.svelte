@@ -23,11 +23,11 @@
 
 <div>
 	<label class="field-label" for="role-name">Namn</label>
-	<input id="role-name" type="text" name="name" value={role?.name ?? ''} required class="field" />
+	<input id="role-name" type="text" name="name" value={role?.name ?? ''} required maxlength="100" class="field" />
 </div>
 <div>
 	<label class="field-label" for="role-description">Beskrivning (frivilligt)</label>
-	<textarea id="role-description" name="description" rows="4" class="field">{role?.description ?? ''}</textarea>
+	<textarea id="role-description" name="description" rows="4" maxlength="1000" class="field">{role?.description ?? ''}</textarea>
 </div>
 
 <div>

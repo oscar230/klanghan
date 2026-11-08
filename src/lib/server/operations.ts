@@ -13,9 +13,27 @@ export class DomainError extends Error {
 }
 
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+const MAX_NAME_LENGTH = 100;
+const MAX_DESCRIPTION_LENGTH = 1000;
+
+/**
+ * Cleans up text typed by an admin: Unicode NFC (so "é" typed two ways is the same name), invisible
+ * zero-width characters removed, trimmed, and limited in length. `what` names the field in error messages.
+ */
+function cleanText(value: string, what: string, max = MAX_NAME_LENGTH): string {
+	const cleaned = value.normalize('NFC').replace(/[\u200B-\u200D\u2060\uFEFF]/g, '').trim();
+	if (!cleaned) throw new DomainError(`${what} krävs`);
+	if (cleaned.length > max) throw new DomainError(`${what} får vara högst ${max} tecken`);
+	return cleaned;
+}
+
+const cleanDescription = (value: string | null) =>
+	value === null || !value.trim() ? null : cleanText(value, 'Beskrivningen', MAX_DESCRIPTION_LENGTH);
 const MINUTES_PER_DAY = 24 * 60;
 
-export function addUser(s: Schedule, name: string, imageUrl: string | null): User {
+export function addUser(s: Schedule, rawName: string, imageUrl: string | null): User {
+	const name = cleanText(rawName, 'Namn');
 	if (s.users.some((u) => sameName(u.name, name))) {
 		throw new DomainError('En volontär med det namnet finns redan');
 	}
@@ -72,7 +90,8 @@ function checkSupervisor(s: Schedule, id: string, { isSupervisor, supervisorRole
 	}
 }
 
-export function addRole(s: Schedule, input: RoleInput): Role {
+export function addRole(s: Schedule, raw: RoleInput): Role {
+	const input = { ...raw, name: cleanText(raw.name, 'Rollnamn'), description: cleanDescription(raw.description) };
 	if (s.roles.some((r) => sameName(r.name, input.name))) {
 		throw new DomainError('En roll med det namnet finns redan');
 	}
@@ -82,9 +101,10 @@ export function addRole(s: Schedule, input: RoleInput): Role {
 	return role;
 }
 
-export function updateRole(s: Schedule, id: string, input: RoleInput) {
+export function updateRole(s: Schedule, id: string, raw: RoleInput) {
 	const role = s.roles.find((r) => r.id === id);
 	if (!role) throw new DomainError('Rollen hittades inte', 404);
+	const input = { ...raw, name: cleanText(raw.name, 'Rollnamn'), description: cleanDescription(raw.description) };
 	if (s.roles.some((r) => r.id !== id && sameName(r.name, input.name))) {
 		throw new DomainError('En roll med det namnet finns redan');
 	}
@@ -138,16 +158,18 @@ export function deleteShift(s: Schedule, id: string) {
 	s.shifts = s.shifts.filter((sh) => sh.id !== id);
 }
 
-export function addStage(s: Schedule, name: string): Stage {
+export function addStage(s: Schedule, rawName: string): Stage {
+	const name = cleanText(rawName, 'Scenens namn');
 	if (s.stages.some((st) => sameName(st.name, name))) throw new DomainError('En scen med det namnet finns redan');
 	const stage: Stage = { id: randomUUID(), name };
 	s.stages.push(stage);
 	return stage;
 }
 
-export function updateStage(s: Schedule, id: string, name: string) {
+export function updateStage(s: Schedule, id: string, rawName: string) {
 	const stage = s.stages.find((st) => st.id === id);
 	if (!stage) throw new DomainError('Scenen hittades inte', 404);
+	const name = cleanText(rawName, 'Scenens namn');
 	if (s.stages.some((st) => st.id !== id && sameName(st.name, name))) {
 		throw new DomainError('En scen med det namnet finns redan');
 	}
@@ -163,16 +185,17 @@ export function deleteStage(s: Schedule, id: string) {
 
 export type PerformanceInput = Omit<Performance, 'id'>;
 
-function checkPerformance(s: Schedule, { stageId, artist, genre, startOffset, endOffset }: PerformanceInput) {
-	if (!s.stages.some((st) => st.id === stageId)) throw new DomainError('Scenen finns inte');
-	if (!artist.trim()) throw new DomainError('Artistens namn krävs');
-	if (!genre.trim()) throw new DomainError('Genre krävs');
-	checkTimes(startOffset, endOffset);
+/** Checks a performance and returns it with the texts cleaned up. */
+function checkPerformance(s: Schedule, input: PerformanceInput): PerformanceInput {
+	if (!s.stages.some((st) => st.id === input.stageId)) throw new DomainError('Scenen finns inte');
+	const artist = cleanText(input.artist, 'Artistens namn');
+	const genre = cleanText(input.genre, 'Genre');
+	checkTimes(input.startOffset, input.endOffset);
+	return { ...input, artist, genre };
 }
 
 export function addPerformance(s: Schedule, input: PerformanceInput): Performance {
-	checkPerformance(s, input);
-	const performance: Performance = { id: randomUUID(), ...input };
+	const performance: Performance = { id: randomUUID(), ...checkPerformance(s, input) };
 	s.performances.push(performance);
 	return performance;
 }
@@ -180,8 +203,7 @@ export function addPerformance(s: Schedule, input: PerformanceInput): Performanc
 export function updatePerformance(s: Schedule, id: string, input: PerformanceInput) {
 	const performance = s.performances.find((p) => p.id === id);
 	if (!performance) throw new DomainError('Spelningen hittades inte', 404);
-	checkPerformance(s, input);
-	Object.assign(performance, input);
+	Object.assign(performance, checkPerformance(s, input));
 }
 
 export function deletePerformance(s: Schedule, id: string) {

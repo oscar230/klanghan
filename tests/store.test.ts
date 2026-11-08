@@ -274,6 +274,29 @@ test('stages and performances: rules and stage deletion', () => {
 	assert.deepEqual(s.stages.map((st) => st.name), ['Lilla scenen']);
 });
 
+test('names are normalised, invisible characters are rejected and length is limited', () => {
+	const s = emptySchedule();
+	// "José" typed with a combining accent is the same name as the precomposed one
+	ops.addUser(s, 'Jose\u0301', null);
+	assert.equal(s.users[0].name, 'Jos\u00e9');
+	assert.throws(() => ops.addUser(s, 'Jos\u00e9', null), /finns redan/);
+	// Zero-width characters do not make an empty name
+	assert.throws(() => ops.addUser(s, '\u200b \u2060', null), /Namn krävs/);
+	assert.throws(() => ops.addStage(s, '\u200b'), /krävs/);
+	assert.equal(ops.addStage(s, 'Sto\u200bra').name, 'Stora');
+	// Length limits
+	assert.throws(() => ops.addUser(s, 'x'.repeat(101), null), /högst 100/);
+	assert.throws(() => ops.addRole(s, { ...plainRole('Lång'), description: 'x'.repeat(1001) }), /högst 1000/);
+	assert.equal(ops.addRole(s, { ...plainRole('Kort'), description: '   ' }).description, null);
+	const stage = s.stages[0];
+	assert.throws(
+		() => ops.addPerformance(s, { stageId: stage.id, artist: 'x'.repeat(101), genre: 'Folk', startOffset: 0, endOffset: 60 }),
+		/Artistens namn får vara högst 100/
+	);
+	const p = ops.addPerformance(s, { stageId: stage.id, artist: ' Vera\u200b ', genre: 'Folk ', startOffset: 0, endOffset: 60 });
+	assert.deepEqual([p.artist, p.genre], ['Vera', 'Folk']);
+});
+
 test('older documents load with empty stages and performances', () => {
 	const s = normalizeSchedule({ users: [], roles: [], shifts: [] });
 	assert.deepEqual([s.stages, s.performances], [[], []]);

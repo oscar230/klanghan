@@ -74,7 +74,7 @@
 >
 	<div>
 		<label class="field-label" for="new-user-name">Namn</label>
-		<input id="new-user-name" type="text" name="name" required class="field" />
+		<input id="new-user-name" type="text" name="name" required maxlength="100" class="field" />
 	</div>
 	<ImageField />
 </Modal>

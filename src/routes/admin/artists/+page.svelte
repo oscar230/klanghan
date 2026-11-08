@@ -64,7 +64,7 @@
 {#snippet fields(performance: Performance | null)}
 	<div>
 		<label class="field-label" for="performance-artist">Artist</label>
-		<input id="performance-artist" type="text" name="artist" value={performance?.artist ?? ''} required class="field" />
+		<input id="performance-artist" type="text" name="artist" value={performance?.artist ?? ''} required maxlength="100" class="field" />
 	</div>
 	<div>
 		<label class="field-label" for="performance-genre">Genre</label>
@@ -75,6 +75,7 @@
 			list="genres"
 			value={performance?.genre ?? ''}
 			required
+			maxlength="100"
 			autocomplete="off"
 			class="field"
 		/>
